@@ -1,6 +1,6 @@
-(ns rand-music.pitch
-  (:use [rand-music.constants])
-  (:use [rand-music.pitch-class])
+(ns bartok.pitch
+  (:use [bartok.constants])
+  (:use [bartok.pitch-class])
   (:use [utils.utils]))
 
 (declare pitch)

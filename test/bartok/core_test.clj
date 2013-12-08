@@ -1,6 +1,6 @@
-(ns rand-music.core-test
+(ns bartok.core-test
   (:require [clojure.test :refer :all]
-            [rand-music.core :refer :all]))
+            [bartok.core :refer :all]))
 
 (deftest a-test
   (testing "FIXME, I fail."

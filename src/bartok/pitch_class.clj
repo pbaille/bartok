@@ -1,5 +1,5 @@
-(ns rand-music.pitch-class
-  (:use [rand-music.constants])
+(ns bartok.pitch-class
+  (:use [bartok.constants])
   (:use [utils.utils]))
 
 (defprotocol IPitchClass

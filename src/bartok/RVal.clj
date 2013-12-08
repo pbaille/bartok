@@ -1,4 +1,4 @@
-(ns rand-music.RVal
+(ns bartok.RVal
   (:use [utils.utils])
   (:use [clojure.math.combinatorics :as c]))
 

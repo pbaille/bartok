@@ -1,8 +1,8 @@
-(ns rand-music.abs-mode
-  (:use [rand-music.constants])
-  (:use [rand-music.pitch-class])
-  (:use [rand-music.pitch])
-  (:use [rand-music.m-degree])
+(ns bartok.abs-mode
+  (:use [bartok.constants])
+  (:use [bartok.pitch-class])
+  (:use [bartok.pitch])
+  (:use [bartok.m-degree])
   (:use [utils.utils]))
 
 (defn mode? [m] (= (set (keys m)) #{:name :mother :degree :degrees :prio}))
@@ -45,7 +45,7 @@
                 (hash-map :root %1))
     (split-mode-name n)))
 
-(mode :C#-Lyd)
+
 
 
 

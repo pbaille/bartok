@@ -1,8 +1,8 @@
-(ns rand-music.core
+(ns bartok.core
  (:use [midi])
  (:use [clojure.tools.namespace.repl :only (refresh)])
- (:use [rand-music.midi-fns])
- (:use [rand-music.RVal])
+ (:use [bartok.midi-fns])
+ (:use [bartok.RVal])
  (:use [utils.utils]))
 
 

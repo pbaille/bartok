@@ -1,6 +1,6 @@
-(ns rand-music.interval
-  (:use [rand-music.constants])
-  (:use [rand-music.m-degree])
+(ns bartok.interval
+  (:use [bartok.constants])
+  (:use [bartok.m-degree])
   (:use [utils.utils]))
 
 (defrecord Interval [name size direction])

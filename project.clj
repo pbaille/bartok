@@ -1,4 +1,4 @@
-(defproject rand-music "0.1.0-SNAPSHOT"
+(defproject bartok "0.1.0-SNAPSHOT"
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
@@ -8,4 +8,4 @@
                  [overtone/at-at "1.2.0"]
                  [org.clojure/tools.namespace "0.2.4"]
                  [org.clojure/math.combinatorics "0.0.7"]]
-  :main rand-music.core)
+  :main bartok.core)

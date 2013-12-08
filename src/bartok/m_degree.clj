@@ -1,5 +1,5 @@
-(ns rand-music.m-degree
-  (:use [rand-music.constants])
+(ns bartok.m-degree
+  (:use [bartok.constants])
   (:use [utils.utils]))
 
 (defrecord MDegree [name dist generic])

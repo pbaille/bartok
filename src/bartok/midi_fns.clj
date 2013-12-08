@@ -1,4 +1,4 @@
-(ns rand-music.midi-fns
+(ns bartok.midi-fns
   (:use [midi])
   (:use [utils.utils])
   (:use [overtone.at-at]))

@@ -1,4 +1,4 @@
-(ns rand-music.constants
+(ns bartok.constants
   (:use [utils.utils]))
 
 (def pitch-class-defaults-names 
