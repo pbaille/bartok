@@ -1,5 +1,6 @@
-(ns bartok.abs-mode
+(ns bartok.mode
   (:use [bartok.constants])
+  (:use [bartok.litterals.identity])
   (:use [bartok.pitch-class])
   (:use [bartok.pitch])
   (:use [bartok.m-degree])
@@ -22,7 +23,7 @@
 
 (defn split-mode-name [mn]
   (let [[r m] (map keyword (clojure.string/split (name mn) #"\-"))]
-    (if (and (abs-mode-name? m) (pitch-class?? r)) [r m] nil)))
+    (if (and (abs-mode-name? m) (pitch-class-kw? r)) [r m] nil)))
 
 (defn mode-name? [k]
   (if (split-mode-name k) true false))

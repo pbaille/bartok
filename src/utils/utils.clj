@@ -1,6 +1,8 @@
 (ns utils.utils)
 
-
+(defn call [^String nm & args]
+    (when-let [fun (ns-resolve *ns* (symbol nm))]
+        (apply fun args)))
 
 (defn between
   ([a b] (between a (first b) (second b)))

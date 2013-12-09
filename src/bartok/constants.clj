@@ -14,10 +14,9 @@
   (set (for [head (keys unaltered-pitch-classes) 
              alt (vals alterations-names)] 
          (keyword (str (name head) alt)))))
-(defn pitch-class?? [x] (if (pitch-classes x) true false))
 
-(def directions #{:up :down})
-(defn direction? [x] (directions x))
+(defn direction? [x] ((name x) #{:up :down}))
+
 
 ;***************
 
@@ -31,8 +30,7 @@
    :seventh {9 :o7 10 :m7 11 :M7}})
 
 (def m-degree-dist 
-  (reduce #(into %1 (clojure.set/map-invert (second %2))) 
-          {} m-degrees))
+  (reduce #(into %1 (clojure.set/map-invert (second %2))) {} m-degrees))
 
 (def m-degree-generic 
   (reduce 
@@ -102,7 +100,5 @@
 (def modal-moves 
   {:SD 5 :SD- 8 :SD+ 2 :SDalt 11 
    :T  0 :T-  3 :T+  9 :Talt  6})
-
-
 
 

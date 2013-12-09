@@ -4,7 +4,7 @@
 
 (defrecord MDegree [name dist generic])
 
-(defn m-degree? [x] (= (class x) rand_music.m_degree.MDegree))
+(defn m-degree? [x] (= (class x) bartok.m_degree.MDegree))
 
 ;***************** Constructor *****************
 

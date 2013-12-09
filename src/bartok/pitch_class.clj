@@ -28,8 +28,7 @@
             [:unaltered-name :c-dist]))))
 
 
-(defmethod pitch-class :name
-  [n]
+(defmethod pitch-class :name [n]
   (let [name-str (name n)
         unaltered-name (subs name-str 0 1)
         alt-name (subs name-str 1)
@@ -50,7 +49,7 @@
 
 ;*************** Methods *****************
 
-(defn pitch-class? [this] (= (class this) rand_music.pitch_class.PitchClass))
+(defn pitch-class? [this] (= (class this) bartok.pitch_class.PitchClass))
 
 
 

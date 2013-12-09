@@ -16,13 +16,16 @@
 
 (defrecord Pitch [pitch-class octave]
   IPitch
-  (to-midi-pitch [_] 
-    (+ (:c-dist pitch-class) (* (+ octave 5) 12)))
+  (midi-pitch [this] 
+    (if midi-pitch 
+      midi-pitch          
+      (into this :midi-pitch (+ (:c-dist pitch-class) (* (+ octave 5) 12)))))
+  
   (c-dist [_] (:c-dist pitch-class))
 
   Transposable
   (transpose [this n]
-    (pitch (+ n (to-midi-pitch this)))))
+    (pitch (+ n (midi-pitch this)))))
   
 
 ;*********** Constructor ***********
@@ -68,8 +71,4 @@
 
 (defmethod pitch [:pitch-class :octave] [pcn o] 
   (->Pitch pcn o))
-
-
-
-
 
