@@ -1,6 +1,14 @@
-; (ns bartok.m-degree
-;   (:use [bartok.constants])
-;   (:use [utils.utils]))
+(ns bartok.m-degree
+  (:use [bartok.constants])
+  (:use [utils.utils]))
+
+(def m-degrees 
+  (reduce into {}      
+    (for [[amdn amdv] generic-m-degrees 
+          [mdv mdn] amdv]      
+        {mdn {:name mdn
+              :val mdv
+              :generic amdn}})))
 
 ; (defrecord MDegree [name dist generic])
 

@@ -4,23 +4,17 @@
 (def pitch-class-defaults-names 
   [:C :Db :D :Eb :E :F :Gb :G :Ab :A :Bb :B])
 
-(def unaltered-pitch-classes 
+(def natural-pitch-classes 
   (sorted-map :A 9 :B 11 :C 0 :D 2 :E 4 :F 5 :G 7))
 
-(def alterations-names {1 "#" -1 "b" 2 "x" -2 "bb"})
-(def alterations-values (clojure.set/map-invert alterations-names))
+(def alterations {:# 1 :b -1 :x 2 :bb -2})
 
-(def pitch-classes 
-  (set (for [head (keys unaltered-pitch-classes) 
-             alt (vals alterations-names)] 
-         (keyword (str (name head) alt)))))
-
-(defn direction? [x] ((name x) #{:up :down}))
+; (defn direction? [x] ((name x) #{:up :down}) )
 
 
 ;***************
 
-(def m-degrees 
+(def generic-m-degrees 
   {:root    {0 :R}
    :second  {1 :m2 2 :M2 3 :#2}
    :third   {2 :o3 3 :m3 4 :M3 5 :#3}
@@ -29,17 +23,17 @@
    :sixt    {8 :m6 9 :M6 10 :+6}
    :seventh {9 :o7 10 :m7 11 :M7}})
 
-(def m-degree-dist 
-  (reduce #(into %1 (clojure.set/map-invert (second %2))) {} m-degrees))
+; (def m-degree-dist 
+;   (reduce #(into %1 (clojure.set/map-invert (second %2))) {} m-degrees))
 
-(def m-degree-generic 
-  (reduce 
-    #(into %1 (apply hash-map 
-                (mapcat 
-                  (fn [a b] (let [a (keyword a)] [a b])) 
-                  (vals (second %2)) 
-                  (repeat (first %2)))))
-    {} m-degrees))
+; (def m-degree-generic 
+;   (reduce 
+;     #(into %1 (apply hash-map 
+;                 (mapcat 
+;                   (fn [a b] (let [a (keyword a)] [a b])) 
+;                   (vals (second %2)) 
+;                   (repeat (first %2)))))
+;     {} m-degrees))
 
 (def m-degree-generic-defaults 
   {:root :R :second :M2 :third :M3 :fourth :P4 :fifth :P5 :sixth :M6 :seventh :M7})
@@ -47,8 +41,8 @@
 (def m-degree-dist-defaults 
   [:R :m2 :M2 :m3 :M3 :P4 :+4 :P5 :m6 :M6 :m7 :M7])
 
-(defn m-degree-name? [n] (in? (keys m-degree-dist) (keyword n)))
-(defn m-degree-generic-name? [n] (in? (keys m-degrees) (keyword n)))
+; (defn m-degree-name? [n] (in? (keys m-degree-dist) (keyword n)))
+; (defn m-degree-generic-name? [n] (in? (keys m-degrees) (keyword n)))
 
 ;***************
 

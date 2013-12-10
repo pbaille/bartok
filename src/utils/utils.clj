@@ -4,6 +4,9 @@
     (when-let [fun (ns-resolve *ns* (symbol nm))]
         (apply fun args)))
 
+(defn keyword-cat [& args] 
+  (-> (apply str (map name args)) keyword))
+
 (defn between
   ([a b] (between a (first b) (second b)))
   ([a b1 b2] (and (>= a b1) (<= a b2))))
@@ -18,6 +21,12 @@
 
 (defn submap? [sub m] 
   (clojure.set/subset? (set sub) (set m)))
+
+(defn first-where [sub-map coll]
+  (select-first #(submap? sub-map %) coll))
+
+(defn select-where [sub-map coll]
+  (filter #(submap? sub-map %) coll))
 
 (defn abs [x] (if (neg? x) (* x -1) x))
 

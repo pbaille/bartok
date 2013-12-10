@@ -1,6 +1,16 @@
-; (ns bartok.pitch-class
-;   (:use [bartok.constants])
-;   (:use [utils.utils]))
+(ns bartok.pitch-class
+  (:use [bartok.constants])
+  (:use [utils.utils]))
+
+(def pitch-classes 
+  (reduce into {}      
+    (for [[hk hv] natural-pitch-classes 
+          [ak av] (into alterations {nil 0})]
+      (let [nam (if ak (keyword-cat hk ak) hk)]
+        {nam {:name nam
+              :val (mod (+ hv av 12) 12)
+              :natural {:name hk :val hv}
+              :alteration {:name ak :val av}}}))))
 
 ; (defprotocol IPitchClass
 ;   (unaltered-name [this])

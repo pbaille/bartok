@@ -1,72 +1,57 @@
-; (ns bartok.pitch
-;   (:use [bartok.constants])
-;   (:use [bartok.pitch-class])
-;   (:use [utils.utils]))
+(ns bartok.pitch
+  (:use [bartok.constants])
+  (:use [bartok.litterals.identity])
+  (:use [bartok.pitch-class])
+  (:use [utils.utils]))
 
-; (declare pitch)
-
-; (defprotocol IPitch
-;   (to-midi-pitch [this])
-;   (c-dist [this])
-;   )
+(def pitches 
+  (reduce #(if %2 (conj %1 %2) %1) #{}      
+    (for [[pcn pcv] pitch-classes 
+          oct (range -6 7)]
+      (let [nam (keyword (str (name pcn) oct))
+            val (+ (* 12 (+ oct 5)) (:val pcv))]
+        (when (between val 0 127 )
+          {:name nam
+           :val val
+           :octave oct
+           :pitch-class pcv})))))
 
 ; (defprotocol Transposable
-;   (transpose [this n])
+;   (transpose [this x])
 ;   )
 
-; (defrecord Pitch [pitch-class octave]
-;   IPitch
-;   (to-midi-pitch [this] 
-;     (+ (:c-dist pitch-class) (* (+ octave 5) 12)))
-  
-;   (c-dist [_] (:c-dist pitch-class))
-
-;   Transposable
-;   (transpose [this n]
-;     (pitch (+ n (to-midi-pitch this)))))
+(defrecord Pitch [name val octave pitch-class])
   
 
 ; ;*********** Constructor ***********
 
-; (defmulti pitch
-;   (fn [& args]
-;     (cond 
-;       (-> args count (= 1))
-;         (cond 
-;           (map? (first args))    :map
-;           (number? (first args)) :midi-pitch
-;           (or (keyword? (first args)) 
-;               (string? (first args))) 
-;             :midi-name)
-        
-;       (-> args count (= 2))
-;         (cond
-;           (or (keyword? (first args)) 
-;               (string? (first args))) 
-;             [:pitch-class-name :octave]
-;           (pitch-class? (first args))
-;             [:pitch-class :octave]))))
+(defn map->Pitch [m]
+  (let [{:keys [name val octave pitch-class]} m]
+    (->Pitch name val octave pitch-class)))
 
-; (defmethod pitch :midi-pitch [p]
-;   (let [[d r] (div-mod p 12) 
-;          d (- d 5)
-;          pc (pitch-class r)]
-;     (->Pitch pc d)))
+(defmulti pitch
+  (fn [& args]
+    (let [[a b] args]
+      (cond
+        (number? a)     :val
+        (map? a)        :map
+        (pitch-name? a) :name
+        (and (pitch-class-name? a)
+             (number? b)) 
+          [:pitch-class :octave]))))
 
-; (defmethod pitch :map [m]
-;   (let [{:keys [pitch-class octave]} m]
-;     (if (and pitch-class octave)
-;         (->Pitch pitch-class octave))))
+(defmethod pitch :val [v]
+  (map->Pitch (->> (select-where {:val v} pitches) 
+                   (remove #(#{:x :bb :#} (get-in % [:pitch-class :alteration :name])))
+                   first)))
 
-; (defmethod pitch :midi-name [n]
-;   (let [s (if (keyword? n) (kw->str n) n)
-;         oct (parse-int (re-find #"\-\d|\d" s))
-;         pc  (first (clojure.string/split s #"\-\d|\d"))]
-;     (->Pitch (pitch-class (keyword pc)) oct)))
+(defmethod pitch :name [n]
+  (map->Pitch (first-where {:name n} pitches)))
 
-; (defmethod pitch [:pitch-class-name :octave] [pcn o] 
-;   (->Pitch (pitch-class pcn) o))
+(defmethod pitch :map [m]
+  (map->Pitch (first-where m pitches)))
 
-; (defmethod pitch [:pitch-class :octave] [pcn o] 
-;   (->Pitch pcn o))
+(defmethod pitch [:pitch-class :octave] [p o]
+  (map->Pitch (first-where {:pitch-class p :octave o} pitches)))
+
 
