@@ -21,11 +21,11 @@
     (if-let [[_ nat alt] (re-matches #"([A-G])([x#b]b*)*" (name x))]
       {:base nat :alteration alt})))
 
-(defn generic-m-degree-name? [x] 
+(defn generic-interval-class-name? [x] 
   (if (named x) 
     (re-matches #"root|second|third|fourth|fifth|sixt|seventh" (name x))))
 
-(defn m-degree-name? [x] 
+(defn interval-class-name? [x] 
   (if (named x) (re-matches #"[mM#][23]|[bP+][45]|[mM]6|[omM]7" (name x))))
 
 
