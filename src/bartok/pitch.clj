@@ -5,20 +5,23 @@
   (:use [utils.utils]))
 
 (def pitches 
-  (reduce #(if %2 (conj %1 %2) %1) #{}      
-    (for [[pcn pcv] pitch-classes 
+  (reduce conj #{}      
+    (for [{pcn :name pcv :val} pitch-classes 
           oct (range -6 7)]
-      (let [nam (keyword (str (name pcn) oct))
-            val (+ (* 12 (+ oct 5)) (:val pcv))]
+      (let [val (+ (* 12 (+ oct 5)) pcv)]
         (when (between val 0 127 )
-          {:name nam
+          {:name (keyword (str (name pcn) oct))
            :val val
            :octave oct
-           :pitch-class pcv})))))
+           :pitch-class (pitch-class pcn)})))))
 
-; (defprotocol Transposable
-;   (transpose [this x])
-;   )
+; pitches with either no or b alteration
+(def default-name-pitches 
+  (let [defaults (set pitch-class-defaults-names)]
+    (filter #( defaults (get-in % [:pitch-class :name])) pitches)))
+
+(def name->pitch (reduce #(into %1 {(:name %2) %2}) {} pitches))
+(def val->pitch  (reduce #(into %1 {(:val %2) %2}) {} default-name-pitches))
 
 (defrecord Pitch [name val octave pitch-class])
   
@@ -40,13 +43,9 @@
              (number? b)) 
           [:pitch-class :octave]))))
 
-(defmethod pitch :val [v]
-  (map->Pitch (->> (select-where {:val v} pitches) 
-                   (remove #(#{:x :bb :#} (get-in % [:pitch-class :alteration :name])))
-                   first)))
+(defmethod pitch :val [v] (map->Pitch (val->pitch v)))
 
-(defmethod pitch :name [n]
-  (map->Pitch (first-where {:name n} pitches)))
+(defmethod pitch :name [n] (map->Pitch (name->pitch n)))
 
 (defmethod pitch :map [m]
   (map->Pitch (first-where m pitches)))

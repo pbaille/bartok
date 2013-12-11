@@ -1,19 +1,18 @@
 (ns bartok.interval
-  (:use [bartok.constants])
+  (:use [bartok.litterals.identity])
   (:use [bartok.m-degree])
   (:use [utils.utils]))
 
+(def directions {:u 1 :d -1})
+
 (def intervals 
   (reduce into {}      
-    (for [[mdn mdv] m-degrees 
+    (for [{mdn :name mdv :val mdg :generic} m-degrees 
            oct (range 11)
-           dir #{:u :d}]      
-      (let [nam (keyword (str (name mdn) (name dir) oct))
-            val ((if (= dir :u) identity #(* -1 %)) 
-                 (+ (:val mdv) (* 12 oct)))]
-        {nam {:name nam
-             :val val
-             :m-degree mdv}}))))
+          [dirn dirv] directions]      
+      {:name (keyword (str (name mdn) (name dir) oct))
+       :val (* dirv (+ (:val mdv) (* 12 oct)))
+       :m-degree mdv})))
 
 ; (defrecord Interval [name size direction])
 

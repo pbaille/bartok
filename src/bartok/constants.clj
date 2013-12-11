@@ -1,27 +1,9 @@
 (ns bartok.constants
   (:use [utils.utils]))
 
-(def pitch-class-defaults-names 
-  [:C :Db :D :Eb :E :F :Gb :G :Ab :A :Bb :B])
-
-(def natural-pitch-classes 
-  (sorted-map :A 9 :B 11 :C 0 :D 2 :E 4 :F 5 :G 7))
-
-(def alterations {:# 1 :b -1 :x 2 :bb -2})
-
-; (defn direction? [x] ((name x) #{:up :down}) )
-
-
 ;***************
 
-(def generic-m-degrees 
-  {:root    {0 :R}
-   :second  {1 :m2 2 :M2 3 :#2}
-   :third   {2 :o3 3 :m3 4 :M3 5 :#3}
-   :fourth  {4 :b4 5 :P4 6 :+4}
-   :fifth   {6 :b5 7 :P5 8 :+5}
-   :sixt    {8 :m6 9 :M6 10 :+6}
-   :seventh {9 :o7 10 :m7 11 :M7}})
+
 
 ; (def m-degree-dist 
 ;   (reduce #(into %1 (clojure.set/map-invert (second %2))) {} m-degrees))
@@ -35,11 +17,11 @@
 ;                   (repeat (first %2)))))
 ;     {} m-degrees))
 
-(def m-degree-generic-defaults 
-  {:root :R :second :M2 :third :M3 :fourth :P4 :fifth :P5 :sixth :M6 :seventh :M7})
+; (def m-degree-generic-defaults 
+;   {:root :R :second :M2 :third :M3 :fourth :P4 :fifth :P5 :sixth :M6 :seventh :M7})
 
-(def m-degree-dist-defaults 
-  [:R :m2 :M2 :m3 :M3 :P4 :+4 :P5 :m6 :M6 :m7 :M7])
+; (def m-degree-dist-defaults 
+;   [:R :m2 :M2 :m3 :M3 :P4 :+4 :P5 :m6 :M6 :m7 :M7])
 
 ; (defn m-degree-name? [n] (in? (keys m-degree-dist) (keyword n)))
 ; (defn m-degree-generic-name? [n] (in? (keys m-degrees) (keyword n)))

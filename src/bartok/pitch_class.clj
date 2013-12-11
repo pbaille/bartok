@@ -1,67 +1,48 @@
 (ns bartok.pitch-class
-  (:use [bartok.constants])
+  (:use [bartok.alteration])
+  (:use [bartok.natural-pitch-class])
+  (:use [bartok.litterals.identity])
   (:use [utils.utils]))
 
 (def pitch-classes 
-  (reduce into {}      
-    (for [[hk hv] natural-pitch-classes 
-          [ak av] (into alterations {nil 0})]
-      (let [nam (if ak (keyword-cat hk ak) hk)]
-        {nam {:name nam
-              :val (mod (+ hv av 12) 12)
-              :natural {:name hk :val hv}
-              :alteration {:name ak :val av}}}))))
+  (reduce conj #{}      
+    (for [{npcn :name npcv :val} natural-pitch-classes 
+          {an :name av :val} alterations]
+      {:name (if (= av 0) npcn (keyword-cat npcn an))
+       :val (mod (+ npcv av 12) 12)
+       :natural (natural-pitch-class npcn)
+       :alteration (alteration av)})))
 
-; (defprotocol IPitchClass
-;   (unaltered-name [this])
-;   (alt-name [this])
-;   (alt-val [this]))
+(def pitch-class-defaults-names 
+  #{:C :Db :D :Eb :E :F :Gb :G :Ab :A :Bb :B})
 
-; (defrecord PitchClass [name c-dist]
-;   IPitchClass
-;   (unaltered-name [this] (subs name 0 1))
-;   (alt-name [this] (subs name 1))
-;   (alt-val [this] (alterations-values (alt-name this))))
+(def default-name-pitch-classes 
+  (filter pitch-class-defaults-names pitch-classes))
 
-; ;********** Constructor **************
+; for performance
+(def name->pitch-class (reduce #(into %1 {(:name %2) %2}) {} pitch-classes))
+(def val->pitch-class  (reduce #(into %1 {(:val %2) %2}) {} default-name-pitch-classes))
 
-; (defmulti pitch-class
-;   (fn [& args]
-;     (cond
-;       (count= args 1)
-;         (if (or (keyword? (first args)) (string? (first args))) 
-;             :name
-;             :integer)
-;       (count= args 2) 
-;         (if (and (or (keyword? (first args)) (string? (first args)))
-;                  (number? (second args)))
-;             [:unaltered-name :c-dist]))))
+(defrecord PitchClass [name val natural alteration])
 
+; ;*********** Constructor ***********
 
-; (defmethod pitch-class :name [n]
-;   (let [name-str (name n)
-;         unaltered-name (subs name-str 0 1)
-;         alt-name (subs name-str 1)
-;         alt-val  (or (alterations-values alt-name) 0)
-;         c-dist (+ (unaltered-pitch-classes (keyword unaltered-name)) alt-val)]
-;     (->PitchClass name-str c-dist)))
+(defn map->PitchClass [m]
+  (let [{:keys [name val natural alteration]} m]
+    (->PitchClass name val natural alteration)))
 
-; (defmethod pitch-class :integer [i] 
-;   (let [n (pitch-class-defaults-names i)] (pitch-class n)))
+(defmulti pitch-class
+  (fn [& args]
+    (let [[a b] args]
+      (cond
+        (number? a) :val
+        (map? a) :map
+        (pitch-class-name? a) :name))))
 
-; (defmethod pitch-class [:unaltered-name :c-dist]
-;   [un cd]
-;   (let [diff (- cd (unaltered-pitch-classes (keyword un)))
-;         alt-val (cond (< 2 diff) (- diff 12) (> -2 diff) (+ diff 12) :else diff)
-;         alt-name (alterations-names alt-val)
-;         name-str (str (name un) alt-name)]
-;     (->PitchClass name-str cd)))
+(defmethod pitch-class :val [v] (map->PitchClass (val->pitch-class v)))
 
-; ;*************** Methods *****************
+(defmethod pitch-class :name [n] (map->PitchClass (name->pitch-class n)))
 
-; (defn pitch-class? [this] (= (class this) bartok.pitch_class.PitchClass))
-
-
-
+(defmethod pitch-class :map [m] (map->PitchClass (first-where m pitch-classes)))
 
 

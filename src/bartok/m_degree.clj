@@ -1,50 +1,45 @@
 (ns bartok.m-degree
+  (:use [bartok.litterals.identity])
   (:use [bartok.constants])
   (:use [utils.utils]))
 
+(def generic-m-degrees 
+  {:root    {0 :R}
+   :second  {1 :m2 2 :M2 3 :#2}
+   :third   {2 :o3 3 :m3 4 :M3 5 :#3}
+   :fourth  {4 :b4 5 :P4 6 :+4}
+   :fifth   {6 :b5 7 :P5 8 :+5}
+   :sixt    {8 :m6 9 :M6 10 :+6}
+   :seventh {9 :o7 10 :m7 11 :M7}})
+
 (def m-degrees 
-  (reduce into {}      
+  (reduce conj #{}      
     (for [[amdn amdv] generic-m-degrees 
           [mdv mdn] amdv]      
-        {mdn {:name mdn
-              :val mdv
-              :generic amdn}})))
+      {:name mdn
+       :val mdv
+       :generic amdn})))
 
-; (defrecord MDegree [name dist generic])
+(def generic->default-m-degree 
+  (reduce #(into %1 {(:generic %2) %2}) {} 
+          (filter #(#{:R :M2 :M3 :P4 :P5 :M6 :M7} (:name %)) m-degrees)))
 
-; (defn m-degree? [x] (= (class x) bartok.m_degree.MDegree))
+(def name->m-degree (reduce #(into %1 {(:name %2) %2}) {} m-degrees))
+(def val->m-degree  (reduce #(into %1 {(:val %2) %2}) {} m-degrees))
 
-; ;***************** Constructor *****************
+(defrecord MDegree [name val generic])
 
-; (defmulti m-degree 
-;   (fn [& args]
-;     (case (count args)
-;       1 (let [f (first args)]       
-;           (cond 
-;             (m-degree-name? f)         :name 
-;             (m-degree-generic-name? f) :generic
-;             (number? f)                :number  ))
-      
-;       2 (when (m-degree-generic-name? (first args)) [:generic :dist]))))
+(defn map->MDegree [m] (->MDegree (:name m) (:val m) (:generic m)))
 
-; (defmethod m-degree :name [n] 
-;   (let [nam (keyword n)
-;         dist (m-degree-dist n)
-;         gen (m-degree-generic n)] 
-;     (->MDegree nam dist gen )))
+(defmulti m-degree 
+  (fn [arg]
+    (cond
+      (m-degree-name? arg) :name
+      (generic-m-degree-name? arg) :generic
+      (between arg [-2 2]) :val)))
 
-; (defmethod m-degree :generic [gen] 
-;   (let [nam (m-degree-generic-defaults (keyword gen)) 
-;         dist (m-degree-dist nam )] 
-;     (->MDegree nam dist gen )))
+(defmethod m-degree :name [n] (map->MDegree (name->m-degree n)))
+(defmethod m-degree :generic [g] (map->MDegree (generic->default-m-degree g)))
+(defmethod m-degree :val [v] (map->MDegree (val->m-degree v)))
 
-; (defmethod m-degree :number [number] 
-;   (let [dist (mod number 12)
-;         nam (m-degree-dist-defaults dist)
-;         gen (m-degree-generic nam)] 
-;     (->MDegree nam dist gen)))
 
-; (defmethod m-degree [:generic :dist] [g dist] 
-;   (let [gen (keyword g)
-;         nam (get-in m-degrees [gen dist])]
-;     (->MDegree nam dist gen)))

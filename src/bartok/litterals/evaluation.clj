@@ -11,9 +11,9 @@
 ; (defn bk [x]
 ;   (when (keyword? x)
 ;     (cond
-;       (pitch-class-kw? x) (pitch-class x)
-;       (pitch-kw? x)       (pitch x)
-;       (interval-kw? x)    (interval x)
-;       (m-degree-kw? x)    (m-degree x)
-;       (abs-mode-kw? x)    (abs-mode x)
-;       (mode-kw? x)        (mode x))))
+;       (pitch-class-name? x) (pitch-class x)
+;       (pitch-name? x)       (pitch x)
+;       (interval-name? x)    (interval x)
+;       (m-degree-name? x)    (m-degree x)
+;       (abs-mode-name? x)    (abs-mode x)
+;       (mode-name? x)        (mode x))))
