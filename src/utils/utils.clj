@@ -65,6 +65,8 @@
 (defn pos [pred coll]
   (for [[i v] (index coll) :when (pred v)] i))
 
+(defn index-of [item coll] (first (pos #{item} coll)))
+
 
 (defn div-mod [x div] [(int (/ x div)) (rem x div)])
 

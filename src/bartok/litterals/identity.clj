@@ -1,5 +1,4 @@
 (ns bartok.litterals.identity
-  (:use [bartok.constants])
   (:use [utils.utils]))
 
 (defn named [x]
@@ -32,9 +31,23 @@
 (defn interval-name? [x]
   (if (named x) (re-matches #"([mM#][23]|[bP+][45]|[mM]6|[omM]7)([ud][0-5]*)" (name x))))
 
-(defn abs-mode-name? [x] (if (named x) (mother x)))
+(defn mode-class-name? [x] 
+  (if (named x) 
+    (re-matches #"Lyd#2|AltDim|Harmm|Loc6|Ion\+|Dor\+4|PhryM|Lyd\+|Lydb7|Mixb6|Loc2|Alt|Melm|Phry6|Lyd|Mix|Eol|Loc|Ion|Dor|Phry" (name x))))
 
-(defn mode-name? [x] 
-  (let [[r m] (map keyword (clojure.string/split (name x) #"\-"))]
-    (if (and (abs-mode-name? m) (pitch-class-name? r)) [r m] nil)))
+(defn mother-mode-name? [x]
+  (if (named x) 
+    (re-matches #"Lyd#2|Lyd\+|Lyd" (name x))))
+
+(defn split-mode-name [x]
+  (if (named x) 
+    (let [[r m] (map keyword (clojure.string/split (name x) #"\-"))]
+      (if (and (pitch-class-name? r) (mode-class-name? m)) [r m] nil))))
+
+(defn mode-name? [x]
+  (if (split-mode-name x) true false))
+
+; (defn mode-name? [x] 
+;   (let [[r m] (map keyword (clojure.string/split (name x) #"\-"))]
+;     (if (and (abs-mode-name? m) (pitch-class-name? r)) [r m] nil)))
 

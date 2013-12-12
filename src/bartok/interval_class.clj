@@ -12,6 +12,9 @@
    :sixt    {8 :m6 9 :M6 10 :+6}
    :seventh {9 :o7 10 :m7 11 :M7}})
 
+(def generic->val 
+  {:root 0 :second 1 :third 2 :fourth 3 :fifth 4 :sixt 5 :seventh 6})
+
 (def interval-classes 
   (reduce conj #{}      
     (for [[gicn gicv] generic-interval-class 
@@ -33,7 +36,11 @@
   (reduce #(into %1 {(:val %2) %2}) {} 
           (filter #(interval-class-default-names (:name %)) interval-classes)))
 
+;********************************************
+
 (defrecord IntervalClass [name val generic])
+
+;*********** construct *****************
 
 (defn map->IntervalClass [m] (->IntervalClass (:name m) (:val m) (:generic m)))
 
@@ -48,4 +55,7 @@
 (defmethod interval-class :generic [g] (map->IntervalClass (generic->default-interval-class g)))
 (defmethod interval-class :val [v] (map->IntervalClass (val->interval-class (mod12 v))))
 
+;*********** functions ******************
 
+(defn generic-val [this] 
+  (generic->val (:generic this)))

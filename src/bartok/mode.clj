@@ -1,54 +1,37 @@
-; (ns bartok.mode
-;   (:use [bartok.constants])
-;   (:use [bartok.litterals.identity])
-;   (:use [bartok.pitch-class])
-;   (:use [bartok.pitch])
-;   (:use [bartok.m-degree])
-;   (:use [utils.utils]))
+(ns bartok.mode
+  (:use [bartok.litterals.identity])
+  (:use [bartok.interval-class])
+  (:use [bartok.natural-pitch-class])
+  (:use [bartok.pitch-class])
+  (:use [bartok.pitch])
+  (:use [bartok.mode-class])
+  (:use [utils.utils]))
 
-; (defn mode? [m] (= (set (keys m)) #{:name :mother :degree :degrees :prio}))
+(defrecord Mode [name root mode-class pitch-classes])
 
+;********* helpers *********
 
-; (def modes
-;   (set (map
-;     (fn [[ch-name moth-name]]
-;       (let [moth-hash (mother-modes moth-name)
-;             degree (->> moth-hash :childs (pos #{ch-name}) first inc)
-;             prio   (-> moth-hash :modes_prio (nth (dec degree)))
-;             degrees (vec (sort #(< (m-degree-dist %1) (m-degree-dist %2)) prio))]
-;         {:name ch-name :mother moth-name :degree degree :prio prio :degrees degrees}))
-;     mother)))
+(defn- pitch-classes-calc [root degrees]
+  (map #(transpose root %) degrees))
 
-; (defn abs-mode-name? [k] (k mother))
+;************ construct **************
 
-; (defn split-mode-name [mn]
-;   (let [[r m] (map keyword (clojure.string/split (name mn) #"\-"))]
-;     (if (and (abs-mode-name? m) (pitch-class-kw? r)) [r m] nil)))
+(defn mode-constructor-dispatch 
+  ([] "no args")
+  ([a]
+   (cond 
+     (mode-name? a) :name))
+  ([a b] "one args")
+  ([a b c] "one args"))
 
-; (defn mode-name? [k]
-;   (if (split-mode-name k) true false))
+(defmulti mode mode-constructor-dispatch )
 
-; (defn abs-mode [& args]
-;   (let [[a b c d] args]
-;     (cond
-;       (abs-mode-name? a)
-;         (select-first #(= a (:name %)) modes)
-;       (map? a)
-;         (select-first #(submap? a %) modes))))
-
-; (defmulti mode
-;   (fn [& args] (let [[a b c d] args]
-;      (cond
-;       (mode-name? a) :mode-name))))
-
-; (defmethod mode :mode-name [n]
-;   (apply #(into (abs-mode %2)
-;                 (hash-map :root %1))
-;     (split-mode-name n)))
-
-
-
-
-
-
+(defmethod mode :name [n]
+  
+  (let [[r mc] (split-mode-name n)
+         r (pitch-class r)
+         mc (mode-class mc)
+         pcs (pitch-classes-calc r (:degrees mc))]
+    
+    (->Mode n r mc pcs)))
 
