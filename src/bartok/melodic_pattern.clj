@@ -1,6 +1,6 @@
 (ns bartok.melodic-pattern
-  (:require [clojure.set :refer :all])
-  (:use [utils.dom-part]))
+  (:use [utils.dom-part])
+  (:use [utils.utils]))
 
 (def ^:private default-params
   {:steps (set (range -2 3))
@@ -9,7 +9,7 @@
    :cycle-lengths #{3 4}})
 
 (defn- keys-subset? [sub m]
-  (subset? (set (keys sub)) (set (keys m))))
+  (clojure.set/subset? (set (keys sub)) (set (keys m))))
 
 (defn- merge-with-defaults [m]
   (when (keys-subset? m default-params)
@@ -53,10 +53,13 @@
       (conj mp (conj {:iterations (first i)} (second i))))))
 
 (defn melodic-pattern-chooser [params]
-  (let [mps (melodic-patterns params)]
-    (fn [amplitude-bounds]
-      (first (filter (fn [mp] 
-                       (and)) 
-                     (shuffle mps))))))
+  (let [mps (melodic-patterns params)
+        emps (shuffle (mapcat expand-melodic-pattern mps))
+        cnt  (count emps)]
+    (fn [[down up]]
+      (select-first #(and (>= (get-in % [:amplitude :down]) down)
+                          (<= (get-in % [:amplitude :up]) up))
+                    (rotate emps (rand-int cnt)) ))))
+
  
  
