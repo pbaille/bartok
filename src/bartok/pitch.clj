@@ -1,6 +1,6 @@
 (ns bartok.pitch
-  (:use [bartok.constants])
   (:use [bartok.litterals.identity])
+  (:use [bartok.protocols])
   (:use [bartok.pitch-class])
   (:use [utils.utils]))
 
@@ -23,8 +23,17 @@
 (def name->pitch (reduce #(into %1 {(:name %2) %2}) {} pitches))
 (def val->pitch  (reduce #(into %1 {(:val %2) %2}) {} default-name-pitches))
 
-(defrecord Pitch [name val octave pitch-class])
+(defrecord Pitch [name val octave pitch-class]
+  Transpose
+  (transpose [this interval]
+    (let [pc (transpose pitch-class (:interval-class interval))
+          v (+ (:val this) (:val interval))
+          o (+ octave (:octave-offset interval))
+          n (keyword-cat (:name pc) (keyword (str o)))]
+      (->Pitch n v o pc))))
   
+;; type check
+(defn pitch? [x] (instance? Pitch x))
 
 ; ;*********** Constructor ***********
 
@@ -36,9 +45,10 @@
   (fn [& args]
     (let [[a b] args]
       (cond
-        (number? a)     :val
-        (map? a)        :map
-        (pitch-name? a) :name
+        (number? a)      :val
+        (pitch-name? a)  :name
+        (pitch-class? a) :pitch-class
+        (map? a)         :map
         (and (pitch-class-name? a)
              (number? b)) 
           [:pitch-class :octave]))))
@@ -46,6 +56,9 @@
 (defmethod pitch :val [v] (map->Pitch (val->pitch v)))
 
 (defmethod pitch :name [n] (map->Pitch (name->pitch n)))
+
+(defmethod pitch :pitch-class [pc] 
+  (pitch (keyword-cat (:name pc) "0")))
 
 (defmethod pitch :map [m]
   (map->Pitch (first-where m pitches)))

@@ -8,4 +8,5 @@
                  [overtone/at-at "1.2.0"]
                  [org.clojure/math.combinatorics "0.0.7"]
                  [org.clojure/clojure-contrib "1.2.0"]]
+  :profiles {:dev {:dependencies [[midje "1.6.0"]]}}
   :main bartok.core)

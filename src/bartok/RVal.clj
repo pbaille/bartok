@@ -4,19 +4,19 @@
 
 (defn is-ratio? [r] (= (type r) clojure.lang.Ratio))
 
-(defn denominator [r] 
-  (if (is-ratio? r) (clojure.core/denominator r) 1))
+(defn denom [r] 
+  (if (is-ratio? r) (denominator r) 1))
 
 (defn to-ms [rational bpm]
   (* (/ 60000 bpm) rational))
 
 (defn allowed-subs [rval]
   (set 
-    (for [sub (-> rval denominator prime-factors c/subsets)]
+    (for [sub (-> rval denom prime-factors c/subsets)]
       (apply * sub))))
 
 (defn rand-rval-at [rvals at]
-  (let [allowed (filter #(in? (allowed-subs %) (denominator at)) 
+  (let [allowed (filter #(in? (allowed-subs %) (denom at)) 
                         (seq rvals))]
     (rand-nth allowed)))
 

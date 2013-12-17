@@ -1,6 +1,5 @@
 (ns bartok.interval-class
   (:use [bartok.litterals.identity])
-  (:use [bartok.constants])
   (:use [utils.utils]))
 
 (def generic-interval-class

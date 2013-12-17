@@ -1,5 +1,6 @@
 (ns bartok.natural-pitch-class
   (:use [bartok.litterals.identity])
+  (:use [bartok.protocols])
   (:use [utils.utils]))
 
 
@@ -11,11 +12,6 @@
 
 (def name->natural-pitch-class (reduce #(into %1 {(:name %2) %2}) {} natural-pitch-classes))
 (def val->natural-pitch-class  (reduce #(into %1 {(:val %2) %2}) {} natural-pitch-classes))
-
-;*******************************************
-
-(defprotocol Transpose
-  (transpose [this of]))
 
 ;*******************************************
 

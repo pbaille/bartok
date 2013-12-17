@@ -2,6 +2,7 @@
   (:use [bartok.alteration])
   (:use [bartok.natural-pitch-class])
   (:use [bartok.interval-class])
+  (:use [bartok.protocols])
   (:use [bartok.litterals.identity])
   (:use [utils.utils]))
 
@@ -32,11 +33,13 @@
   Transpose
   (transpose [this interval]
     (let [nat (:name (transpose natural (generic-val interval)))
-          v (+ (:val this) (:val interval))]
+          v (mod12 (+ (:val this) (:val interval)))]
       (pitch-class nat v))))
 
+;; type check
+(defn pitch-class? [x] (instance? PitchClass x))
 
-; ;*********** Constructor ***********
+;;*********** Constructor ***********
 
 (defn map->PitchClass [m]
   (let [{:keys [name val natural alteration]} m]
@@ -47,8 +50,9 @@
     ([a]
       (cond
         (number? a) :val
-        (map? a) :map
-        (pitch-class-name? a) :name))
+        (pitch-class-name? a) :name
+        (pitch-class? a) :pitch-class
+        (map? a) :map))
     ([a b]
       (cond
         (and (natural-pitch-class-name? a) (number? b))
@@ -57,6 +61,9 @@
 (defmethod pitch-class :val [v] (map->PitchClass (val->pitch-class v)))
 
 (defmethod pitch-class :name [n] (map->PitchClass (name->pitch-class n)))
+
+;(defmethod pitch-class :pitch [p] (:pitch-class p))
+(defmethod pitch-class :pitch-class [pc] pc )
 
 (defmethod pitch-class :map [m] (map->PitchClass (first-where m pitch-classes)))
 

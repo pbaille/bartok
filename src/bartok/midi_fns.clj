@@ -18,7 +18,7 @@
 (defn play-line
   [out & pith-vel-dur-triples]
   (loop [notes (seq pith-vel-dur-triples)
-         at 0]
+         at 0] 
     (apply (partial play-note out) (conj (first notes) at))
     (if-let
       [nexts (next notes)]

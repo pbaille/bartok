@@ -1,4 +1,4 @@
-(ns utils.domain-partition)
+(ns utils.dom-part )
 
 (defn dom-part [elements size sum]
   
@@ -20,7 +20,3 @@
         (recur (set (mapcat 
                       #(for [b (allowed-elems %)] (conj % b)) 
                       results )))))))
-
-
-
-

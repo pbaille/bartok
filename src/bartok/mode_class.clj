@@ -68,7 +68,15 @@
 (def mother-degree->mode-class 
   (reduce #(into %1 {{:mother (:mother %2) :degree (:degree %2)} %2}) {} mode-classes))
 
+;;***********************************
+ 
 (defrecord ModeClass [name mother degree prio degrees])
+
+
+;; type check
+(defn mode-class? [x] (instance? ModeClass x))
+
+;;*********** Constructor ***********
 
 (defn map->ModeClass [m] 
   (->ModeClass (:name m) (:mother m) (:degree m) (:prio m) (:degrees m)))
@@ -84,8 +92,6 @@
 
 (defmethod mode-class :name [n] (map->ModeClass (name->mode-class n)))
 (defmethod mode-class [:mother :degree] [m d] (map->ModeClass (mother-degree->mode-class {:mother m :degree d})))
-
-
 
 
 
