@@ -1,11 +1,10 @@
-(ns bartok.mode
-  (:use [bartok.litterals.identity])
-  (:use [bartok.interval-class])
-  (:use [bartok.pitch-class])
-  (:use [bartok.pitch])
-  (:use [bartok.mode-class])
-  (:use [bartok.protocols])
-  (:use [utils.utils]))
+(in-ns 'bartok.types)
+
+(load "types/interval_class")
+(load "types/interval")
+(load "types/pitch_class")
+(load "types/pitch")
+(load "types/mode_class")
 
 (defrecord Mode [name root mode-class pitch-classes]
   Transpose

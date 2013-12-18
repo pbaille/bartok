@@ -9,4 +9,5 @@
                  [org.clojure/math.combinatorics "0.0.7"]
                  [org.clojure/clojure-contrib "1.2.0"]]
   :profiles {:dev {:dependencies [[midje "1.6.0"]]}}
+  ;:repl-options {:nrepl-middleware [utils.nrepl-middleware/pprint-middleware]}
   :main bartok.core)

@@ -1,6 +1,4 @@
-(ns bartok.interval-class
-  (:use [bartok.litterals.identity])
-  (:use [utils.utils]))
+(in-ns 'bartok.types )
 
 (def generic-interval-class
   {:root    {0 :R}

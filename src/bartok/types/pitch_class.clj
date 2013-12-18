@@ -1,10 +1,11 @@
-(ns bartok.pitch-class
-  (:use [bartok.alteration])
-  (:use [bartok.natural-pitch-class])
-  (:use [bartok.interval-class])
-  (:use [bartok.protocols])
-  (:use [bartok.litterals.identity])
-  (:use [utils.utils]))
+(in-ns 'bartok.types)
+
+(load "types/alteration")
+(load "types/natural_pitch_class")
+(load "types/interval_class")
+
+(declare pitch? )
+
 
 (def pitch-classes 
   (reduce conj #{}      
@@ -52,6 +53,7 @@
         (number? a) :val
         (pitch-class-name? a) :name
         (pitch-class? a) :pitch-class
+        (pitch? a) :pitch
         (map? a) :map))
     ([a b]
       (cond
@@ -62,7 +64,8 @@
 
 (defmethod pitch-class :name [n] (map->PitchClass (name->pitch-class n)))
 
-;(defmethod pitch-class :pitch [p] (:pitch-class p))
+(defmethod pitch-class :pitch [p] (:pitch-class p))
+
 (defmethod pitch-class :pitch-class [pc] pc )
 
 (defmethod pitch-class :map [m] (map->PitchClass (first-where m pitch-classes)))

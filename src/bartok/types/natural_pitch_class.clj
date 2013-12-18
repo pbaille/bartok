@@ -1,8 +1,4 @@
-(ns bartok.natural-pitch-class
-  (:use [bartok.litterals.identity])
-  (:use [bartok.protocols])
-  (:use [utils.utils]))
-
+(in-ns 'bartok.types)
 
 (def natural-pitch-classes
   (reduce #(conj %1 {:name (first %2) :val (second %2)})

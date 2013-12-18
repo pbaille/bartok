@@ -1,9 +1,9 @@
-(ns bartok.mode-class
-  (:use [bartok.litterals.identity])
-  (:use [bartok.interval-class])
-  (:use [bartok.pitch-class])
-  (:use [bartok.pitch])
-  (:use [utils.utils]))
+(in-ns 'bartok.types)
+
+(load "types/interval_class")
+(load "types/pitch_class")
+(load "types/pitch")
+
 
 (def mother-modes
   {:Lyd {

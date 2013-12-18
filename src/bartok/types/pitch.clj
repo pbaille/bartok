@@ -1,8 +1,6 @@
-(ns bartok.pitch
-  (:use [bartok.litterals.identity])
-  (:use [bartok.protocols])
-  (:use [bartok.pitch-class])
-  (:use [utils.utils]))
+(in-ns 'bartok.types)
+
+(load "types/pitch_class")
 
 (def pitches 
   (reduce conj #{}      

@@ -1,10 +1,8 @@
-(ns bartok.interval
-  (:use [bartok.litterals.identity])
-  (:use [bartok.interval-class])
-  (:use [utils.utils]))
+(in-ns 'bartok.types)
+
+(load "types/interval_class")
 
 (def directions {:u 1 :d -1})
-
 
 (def intervals 
   (reduce conj #{}      

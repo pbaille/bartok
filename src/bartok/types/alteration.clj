@@ -1,6 +1,4 @@
-(ns bartok.alteration
-  (:use [bartok.litterals.identity])
-  (:use [utils.utils]))
+(in-ns 'bartok.types)
 
 (def alterations
   (reduce #(conj %1 {:name (first %2) :val (second %2)})

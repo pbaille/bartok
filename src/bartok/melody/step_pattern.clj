@@ -1,6 +1,8 @@
-(ns bartok.melodic-pattern
+(ns bartok.melody.step-pattern
   (:use [utils.dom-part])
   (:use [utils.utils]))
+
+;************* helpers ********************
 
 (def ^:private default-params
   {:steps (set (range -2 3))
@@ -24,7 +26,7 @@
           {:down 0 :up 0 :total-step 0}
           step-sequence))
       
-(defn- step-patterns [params]
+(defn- steps-calc [params]
   (mapcat (fn [{:keys [cycle-length cycle-step] :as m}] 
             (map #(merge m (hash-map :step-pattern %)) 
                   (dom-part (:steps params) cycle-length cycle-step)))
@@ -42,19 +44,21 @@
                  :total-step total-step}}))]
     (merge step-pattern {:iterations (apply merge iters)})))
 
-(defn melodic-patterns [params] 
-  (let [params (merge-with-defaults params)] 
-    (map #(add-iterations % (:iterations params)) 
-         (for [sp (step-patterns params)] sp ))))
-
-(defn- expand-melodic-pattern [mp]
+(defn- expand-step-pattern [mp]
   (for [i (:iterations mp)]
     (let [mp (dissoc mp :iterations)]
       (conj mp (conj {:iterations (first i)} (second i))))))
 
-(defn melodic-pattern-chooser [params]
-  (let [mps (melodic-patterns params)
-        emps (shuffle (mapcat expand-melodic-pattern mps))
+;**************** public *********************
+
+(defn step-patterns [params] 
+  (let [params (merge-with-defaults params)] 
+    (map #(add-iterations % (:iterations params)) 
+         (for [sp (steps-calc params)] sp ))))
+
+(defn step-pattern-picker [params]
+  (let [mps (step-patterns params)
+        emps (shuffle (mapcat expand-step-pattern mps))
         cnt  (count emps)]
     (fn [[down up]]
       (select-first #(and (>= (get-in % [:amplitude :down]) down)
