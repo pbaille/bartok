@@ -57,10 +57,11 @@
     (fn [[ch-name moth-name]]
       (let [moth-hash (mother-modes moth-name)
             degree (->> moth-hash :childs (pos #{ch-name}) first inc)
-            prio   (map interval-class 
-                        (-> moth-hash :modes_prio (nth (dec degree))))
+            prio   (map interval-class (-> moth-hash :modes_prio (nth (dec degree))))
             degrees (vec (sort-by :val prio))]
-        {:name ch-name :mother moth-name :degree degree :prio prio :degrees degrees}))
+        (with-type 
+          'ModeClass
+          {:name ch-name :mother moth-name :degree degree :prio prio :degrees degrees})))
     mode-class->mother)))
 
 (def name->mode-class (reduce #(into %1 {(:name %2) %2}) {} mode-classes))
@@ -69,29 +70,16 @@
   (reduce #(into %1 {{:mother (:mother %2) :degree (:degree %2)} %2}) {} mode-classes))
 
 ;;***********************************
- 
-(defrecord ModeClass [name mother degree prio degrees])
-
 
 ;; type check
-(defn mode-class? [x] (instance? ModeClass x))
+;(defn mode-class? [x] (instance? ModeClass x))
 
 ;;*********** Constructor ***********
 
-(defn map->ModeClass [m] 
-  (->ModeClass (:name m) (:mother m) (:degree m) (:prio m) (:degrees m)))
+(defmulti mode-class b-type )
 
-(defmulti mode-class
-  (fn [& args]
-    (let [[a b] args]
-      (cond
-        (and (mode-class-name? a) (not b)) 
-          :name
-        (and (mother-mode-name? a) (number? b)) 
-          [:mother :degree]))))
-
-(defmethod mode-class :name [n] (map->ModeClass (name->mode-class n)))
-(defmethod mode-class [:mother :degree] [m d] (map->ModeClass (mother-degree->mode-class {:mother m :degree d})))
+(defmethod mode-class :mode-class [n] (name->mode-class n))
+(defmethod mode-class [:mode-class :number] [m d] (mother-degree->mode-class {:mother m :degree d}))
 
 
 

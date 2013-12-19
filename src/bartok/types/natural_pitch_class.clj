@@ -11,25 +11,22 @@
 
 ;*******************************************
 
-(declare natural-pitch-class)
+;(declare natural-pitch-class)
 
-(defrecord NaturalPitchClass [name val]
-  Transpose
-  (transpose [this n] 
-    (let [current-index (index-of name natural-pitch-classes-names)
-          new-name (nth natural-pitch-classes-names (mod (+ current-index n) 7))]
-      (natural-pitch-class new-name))))
+; (defrecord NaturalPitchClass [name val]
+;   Transpose
+;   (transpose [this n] 
+;     (let [current-index (index-of name natural-pitch-classes-names)
+;           new-name (nth natural-pitch-classes-names (mod (+ current-index n) 7))]
+;       (natural-pitch-class new-name))))
 
 ;************ construct ******************
 
-(defn map->NaturalPitchClass [m] (->NaturalPitchClass (:name m) (:val m)))
+(defmulti natural-pitch-class b-type )
 
-(defmulti natural-pitch-class 
-  (fn [arg]
-    (cond
-      (natural-pitch-class-name? arg) :name
-      (between arg [-2 2]) :val)))
+(defmethod natural-pitch-class :natural-pitch-class [n] (name->natural-pitch-class n))
+(defmethod natural-pitch-class :number [v] (val->natural-pitch-class v))
 
-(defmethod natural-pitch-class :name [n] (map->NaturalPitchClass (name->natural-pitch-class n)))
-(defmethod natural-pitch-class :val [v] (map->NaturalPitchClass (val->natural-pitch-class v)))
+;**************** methods ****************
 
+; (defmethod transpose ['NaturalPitchClass ] [this n])

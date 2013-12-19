@@ -18,9 +18,11 @@
   (reduce conj #{}      
     (for [[gicn gicv] generic->interval-classes 
           [icv icn] gicv]      
-      {:name icn
-       :val icv
-       :generic (generic-interval-class gicn)})))
+      (with-type 
+        'IntervalClass
+        {:name icn
+         :val icv
+         :generic (generic-interval-class gicn)}))))
 
 (def generic->default-interval-class
   (reduce #(into %1 {(:generic %2) %2}) {} 
@@ -35,24 +37,13 @@
   (reduce #(into %1 {(:val %2) %2}) {} 
           (filter #(interval-class-default-names (:name %)) interval-classes)))
 
-;********************************************
-
-(defrecord IntervalClass [name val generic])
-
 ;*********** construct *****************
 
-(defn map->IntervalClass [m] (->IntervalClass (:name m) (:val m) (:generic m)))
+(defmulti interval-class b-type )
 
-(defmulti interval-class 
-  (fn [arg]
-    (cond
-      (interval-class-name? arg) :name
-      (generic-interval-class-name? arg) :generic
-      (number? arg) :val)))
-
-(defmethod interval-class :name [n] (map->IntervalClass (name->interval-class n)))
-(defmethod interval-class :generic [g] (map->IntervalClass (generic->default-interval-class g)))
-(defmethod interval-class :val [v] (map->IntervalClass (val->interval-class (mod12 v))))
+(defmethod interval-class :interval-class [n] (name->interval-class n))
+(defmethod interval-class :generic-interval-class [g] (generic->default-interval-class g))
+(defmethod interval-class :number [v] (val->interval-class (mod12 v)))
 
 ;*********** functions ******************
 
