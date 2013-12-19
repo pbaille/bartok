@@ -1,5 +1,6 @@
 (ns bartok.litterals.evaluation
   (:use [bartok.litterals.identity])
+  (:use [bartok.litterals.patterns])
   (:use [utils.utils])
   (:use [bartok.types]))
 
@@ -16,14 +17,13 @@
     x ))
 
 
-(defn b? [x]
-  (if (keyword? x)
-    (cond
-      (pitch-class-name? x) :pitch-class
-      (pitch-name? x) :pitch
-      (interval-class-name? x) :interval-class
-      (interval-name? x) :interval 
-      (mode-class-name? x) :mode-class 
-      (mode-name? x) :mode 
-      :else nil)
-    nil ))
+
+
+
+
+
+
+
+
+
+

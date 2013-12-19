@@ -7,17 +7,12 @@
 (def name->alteration (reduce #(into %1 {(:name %2) %2}) {} alterations))
 (def val->alteration  (reduce #(into %1 {(:val %2) %2}) {} alterations))
 
-(defrecord Alteration [name val])
+(defmulti alteration b-type )
 
-(defn map->Alteration [m] (->Alteration (:name m) (:val m)))
+(defmethod alteration :alteration [n] 
+  (with-type `Alteration (name->alteration n)))
 
-(defmulti alteration
-  (fn [arg]
-    (cond
-      (alteration-name? arg) :name
-      (between arg [-2 2]) :val)))
-
-(defmethod alteration :name [n] (map->Alteration (name->alteration n)))
-(defmethod alteration :val [v] (map->Alteration (val->alteration v)))
+(defmethod alteration :number [v] 
+  (with-type `Alteration (val->alteration v)))
 
 

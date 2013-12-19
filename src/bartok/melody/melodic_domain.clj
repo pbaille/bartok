@@ -6,6 +6,8 @@
 (defn- current-pitch [md]
   (-> md :current :pitch))
 
+(defn- if-val [x] (or (:val x) x))
+
 (defn- init-and-compute-pitches [mode bounds]
   (let [rng (range (-> bounds first :val) 
                    (-> bounds second :val inc))
@@ -42,9 +44,9 @@
       nil)))
 
 (defn step-sequence [md steps]
-  (when (let [indexes (map-reduce + (-> md :current :index) steps)]
-          (every? #(valid-domain-index? md %) indexes))
-    (map current-pitch (map-reduce step md steps))))
+  (let [indexes (map-reduce + (-> md :current :index) (map if-val steps))]
+    (when (every? #(valid-domain-index? md %) indexes)
+      (map #(-> md :pitches (nth %)) indexes))))
 
  
 

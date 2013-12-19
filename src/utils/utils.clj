@@ -1,6 +1,7 @@
-(ns utils.utils)
+(ns utils.utils
+  (:require clojure.pprint))
 
-(defn pp [x] (clojure.pprint/pprint x))
+(defn p [x] (clojure.pprint/pprint x))
 
 (defn map-reduce [f init coll] 
   ((comp vec next) 
