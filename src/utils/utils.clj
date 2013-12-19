@@ -1,5 +1,29 @@
 (ns utils.utils)
 
+(defn pp [x] (clojure.pprint/pprint x))
+
+(defn map-reduce [f init coll] 
+  ((comp vec next) 
+     (reduce (fn [acc el] 
+               (conj acc (f (last acc) el))) 
+              [init] 
+              coll)))
+
+; takes function that takes coll as third argument
+(defn red-with-coll [f init coll] 
+  (reduce #(f %1 %2 coll) init coll))
+
+(defn named? [x]
+  (or (keyword? x) (string? x) (symbol? x)))
+
+(defn types 
+  ([arg] (type arg))
+  ([arg & more] (vec (map type (concat [arg] more)))))
+
+(defn with-type [t obj]
+  {:pre [(named? t)]}
+  (with-meta obj {:type t}))
+
 (defn call [^String nm & args]
     (when-let [fun (ns-resolve *ns* (symbol nm))]
         (apply fun args)))
@@ -27,6 +51,9 @@
 
 (defn select-where [sub-map coll]
   (filter #(submap? sub-map %) coll))
+
+(defn best [f coll]
+  (reduce #(if (f %1 %2) %1 %2) coll))
 
 (defn abs [x] (if (neg? x) (* x -1) x))
 
@@ -66,7 +93,6 @@
   (for [[i v] (index coll) :when (pred v)] i))
 
 (defn index-of [item coll] (first (pos #{item} coll)))
-
 
 (defn div-mod [x div] [(int (/ x div)) (rem x div)])
 

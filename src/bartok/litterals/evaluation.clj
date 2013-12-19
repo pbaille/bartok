@@ -14,3 +14,16 @@
       (mode-name? x) (mode x)
       :else nil)
     x ))
+
+
+(defn b? [x]
+  (if (keyword? x)
+    (cond
+      (pitch-class-name? x) :pitch-class
+      (pitch-name? x) :pitch
+      (interval-class-name? x) :interval-class
+      (interval-name? x) :interval 
+      (mode-class-name? x) :mode-class 
+      (mode-name? x) :mode 
+      :else nil)
+    nil ))

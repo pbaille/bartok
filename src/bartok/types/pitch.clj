@@ -62,6 +62,12 @@
   (map->Pitch (first-where m pitches)))
 
 (defmethod pitch [:pitch-class :octave] [p o]
-  (map->Pitch (first-where {:pitch-class p :octave o} pitches)))
+  (pitch (keyword-cat p (str o))))
+
+;**************** functions ******************
+
+(defn distance [p1 p2]
+  {:pre [(and (pitch? p1) (pitch? p2))]}
+  (abs (- (:val p1) (:val p2))))
 
 

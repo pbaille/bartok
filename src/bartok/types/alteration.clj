@@ -11,7 +11,7 @@
 
 (defn map->Alteration [m] (->Alteration (:name m) (:val m)))
 
-(defmulti alteration 
+(defmulti alteration
   (fn [arg]
     (cond
       (alteration-name? arg) :name

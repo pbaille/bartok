@@ -33,7 +33,7 @@
 (defrecord PitchClass [name val natural alteration]
   Transpose
   (transpose [this interval]
-    (let [nat (:name (transpose natural (generic-val interval)))
+    (let [nat (:name (transpose natural (get-in interval [:generic :val])))
           v (mod12 (+ (:val this) (:val interval)))]
       (pitch-class nat v))))
 

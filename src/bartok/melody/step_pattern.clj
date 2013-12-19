@@ -26,13 +26,21 @@
           {:down 0 :up 0 :total-step 0}
           step-sequence))
       
+; (defn- steps-calc-old [params]
+;   (mapcat (fn [{:keys [cycle-length cycle-step] :as m}] 
+;             (map #(merge m (hash-map :step-pattern %)) 
+;                   (dom-part (:steps params) cycle-length cycle-step)))
+;           (for [cs (:cycle-steps params) 
+;                 cl (:cycle-lengths params)]
+;             {:cycle-length cl :cycle-step cs})))
+
 (defn- steps-calc [params]
-  (mapcat (fn [{:keys [cycle-length cycle-step] :as m}] 
-            (map #(merge m (hash-map :step-pattern %)) 
-                  (dom-part (:steps params) cycle-length cycle-step)))
-          (for [cs (:cycle-steps params) 
-                cl (:cycle-lengths params)]
-            {:cycle-length cl :cycle-step cs})))
+  (apply concat 
+    (for [cs (:cycle-steps params) 
+          cl (:cycle-lengths params)]
+      (map #(conj {:cycle-length cl :cycle-step cs} 
+                  (hash-map :step-pattern %)) 
+           (dom-part (:steps params) cl cs)))))
 
 (defn- add-iterations [step-pattern iterations]
   (let [iters 
@@ -51,10 +59,12 @@
 
 ;**************** public *********************
 
-(defn step-patterns [params] 
-  (let [params (merge-with-defaults params)] 
-    (map #(add-iterations % (:iterations params)) 
-         (for [sp (steps-calc params)] sp ))))
+(defn step-patterns  
+  ([] (step-patterns {}))
+  ([params]
+    (let [params (merge-with-defaults params)] 
+      (for [sp (steps-calc params)] 
+        (add-iterations sp (:iterations params))))))
 
 (defn step-pattern-picker [params]
   (let [mps (step-patterns params)
@@ -63,7 +73,7 @@
     (fn [[down up]]
       (select-first #(and (>= (get-in % [:amplitude :down]) down)
                           (<= (get-in % [:amplitude :up]) up))
-                    (rotate emps (rand-int cnt)) ))))
+                    (rotate emps (rand-int cnt))))))
 
  
  
