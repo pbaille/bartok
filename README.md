@@ -2,26 +2,69 @@
 
 A music clojure library.
 
-## Usage
+## Litterals
 
-### Litterals
+- Alteration 
+  :bb :b :# :x
 
-####alterations 
-:bb :b :# :x
+- NaturalPitchClass 
+  :a :b :c :d :e :f :g
 
-####natural-pitch-classes 
-:a :b :c :d :e :f :g
+- Directions 
+  :+ :-
 
-####directions 
-:u :d
+- PitchClass
+  1/ uppcased NaturalPitchClass
+  2/ Alteration
+  example :C# 
 
-####pitch-class
-:C# 
+- Pitch
+  1/ PitchClass
+  2/ octave
+  example: :C#2 / :Eb-2
 
-####pitch
-:C#u1 (u => direction , 1 => octave offset)
+- DegreeClass
+  :root :second :thrid :fourth :fifth :sixth :seventh
 
+- Degree
+```
+  :R
+  :m2 :M2 :#2
+  :o3 :m3 :M3 :#3
+  :b4 :P4 :+4
+  :b5 :P5 :+5
+  :m6 :M6 :#6
+  :o7 :m7 :M7   
+```
 
+- GenericIntervalClass  
+  :1st :2nd :3rd :4th :5th :6th :7th 
+
+- GenericInterval 
+  1/ GenericIntervalClass
+  2/ separator -
+  3/ Direction
+  4/ *optional* octave-offset #"[0–9]"
+  ```
+  example: :2nd-u2
+  ```
+
+- Interval
+  1/ Degree
+  2/ separator -
+  3/ direction
+  4/ *optional* octave-offset #"[0–9]"
+  example: +4-u2 / P4-d
+
+- ModeClass
+  :Lyd :Mix :Eol :Loc :Ion :Dor :Phry
+  :Lyd+ :Lydb7 :Mixb6 :Loc2 :Alt :Melm :Phry6
+  :Lyd#2 :AltDim :Harmm :Loc6 :Ion+ :Dor+4 :PhryM
+
+- Mode
+  1/ PitchClass
+  2/ separator
+  3/ ModeClass
 
 ## License
 
