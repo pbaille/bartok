@@ -24,7 +24,7 @@
           (filter #(interval-class-default-names (get-in % [:interval-class :name])) 
                   intervals)))
 
-(defmulti interval b-type )
+(defmulti interval b-types )
 
 (defmethod interval :interval [n] (name->interval n))
 (defmethod interval :interval-class [ic] (name->interval (keyword-cat ic :u)))

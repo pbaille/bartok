@@ -69,14 +69,9 @@
 (def mother-degree->mode-class 
   (reduce #(into %1 {{:mother (:mother %2) :degree (:degree %2)} %2}) {} mode-classes))
 
-;;***********************************
-
-;; type check
-;(defn mode-class? [x] (instance? ModeClass x))
-
 ;;*********** Constructor ***********
 
-(defmulti mode-class b-type )
+(defmulti mode-class b-types )
 
 (defmethod mode-class :mode-class [n] (name->mode-class n))
 (defmethod mode-class [:mode-class :number] [m d] (mother-degree->mode-class {:mother m :degree d}))

@@ -1,11 +1,24 @@
 # bartok
 
-A Clojure library designed to ... well, that part is up to you.
+A music clojure library.
 
 ## Usage
 
-FIXME
+### Litterals
 
+alterations :bb :b :# :x
+
+natural-pitch-classes :a :b :c :d :e :f :g
+
+directions :u :d
+
+pitch-class
+  example: :C# 
+
+pitch
+  example: :C#u1 (u => direction , 1 => octave offset)
+
+     
 ## License
 
 Copyright © 2013 FIXME

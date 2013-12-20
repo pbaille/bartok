@@ -23,21 +23,11 @@
 (def name->pitch (reduce #(into %1 {(:name %2) %2}) {} pitches))
 (def val->pitch  (reduce #(into %1 {(:val %2) %2}) {} default-name-pitches))
 
-; (defrecord Pitch [name val octave pitch-class]
-;   Transpose
-;   (transpose [this interval]
-;     (let [pc (transpose pitch-class (:interval-class interval))
-;           v (+ (:val this) (:val interval))
-;           o (+ octave (:octave-offset interval))
-;           n (keyword-cat (:name pc) (keyword (str o)))]
-;       (->Pitch n v o pc))))
-  
-;; type check
-;(defn pitch? [x] (instance? Pitch x))
-
 ; ;*********** Constructor ***********
+(defn- build-pitch [n v o pc]
+  (with-type 'Pitch {:name n :val v :octave o :pitch-class pc}))
 
-(defmulti pitch b-type )
+(defmulti pitch b-types )
 
 (defmethod pitch :number [v] (val->pitch v))
 (defmethod pitch :pitch [n] (name->pitch n))
@@ -54,4 +44,9 @@
   {:pre [(and (pitch? p1) (pitch? p2))]}
   (abs (- (:val p1) (:val p2))))
 
-
+(defmethod transpose 'Pitch [this interval]
+    (let [pc (transpose (:pitch-class this) (:interval-class interval))
+          v (+ (:val this) (:val interval))
+          o (+ (:octave this) (:octave-offset interval))
+          n (keyword-cat (:name pc) (keyword (str o)))]
+      (build-pitch n v o pc)))

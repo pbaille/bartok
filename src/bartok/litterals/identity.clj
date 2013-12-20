@@ -77,12 +77,12 @@
             (fit? generic-interval-name n) :generic-interval
             :else nil)))))
 
-(defn- bartok-type [x]
+(defn b-type [x & more]
   (cond
     (named? x) (or (b? x) (type x))
     (number? x) (if (ratio? x) :ratio :number)
     :else (type x)))
 
-(defn b-type 
-  ([arg] (bartok-type arg))
-  ([arg & more] (vec (map bartok-type (concat [arg] more)))))
+(defn b-types 
+  ([arg] (b-type arg))
+  ([arg & more] (vec (map b-type (concat [arg] more)))))

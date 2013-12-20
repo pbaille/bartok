@@ -28,27 +28,9 @@
 (def name->pitch-class (reduce #(into %1 {(:name %2) %2}) {} pitch-classes))
 (def val->pitch-class  (reduce #(into %1 {(:val %2) %2}) {} default-name-pitch-classes))
 
-;*********************************************
-
-; (declare pitch-class)
-
-; (defrecord PitchClass [name val natural alteration]
-;   Transpose
-;   (transpose [this interval]
-;     (let [nat (:name (transpose natural (get-in interval [:generic :val])))
-;           v (mod12 (+ (:val this) (:val interval)))]
-;       (pitch-class nat v))))
-
-;; type check
-;(defn pitch-class? [x] (instance? PitchClass x))
-
 ;;*********** Constructor ***********
 
-; (defn map->PitchClass [m]
-;   (let [{:keys [name val natural alteration]} m]
-;     (->PitchClass name val natural alteration)))
-
-(defmulti pitch-class b-type )
+(defmulti pitch-class b-types )
 
 (defmethod pitch-class :number [v] (val->pitch-class v))
 
@@ -64,3 +46,17 @@
   (select-first #(and (= (get-in % [:natural :name]) n)
                       (= (:val %) v))
                 pitch-classes))
+
+;*************** functions **************
+
+(defmethod transpose 'PitchClass [this interval]
+    (println interval)
+    (let [nat (:name (transpose (:natural this) (:generic interval)))
+          v (mod12 (+ (:val this) (:val interval)))]
+      (pitch-class nat v)))
+
+
+
+
+
+

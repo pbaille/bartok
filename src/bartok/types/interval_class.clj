@@ -39,7 +39,7 @@
 
 ;*********** construct *****************
 
-(defmulti interval-class b-type )
+(defmulti interval-class b-types )
 
 (defmethod interval-class :interval-class [n] (name->interval-class n))
 (defmethod interval-class :generic-interval-class [g] (generic->default-interval-class g))

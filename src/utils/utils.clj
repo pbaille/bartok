@@ -67,7 +67,8 @@
 (defn kw-or-str? [x] (or (keyword? x) (string? x)))
 
 (defn rotate [coll n]
-  (let [n (if (>= n 0) n (+ n (count coll)))
+  (let [c (count coll)
+        n (if (>= n 0) (mod n c) (+ n (count coll)))
         splited (split-at n coll)]
     (concat (splited 1) (splited 0))))
 

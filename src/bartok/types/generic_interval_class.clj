@@ -10,7 +10,7 @@
 
 ;************ generic interval class ******************
 
-(defmulti generic-interval-class b-type )
+(defmulti generic-interval-class b-types )
 
 (defmethod generic-interval-class :generic-interval-class [n] 
   (with-type 'GenericIntervalClass (name->generic-interval-class n)))
@@ -19,7 +19,7 @@
 
 ;*************** generic interval ***************
 
-(defmulti generic-interval b-type )
+(defmulti generic-interval b-types)
 
 (defmethod generic-interval :generic-interval [n] 
   (let [[_ gin oct] (re-matches #"([a-z]*)([0-9])" (name n))

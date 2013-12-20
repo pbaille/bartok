@@ -7,7 +7,7 @@
 (def name->alteration (reduce #(into %1 {(:name %2) %2}) {} alterations))
 (def val->alteration  (reduce #(into %1 {(:val %2) %2}) {} alterations))
 
-(defmulti alteration b-type )
+(defmulti alteration b-types )
 
 (defmethod alteration :alteration [n] 
   (with-type `Alteration (name->alteration n)))

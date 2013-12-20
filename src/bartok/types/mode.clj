@@ -28,7 +28,7 @@
 
 ;************ construct **************
 
-(defmulti mode b-type )
+(defmulti mode b-types )
 
 (defmethod mode :mode [n]
   (let [[r mc] (split-mode-name n)
@@ -46,11 +46,12 @@
 
 ;************* methods *************
 
-; (defmethod transpose 'Mode [this interval]
-;   (let [r (transpose (:root this) interval)
-;         n (keyword-cat (:name r) "-" (:name mode-class))
-;         ps (map #(transpose % interval) (:pitch-classes this))]
-;     (build-mode n r (:mode-class this) ps))))
+(defmethod transpose 'Mode [this interval-class]
+  (let [r (transpose (:root this) interval-class)
+        n (keyword-cat (:name r) "-" (-> this :mode-class :name))
+        _ (p (:pitch-classes this))
+        ps (map #(do (println %) (transpose % interval)) (:pitch-classes this))]
+    (build-mode n r (:mode-class this) ps)))
 
 (defn mother-root [m]
   (let [d (get-in m [:mode-class :degree])]

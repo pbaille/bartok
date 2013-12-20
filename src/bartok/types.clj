@@ -1,7 +1,7 @@
 (ns bartok.types
   (:use [bartok.litterals.identity])
   (:use [utils.utils])
-  (:use [bartok.protocols]))
+  (:use [bartok.multimethods]))
 
 (load "types/alteration")
 (load "types/natural_pitch_class")
