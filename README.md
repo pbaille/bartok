@@ -16,8 +16,8 @@ A music clojure library.
   :+ :-
 ```
 #### PitchClass
-  - upcased NaturalPitchClass
-  - Alteration
+- upcased NaturalPitchClass
+- Alteration
 ```  
   //example 
   :C# 
