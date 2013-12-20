@@ -6,19 +6,23 @@ A music clojure library.
 
 ### Litterals
 
-alterations :bb :b :# :x
+####alterations 
+:bb :b :# :x
 
-natural-pitch-classes :a :b :c :d :e :f :g
+####natural-pitch-classes 
+:a :b :c :d :e :f :g
 
-directions :u :d
+####directions 
+:u :d
 
-pitch-class
-  example: :C# 
+####pitch-class
+:C# 
 
-pitch
-  example: :C#u1 (u => direction , 1 => octave offset)
+####pitch
+:C#u1 (u => direction , 1 => octave offset)
 
-     
+
+
 ## License
 
 Copyright © 2013 FIXME
