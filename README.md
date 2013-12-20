@@ -4,27 +4,31 @@ A music clojure library.
 
 ## Litterals
 #### Alteration 
+```
   :bb :b :# :x
+```
 #### NaturalPitchClass 
+```
   :a :b :c :d :e :f :g
+```
 #### Directions 
 ```
   :+ :-
 ```
 #### PitchClass
 
-  1/ uppcased NaturalPitchClass
-  2/ Alteration
+  - uppcased NaturalPitchClass
+  - Alteration
 ```  
   example :C# 
 ```
 #### Pitch
-  1/ PitchClass
-  2/ octave
+  - PitchClass
+  - octave
 ```  
   example: :C#2 / :Eb-2
 ```
-#### DegreeClass
+####- DegreeClass
 ```
   :root :second :thrid :fourth :fifth :sixth :seventh
 ```
@@ -43,34 +47,34 @@ A music clojure library.
   :1st :2nd :3rd :4th :5th :6th :7th 
 ```
 #### GenericInterval 
-  1/ GenericIntervalClass
-  2/ separator -
-  3/ Direction
-  4/ *optional* octave-offset #"[0–9]"
+  - GenericIntervalClass
+  - separator -
+  - Direction
+  - *optional* octave-offset #"[0–9]"
   ```
   example: :2nd-u2
   ```
 
-- Interval
-  1/ Degree
-  2/ separator -
-  3/ direction
-  4/ *optional* octave-offset #"[0–9]"
+#### Interval
+  - Degree
+  - separator -
+  - direction
+  - *optional* octave-offset #"[0–9]"
 ```
   example: +4-u2 / P4-d
 ```
-- ModeClass
+#### ModeClass
+```
   :Lyd :Mix :Eol :Loc :Ion :Dor :Phry
   :Lyd+ :Lydb7 :Mixb6 :Loc2 :Alt :Melm :Phry6
   :Lyd#2 :AltDim :Harmm :Loc6 :Ion+ :Dor+4 :PhryM
+```
+#### Mode
+  - PitchClass
+  - separator
+  - ModeClass
+```
+  ;example
+  :Eb-Dor+4
+```    
 
-- Mode
-  1/ PitchClass
-  2/ separator
-  3/ ModeClass
-
-## License
-
-Copyright © 2013 FIXME
-
-Distributed under the Eclipse Public License, the same as Clojure.
