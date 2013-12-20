@@ -3,39 +3,32 @@
 A music clojure library.
 
 ## Litterals
-
-- Alteration 
+#### Alteration 
   :bb :b :# :x
-
-- NaturalPitchClass 
+#### NaturalPitchClass 
   :a :b :c :d :e :f :g
-
-- Directions 
+#### Directions 
 ```
   :+ :-
 ```
-
-- PitchClass
+#### PitchClass
 
   1/ uppcased NaturalPitchClass
   2/ Alteration
 ```  
   example :C# 
 ```
-
-- Pitch
+#### Pitch
   1/ PitchClass
   2/ octave
 ```  
   example: :C#2 / :Eb-2
 ```
-
-- DegreeClass
+#### DegreeClass
 ```
   :root :second :thrid :fourth :fifth :sixth :seventh
 ```
-
-- Degree
+#### Degree
 ```
   :R
   :m2 :M2 :#2
@@ -45,13 +38,11 @@ A music clojure library.
   :m6 :M6 :#6
   :o7 :m7 :M7   
 ```
-
-- GenericIntervalClass  
+#### GenericIntervalClass  
 ```
   :1st :2nd :3rd :4th :5th :6th :7th 
 ```
-
-- GenericInterval 
+#### GenericInterval 
   1/ GenericIntervalClass
   2/ separator -
   3/ Direction
