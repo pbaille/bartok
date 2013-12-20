@@ -11,20 +11,29 @@ A music clojure library.
   :a :b :c :d :e :f :g
 
 - Directions 
+```
   :+ :-
+```
 
 - PitchClass
+
   1/ uppcased NaturalPitchClass
   2/ Alteration
+```  
   example :C# 
+```
 
 - Pitch
   1/ PitchClass
   2/ octave
+```  
   example: :C#2 / :Eb-2
+```
 
 - DegreeClass
+```
   :root :second :thrid :fourth :fifth :sixth :seventh
+```
 
 - Degree
 ```
@@ -38,7 +47,9 @@ A music clojure library.
 ```
 
 - GenericIntervalClass  
+```
   :1st :2nd :3rd :4th :5th :6th :7th 
+```
 
 - GenericInterval 
   1/ GenericIntervalClass
@@ -54,8 +65,9 @@ A music clojure library.
   2/ separator -
   3/ direction
   4/ *optional* octave-offset #"[0–9]"
+```
   example: +4-u2 / P4-d
-
+```
 - ModeClass
   :Lyd :Mix :Eol :Loc :Ion :Dor :Phry
   :Lyd+ :Lydb7 :Mixb6 :Loc2 :Alt :Melm :Phry6
