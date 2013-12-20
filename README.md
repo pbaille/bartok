@@ -28,7 +28,7 @@ A music clojure library.
 ```  
   example: :C#2 / :Eb-2
 ```
-####- DegreeClass
+#### DegreeClass
 ```
   :root :second :thrid :fourth :fifth :sixth :seventh
 ```
@@ -51,9 +51,9 @@ A music clojure library.
   - separator -
   - Direction
   - *optional* octave-offset #"[0–9]"
-  ```
+```
   example: :2nd-u2
-  ```
+```
 
 #### Interval
   - Degree
