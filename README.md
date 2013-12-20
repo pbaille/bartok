@@ -23,7 +23,6 @@ A music clojure library.
 - Alteration
 
 ```  
-  ;example 
   :C# 
 ```
 #### Pitch
@@ -31,7 +30,6 @@ A music clojure library.
 - octave
 
 ```  
-  ;example
   :C#2 / :Eb-2
 ```
 #### DegreeClass
@@ -63,7 +61,6 @@ A music clojure library.
 - *optional* octave-offset #"[0–9]"
 
 ```
-  ;example 
   :2nd-u2
 ```
 #### Interval
@@ -73,7 +70,6 @@ A music clojure library.
 - *optional* octave-offset #"[0–9]"
 
 ```
-  ;example
   +4-u2 / P4-d
 ```
 #### ModeClass
@@ -89,7 +85,6 @@ A music clojure library.
 - ModeClass
 
 ```
-  ;example
   :Eb-Dor+4
 ```    
 
