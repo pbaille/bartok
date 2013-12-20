@@ -19,7 +19,7 @@ A music clojure library.
   - upcased NaturalPitchClass
   - Alteration
 ```  
-  ;example 
+  //example 
   :C# 
 ```
 #### Pitch
