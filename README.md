@@ -16,7 +16,6 @@ A music clojure library.
   :+ :-
 ```
 #### PitchClass
-
   - uppcased NaturalPitchClass
   - Alteration
 ```  
@@ -54,7 +53,6 @@ A music clojure library.
 ```
   example: :2nd-u2
 ```
-
 #### Interval
   - Degree
   - separator -
