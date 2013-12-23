@@ -1,5 +1,5 @@
 (ns bartok.multimethods
   (:use [bartok.litterals.identity]))
 
-(defmulti transpose b-type )
+(defmulti transpose b-types)
 

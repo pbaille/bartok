@@ -1,12 +1,10 @@
 (in-ns 'bartok.types)
 
-(def natural-pitch-classes
-  (reduce #(conj %1 (with-type 
-                      'NaturalPitchClass 
-                      {:name (first %2) :val (second %2)}))
-          #{} {:A 9 :B 11 :C 0 :D 2 :E 4 :F 5 :G 7}))
+(declare generic-interval)
 
-(def natural-names [:A :B :C :D :E :F :G])
+(def natural-pitch-classes
+  (map #(with-type 'NaturalPitchClass (zipmap [:pitch-val :val :name] [%3 %2 %1]))
+       ['C 'D 'E 'F 'G 'A 'B] (range) [0 2 4 5 7 9 11]))
 
 (def name->natural-pitch-class (reduce #(into %1 {(:name %2) %2}) {} natural-pitch-classes))
 (def val->natural-pitch-class  (reduce #(into %1 {(:val %2) %2}) {} natural-pitch-classes))
@@ -16,11 +14,15 @@
 (defmulti natural-pitch-class b-types)
 
 (defmethod natural-pitch-class :natural-pitch-class [n] (name->natural-pitch-class n))
-(defmethod natural-pitch-class :number [v] (val->natural-pitch-class v))
+(defmethod natural-pitch-class :number [v] (val->natural-pitch-class (mod v 7)))
 
 ;**************** methods ****************
 
-(defmethod transpose 'NaturalPitchClass [this generic-interval]
-  (let [c (index-of (:name this) natural-names)
-        new-name (get (-> natural-names (rotate (:val generic-interval)) vec ) c)]
-    (natural-pitch-class new-name)))
+(defmethod transpose ['NaturalPitchClass 'GenericInterval] [this gi]
+  (natural-pitch-class (+ (:val this) (:val gi))))
+
+(defmethod transpose ['NaturalPitchClass :generic-interval] [this gin]
+  (natural-pitch-class (+ (:val this) (:val (generic-interval gin)))))
+
+(defmethod transpose ['NaturalPitchClass :number] [this n]
+  (natural-pitch-class (+ (:val this) n)))

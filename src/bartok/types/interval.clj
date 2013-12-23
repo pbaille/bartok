@@ -1,37 +1,40 @@
 (in-ns 'bartok.types)
 
-(load "types/interval_class")
+(load "types/degree")
+(load "types/generic_interval")
 
-(def directions {:u 1 :d -1})
+(defn build-interval 
+  ([m]
+     (let [{:keys [name val direction octave-offset class generic]} m]
+       (build-interval name val direction octave-offset class generic)))
+  ([name val direction octave-offset class gen]
+     (with-type 
+       'Interval 
+       {:name name 
+        :val val 
+        :class class 
+        :generic gen
+        :direction direction 
+        :octave-offset octave-offset})))
 
-(def intervals 
-  (reduce conj #{}      
-    (for [{icn :name icv :val icg :generic :as ic} interval-classes 
-           oct (range 8)
-          [dirn dirv] directions]      
-      (with-type
-        'Interval
-        {:name (keyword (str (name icn) (name dirn) (if (= 0 oct) "" oct)))
-         :val (* dirv (+ icv (* 12 oct)))
-         :direction {:name dirn :val dirv}
-         :octave-offset oct
-         :interval-class ic}))))
+(defmulti interval b-types)
 
-(def name->interval (reduce #(into %1 {(:name %2) %2}) {} intervals))
+(defmethod interval :interval [n] 
+  (let [[dn diroct] (dash-split n)
+         class (degree (keyword dn))
+         [dir oct] (dir-oct-expand diroct)
+         gen (-> class :degree-class :val (* (:val dir)) (+ (* 7 oct)) generic-interval)
+         val (* (:val dir) (+ (:val class) (* 12 oct)))]
+    (build-interval n val dir oct class gen)))
 
-(def val->interval 
-  (reduce #(into %1 {(:val %2) %2}) {} 
-          (filter #(interval-class-default-names (get-in % [:interval-class :name])) 
-                  intervals)))
+(defmethod interval 'Degree [d] (interval (keyword-cat (:name d) "-u")))
+(defmethod interval :degree [ic] (interval (keyword-cat ic "-u")))
 
-(defmulti interval b-types )
+; (defmethod interval :generic-interval-class [g] 
+;   (name->interval (keyword-cat (:name (generic->default-interval-class g)) :u)))
 
-(defmethod interval :interval [n] (name->interval n))
-(defmethod interval :interval-class [ic] (name->interval (keyword-cat ic :u)))
-(defmethod interval :generic-interval-class [g] 
-  (name->interval (keyword-cat (:name (generic->default-interval-class g)) :u)))
+; (defmethod interval :number [v] (val->interval v))
 
-(defmethod interval :number [v] (val->interval v))
 
 
 

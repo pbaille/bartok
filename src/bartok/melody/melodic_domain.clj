@@ -1,5 +1,7 @@
 (in-ns 'bartok.melody)
 
+;******************* Private ************************
+
 (defn- midi-octave [x]
   (- (int (/ x 12)) 5))
 
@@ -19,7 +21,7 @@
                   (pitch (keyword-cat (mpvs (mod12 x)) (str (midi-octave x))))))})))
 
 (defn- add-current [md current]
-  (let [p (if (pitch? current)
+  (let [p (if (type= current 'Pitch)
             (best #(< (distance current %1) (distance current %2))
                   (:pitches md))
             (-> md :pitches first))
@@ -28,6 +30,8 @@
 
 (defn- valid-domain-index? [md i]
   (between i 0 (-> md :pitches count dec)))
+
+;*************************** Public *************************************
 
 (defn melodic-domain 
   ([mode bounds] (melodic-domain mode bounds false))

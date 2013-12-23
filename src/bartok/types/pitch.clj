@@ -41,12 +41,12 @@
 ;**************** functions ******************
 
 (defn distance [p1 p2]
-  {:pre [(and (pitch? p1) (pitch? p2))]}
+  {:pre [(and (type= p1 'Pitch) (type= p2 'Pitch))]}
   (abs (- (:val p1) (:val p2))))
 
-(defmethod transpose 'Pitch [this interval]
-    (let [pc (transpose (:pitch-class this) (:interval-class interval))
-          v (+ (:val this) (:val interval))
-          o (+ (:octave this) (:octave-offset interval))
-          n (keyword-cat (:name pc) (keyword (str o)))]
-      (build-pitch n v o pc)))
+; (defmethod transpose 'Pitch [this interval]
+;     (let [pc (transpose (:pitch-class this) (:interval-class interval))
+;           v (+ (:val this) (:val interval))
+;           o (+ (:octave this) (:octave-offset interval))
+;           n (keyword-cat (:name pc) (keyword (str o)))]
+;       (build-pitch n v o pc)))

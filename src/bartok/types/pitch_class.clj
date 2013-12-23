@@ -2,18 +2,16 @@
 
 (load "types/alteration")
 (load "types/natural_pitch_class")
-(load "types/interval_class")
 
-(declare pitch? )
-
+(def pitch-class)
 
 (def pitch-classes 
   (reduce conj #{}      
-    (for [{npcn :name npcv :val} natural-pitch-classes 
-          {an :name av :val} alterations]
+    (for [{npcn :name npcv :pitch-val} natural-pitch-classes 
+          {an :name av :val} pitch-alterations]
       (with-type 
         'PitchClass
-        {:name (if (= av 0) npcn (keyword-cat npcn an))
+        {:name (if (= av 0) (keyword npcn) (keyword-cat npcn an))
          :val (mod (+ npcv av 12) 12)
          :natural (natural-pitch-class npcn)
          :alteration (alteration av)}))))
@@ -49,10 +47,9 @@
 
 ;*************** functions **************
 
-(defmethod transpose 'PitchClass [this interval]
-    (println interval)
-    (let [nat (:name (transpose (:natural this) (:generic interval)))
-          v (mod12 (+ (:val this) (:val interval)))]
+(defmethod transpose ['PitchClass 'Interval] [pc i]
+    (let [nat (:name (transpose (:natural pc) (-> i :generic :val)))
+          v (mod12 (+ (:val pc) (:val i)))]
       (pitch-class nat v)))
 
 

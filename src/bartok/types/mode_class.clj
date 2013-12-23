@@ -1,6 +1,6 @@
 (in-ns 'bartok.types)
 
-(load "types/interval_class")
+(load "types/degree")
 (load "types/pitch_class")
 (load "types/pitch")
 
@@ -56,12 +56,12 @@
   (set (map
     (fn [[ch-name moth-name]]
       (let [moth-hash (mother-modes moth-name)
-            degree (->> moth-hash :childs (pos #{ch-name}) first inc)
-            prio   (map interval-class (-> moth-hash :modes_prio (nth (dec degree))))
+            deg (->> moth-hash :childs (pos #{ch-name}) first inc)
+            prio   (map degree (-> moth-hash :modes_prio (nth (dec deg))))
             degrees (vec (sort-by :val prio))]
         (with-type 
           'ModeClass
-          {:name ch-name :mother moth-name :degree degree :prio prio :degrees degrees})))
+          {:name ch-name :mother moth-name :degree deg :prio prio :degrees degrees})))
     mode-class->mother)))
 
 (def name->mode-class (reduce #(into %1 {(:name %2) %2}) {} mode-classes))

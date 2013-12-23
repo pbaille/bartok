@@ -3,6 +3,10 @@
 
 (defn p [x] (clojure.pprint/pprint x))
 
+(defn type= [obj type-sym]
+  (= (type obj) type-sym))
+
+
 (defn map-reduce [f init coll] 
   ((comp vec next) 
      (reduce (fn [acc el] 
@@ -16,6 +20,9 @@
 
 (defn named? [x]
   (or (keyword? x) (string? x) (symbol? x)))
+
+(defn dash-split [x] 
+  (when (named? x) (clojure.string/split (name x) #"\-")))
 
 (defn types 
   ([arg] (type arg))

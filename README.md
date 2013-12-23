@@ -1,6 +1,6 @@
 # BARTÒK
 
-A music clojure library.
+A clojure library for music composition.
 
 ## Litterals
 
@@ -20,7 +20,7 @@ A music clojure library.
   :u :d
 ```
 ### PitchClass
-- upcased NaturalPitchClass
+- NaturalPitchClass
 - Alteration
 
 *usage*
@@ -40,7 +40,7 @@ A music clojure library.
 ### DegreeClass
 
 ```
-  :root :second :thrid :fourth :fifth :sixth :seventh
+  :root :second :third :fourth :fifth :sixth :seventh
 ```
 ### Degree
 
