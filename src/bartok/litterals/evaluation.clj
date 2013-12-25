@@ -5,7 +5,8 @@
   (:use [bartok.types]))
 
 (defn b> 
-  ([x] (when-let [t (b-type x)] (call (name t) x)))
+  ([x] (when-let [t (b-type x)] 
+         (if (keyword? t) (call (name t) x) x)))
   ([x & xs] (map b> (cons x xs))))
 
 

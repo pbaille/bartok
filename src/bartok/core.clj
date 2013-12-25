@@ -9,6 +9,7 @@
  (:use [bartok.melody])
  (:use [bartok.melody.strategies])
  (:use [bartok.melody.step-pattern])
+ (:use [bartok.harmony.harmony])
  (:use [bartok.litterals.identity])
  (:use [bartok.litterals.evaluation])
  )
