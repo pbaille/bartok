@@ -6,7 +6,6 @@
 (defn type= [obj type-sym]
   (= (type obj) type-sym))
 
-
 (defn map-reduce [f init coll] 
   ((comp vec next) 
      (reduce (fn [acc el] 
@@ -103,10 +102,12 @@
 
 (defn index-of [item coll] (first (pos #{item} coll)))
 
-(defn div-mod [x div] [(int (/ x div)) (rem x div)])
+(defn div-mod [x div] [(int (/ x div)) (mod x div)])
 
 (defn steps 
   "return steps between each adjacent items of coll"
   [coll] 
   (reduce #(conj %1 (apply - (reverse %2))) [] (partition 2 1 coll)))
+
+
 

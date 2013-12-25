@@ -2,30 +2,9 @@
 
 (load "types/degree_class")
 
-; (def generic->interval-classes
-;   {:unison  {0 :R}
-;    :second  {1 :m2 2 :M2 3 :#2}
-;    :third   {2 :o3 3 :m3 4 :M3 5 :#3}
-;    :fourth  {4 :b4 5 :P4 6 :+4}
-;    :fifth   {6 :b5 7 :P5 8 :+5}
-;    :sixt    {8 :m6 9 :M6 10 :#6}
-;    :seventh {9 :o7 10 :m7 11 :M7}})
-
-; (def generic->val 
-;   {:unison 0 :second 1 :third 2 :fourth 3 :fifth 4 :sixt 5 :seventh 6})
-
-; (def interval-classes 
-;   (reduce conj #{}      
-;     (for [[gicn gicv] generic->interval-classes 
-;           [icv icn] gicv]      
-;       (with-type 
-;         'IntervalClass
-;         {:name icn
-;          :val icv
-;          :generic (generic-interval-class gicn)}))))
-
 (def degrees
   (concat      
+    [(with-type 'Degree {:name :R :val 0 :degree-class (degree-class :root)})]
     (for [{cn :name cv :val ddv :degree-val ct :alt-type :as dc} degree-classes
           alt (cond (= ct :t1) degree-alterations-1
                     (= ct :t2) degree-alterations-2)]
@@ -53,6 +32,13 @@
 (defmethod degree :degree [n] (name->degree n))
 (defmethod degree :degree-class [g] (degree-class->degree g))
 (defmethod degree :number [v] (val->degree (mod12 v)))
+(defmethod degree :interval [n] (name->degree (first (dash-split n))))
+
+;************* casts *******************
+
+(defmethod degree 'Mode [m] (-> m :mode-class :degree))
+(defmethod degree 'ModeClass [m] (:degree m))
+(defmethod degree 'Interval [m] (:class m))
 
 ; *********** functions ******************
 

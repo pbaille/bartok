@@ -33,12 +33,19 @@
 
 ;*************************** Public *************************************
 
-(defn melodic-domain 
+(defn melodic-domain
+  ;[Mode [Pitch Pitch]] -> MelodicDomain 
   ([mode bounds] (melodic-domain mode bounds false))
+  ;[Mode [Pitch Pitch] Pitch] -> MelodicDomain 
   ([mode bounds current]
   (let [md (init-and-compute-pitches mode bounds)
         md (add-current md current)]
     md )))
+
+(defn interval-bounds [dom]
+  (let [i (-> dom :current :index)]
+    [(generic-interval (* -1 i)) 
+     (generic-interval (- (-> dom :pitches count dec) i))]))
 
 (defn step [md g-interval]
   (let [i-val (if (number? g-interval) g-interval (:val g-interval))

@@ -22,7 +22,7 @@
   #"(root|second|third|fourth|fifth|sixt|seventh)")
 
 (def degree-pat
-  #"([mM#][23]|[bP+][45]|[mM]6|[omM]7)")
+  #"([R]|[mM#][23]|[bP+][45]|[mM]6|[omM]7)")
 
 (def generic-interval-class-pat
   #"(1st|2nd|3rd|[4-7]th)")

@@ -42,7 +42,7 @@
   (generic-interval (keyword-cat n "0")))
 
 (defmethod generic-interval :number [v]
-  (let [[oct m] (div-mod v 7)
+  (let [[oct m] (div-mod (abs v) 7)
         class (generic-interval-class m)
         dir (direction (if (pos? v) :u :d))
         n (keyword-cat (:name class) "-" (:name dir) (if (= 0 oct) "" (str oct)))]
