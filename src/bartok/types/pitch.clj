@@ -4,9 +4,9 @@
 
 (def pitches 
   (reduce conj #{}      
-    (for [{pcn :name pcv :val} pitch-classes 
-          oct (range -6 7)]
-      (let [val (+ (* 12 (+ oct 5)) pcv)]
+    (for [{pcn :name npc :natural pca :alteration} pitch-classes 
+           oct (range -6 7)]
+      (let [val (+ (* 12 (+ oct 5)) (:pitch-val npc) (:val pca) )]
         (when (between val 0 127 )
           (with-type 
             'Pitch
@@ -44,9 +44,10 @@
   {:pre [(and (type= p1 'Pitch) (type= p2 'Pitch))]}
   (abs (- (:val p1) (:val p2))))
 
-; (defmethod transpose 'Pitch [this interval]
-;     (let [pc (transpose (:pitch-class this) (:interval-class interval))
-;           v (+ (:val this) (:val interval))
-;           o (+ (:octave this) (:octave-offset interval))
-;           n (keyword-cat (:name pc) (keyword (str o)))]
-;       (build-pitch n v o pc)))
+(defmethod transpose ['Pitch 'Interval] [this interval]
+    (let [pc (transpose (:pitch-class this) interval)
+          v (+ (:val this) (:val interval))
+          o (+ (:octave this) (:octave-offset interval))
+          o (if (< (-> pc :natural :val) (-> this :pitch-class :natural :val)) (inc o) o)
+          n (keyword-cat (:name pc) (keyword (str o)))]
+      (build-pitch n v o pc)))

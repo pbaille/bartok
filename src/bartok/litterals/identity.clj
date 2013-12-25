@@ -16,6 +16,7 @@
             (fit? direction-pat n) :direction
             (and (symbol? x) (fit? natural-pitch-class-pat n)) :natural-pitch-class
             (fit? degree-pat n) :degree
+            (fit? pitch-pat n) :pitch
             (fit? pitch-class-pat n) :pitch-class
             :else nil)
         (>= c 3)
