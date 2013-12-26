@@ -3,14 +3,12 @@
 (load "types/degree_class")
 
 (def degrees
-  (concat      
-    [(with-type 'Degree {:name :R :val 0 :degree-class (degree-class :root)})]
     (for [{cn :name cv :val ddv :degree-val ct :alt-type :as dc} degree-classes
           alt (cond (= ct :t1) degree-alterations-1
                     (= ct :t2) degree-alterations-2)]
-      (let [n (if (= cn :root) :R (keyword-cat (:name alt) (-> dc :val inc str)))
+      (let [n (keyword-cat (:name alt) (-> dc :val inc str))
             v (mod12 (+ ddv (:val alt) 12))] 
-        (with-type 'Degree {:name n :val v :degree-class dc})))))
+        (with-type 'Degree {:name n :val v :degree-class dc}))))
 
 (def degree-class->degree
   (reduce #(into %1 {(-> %2 :degree-class :name) %2}) {} 

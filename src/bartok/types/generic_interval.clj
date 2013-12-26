@@ -23,6 +23,8 @@
 
 (defmethod generic-interval-class :generic-interval-class [n] 
   (name->generic-interval-class n))
+(defmethod generic-interval-class :generic-interval [gi] 
+  (name->generic-interval-class (-> gi dash-split first keyword)))
 (defmethod generic-interval-class :number [v] 
   (val->generic-interval-class v))
 
@@ -44,7 +46,7 @@
 (defmethod generic-interval :number [v]
   (let [[oct m] (div-mod (abs v) 7)
         class (generic-interval-class m)
-        dir (direction (if (pos? v) :u :d))
+        dir (direction (if (>= v 0) :u :d))
         n (keyword-cat (:name class) "-" (:name dir) (if (= 0 oct) "" (str oct)))]
     (with-type 'GenericInterval 
                {:name n :val v :class class :direction dir :octave-offset oct})))

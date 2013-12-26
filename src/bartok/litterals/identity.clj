@@ -10,26 +10,20 @@
     (let [n (name x)
           c (count n)]
       (cond
-        (<= c 2) 
-          (cond
-            (fit? alteration-pat n) :alteration
-            (fit? direction-pat n) :direction
-            (and (symbol? x) (fit? natural-pitch-class-pat n)) :natural-pitch-class
-            (fit? degree-pat n) :degree
-            (fit? pitch-pat n) :pitch
-            (fit? pitch-class-pat n) :pitch-class
-            :else nil)
-        (>= c 3)
-          (cond
-            (fit? pitch-class-pat n) :pitch-class
-            (fit? pitch-pat n) :pitch
-            (fit? interval-pat n) :interval
-            (fit? mode-class-pat n) :mode-class
-            (fit? mode-pat n) :mode
-            (fit? generic-interval-class-pat n) :generic-interval-class
-            (fit? generic-interval-pat n) :generic-interval
-            (fit? degree-class-pat n) :degree-class
-            :else nil)))))
+        (fit? alteration-pat n) :alteration
+        (fit? direction-pat n) :direction
+        (and (symbol? x) (fit? natural-pitch-class-pat n)) :natural-pitch-class
+        (fit? degree-pat n) :degree
+        (fit? pitch-class-pat n) :pitch-class
+        (fit? pitch-pat n) :pitch
+        (fit? interval-pat n) :interval
+        (fit? mode-class-pat n) :mode-class
+        (fit? mode-pat n) :mode
+        (fit? generic-interval-class-pat n) :generic-interval-class
+        (fit? generic-interval-pat n) :generic-interval
+        (fit? degree-class-pat n) :degree-class
+        (fit? modal-move-pat n) :modal-move
+        :else nil))))
 
 (defn b-type [x & more]
   (cond

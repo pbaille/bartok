@@ -7,7 +7,7 @@
 
 (def mother-modes
   {:Lyd {
-      :degrees [:R :M2 :M3 :+4 :P5 :M6 :M7]
+      :degrees [:P1 :M2 :M3 :+4 :P5 :M6 :M7]
       :childs [:Lyd :Mix :Eol :Loc :Ion :Dor :Phry]
       :modes_prio 
         [[:+4 :M7 :M3 :M6 :M2 :P5]
@@ -18,7 +18,7 @@
          [:M6 :m3 :m7 :M2 :P5 :P4]
          [:m2 :P5 :P4 :m7 :m3 :m6]]}
    :Lyd+ {
-      :degrees [:R :M2 :M3 :+4 :+5 :M6 :M7]
+      :degrees [:P1 :M2 :M3 :+4 :+5 :M6 :M7]
       :childs [:Lyd+ :Lydb7 :Mixb6 :Loc2 :Alt :Melm :Phry6]
       :modes_prio 
         [[:+5 :M7 :M3 :+4 :M6 :M2]
@@ -29,7 +29,7 @@
          [:M7 :m3 :M6 :M2 :P5 :P4]
          [:M6 :m2 :P4 :m7 :m3 :P5]]}
    :Lyd#2 {
-      :degrees [:R :#2 :M3 :+4 :P5 :M6 :M7]
+      :degrees [:P1 :#2 :M3 :+4 :P5 :M6 :M7]
       :childs [:Lyd#2 :AltDim :Harmm :Loc6 :Ion+ :Dor+4 :PhryM]
       :modes_prio 
         [[:+4 :#2 :M7 :M3 :M6 :P5]
@@ -59,7 +59,7 @@
             deg-index (->> moth-hash :childs (index-of ch-name))
             deg (degree (nth (:degrees moth-hash) deg-index))
             prio   (map degree (-> moth-hash :modes_prio (nth deg-index)))
-            degrees (cons (degree :R) (vec (sort-by :val prio)))]
+            degrees (cons (degree :P1) (vec (sort-by :val prio)))]
         (with-type 
           'ModeClass
           {:name ch-name :mother moth-name :degree deg :prio prio :degrees degrees})))

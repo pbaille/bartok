@@ -41,7 +41,7 @@
 ;**************** functions ******************
 
 (defn distance [p1 p2]
-  {:pre [(and (type= p1 'Pitch) (type= p2 'Pitch))]}
+  {:pre [(and (type= 'Pitch p1) (type= 'Pitch p2))]}
   (abs (- (:val p1) (:val p2))))
 
 (defmethod transpose ['Pitch 'Interval] [this interval]

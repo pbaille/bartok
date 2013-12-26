@@ -44,6 +44,8 @@
 
 (defn count= [coll c] (-> coll count (= c)))
 
+(def not-nil? (complement nil?))
+
 (defn mod12 [x] (mod x 12))
 (defn mod12map [coll] (map mod12 coll))
 
@@ -104,10 +106,18 @@
 
 (defn div-mod [x div] [(int (/ x div)) (mod x div)])
 
+(defn int-div [x div] (int (/ x div)))
+
 (defn steps 
   "return steps between each adjacent items of coll"
   [coll] 
   (reduce #(conj %1 (apply - (reverse %2))) [] (partition 2 1 coll)))
+
+; find the first value for kw key in map or nested maps 
+(defn in> [m kw ]
+  (when (map? m)
+    (if-let [v (kw m)] 
+      v (in> (apply merge (filter map? (vals m))) kw))))
 
 
 

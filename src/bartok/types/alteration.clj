@@ -20,9 +20,9 @@
 (defmethod alteration :alteration [n] (name->alteration n))
 (defmethod alteration :number [v] (val->alteration v))
 
-(defmethod alteration [:number 'clojure.lang.Keyword] [v t] 
-  (cond (= t :t1) (index-of v degree-alterations-1)
-        (= t :t2) (index-of v degree-alterations-2)
-        (= t :pitch) (index-of v pitch-alterations)))
+(defmethod alteration [:number clojure.lang.Keyword] [v t] 
+  (cond (= t :t1) (select-first #(= v (:val %)) degree-alterations-1)
+        (= t :t2) (select-first #(= v (:val %)) degree-alterations-2)
+        (= t :pitch) (select-first #(= v (:val %)) pitch-alterations)))
 
 
