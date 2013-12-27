@@ -39,7 +39,7 @@
     (interval (keyword-cat (:name alt) (str (inc v)) "-" dir-oct))))
 
 (defmethod interval 'Degree [d] (interval (keyword-cat (:name d) "-u")))
-(defmethod interval :degree [ic] (interval (keyword-cat ic "-u")))
+(defmethod interval :degree [d] (interval (keyword-cat d "-u")))
 
 ; (defmethod interval [:degree :direction :number] [d dir n] 
 ;   (interval (keyword-cat d "-" dir (str n))))
@@ -51,6 +51,10 @@
          gicv (if (>= diff 0) (- p2v p1v) (-> (- p1v p2v) (+ 7) (mod 7) - ))
          gen (generic-interval (+ gicv (* 7 oct-diff)))]
     (interval (:name gen) (abs diff))))
+
+(defmethod interval ['PitchClass 'PitchClass] [p1 p2]
+  (interval (pitch p1) (pitch p2)))
+
 
 ;**********************************************
 

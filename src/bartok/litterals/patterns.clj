@@ -46,7 +46,7 @@
 (def mother-mode-pat 
   #"(Lyd#2|Lyd\+|Lyd)")
 
-(def modal-move-pat
+(def h-function-pat
   #"(SD|T)(\-|\+|alt)*")
 
 (def mode-pat

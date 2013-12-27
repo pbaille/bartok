@@ -12,10 +12,10 @@
 
 (def degree-class->degree
   (reduce #(into %1 {(-> %2 :degree-class :name) %2}) {} 
-          (filter #(#{:R :M2 :M3 :P4 :P5 :M6 :M7} (:name %)) degrees)))
+          (filter #(#{:P1 :M2 :M3 :P4 :P5 :M6 :M7} (:name %)) degrees)))
 
 (def degree-default-names 
-  #{:R :m2 :M2 :m3 :M3 :P4 :+4 :P5 :m6 :M6 :m7 :M7})
+  #{:P1 :m2 :M2 :m3 :M3 :P4 :+4 :P5 :m6 :M6 :m7 :M7})
 
 (def name->degree (reduce #(into %1 {(:name %2) %2}) {} degrees))
 
@@ -40,5 +40,5 @@
 
 ; *********** functions ******************
 
-; (defn generic-val [this] 
-;   (get-in this [:generic :val]))
+(defmethod relative 'Degree [d] 
+  (degree (- 12 (:val d))))

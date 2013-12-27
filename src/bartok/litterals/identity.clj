@@ -22,7 +22,7 @@
         (fit? generic-interval-class-pat n) :generic-interval-class
         (fit? generic-interval-pat n) :generic-interval
         (fit? degree-class-pat n) :degree-class
-        (fit? modal-move-pat n) :modal-move
+        (fit? h-function-pat n) :h-function
         :else nil))))
 
 (defn b-type [x & more]
