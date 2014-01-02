@@ -1,21 +1,36 @@
 (ns bartok.core
  (:use [midi])
- (:use [clojure.tools.namespace.repl :only (refresh)])
  (:use [bartok.midi-fns])
- (:use [bartok.RVal])
  (:use [utils.utils])
  (:use [utils.macros])
+ (:use clojure.inspector)
+ 
  (:use [bartok.multimethods])
  (:use [bartok.types])
+ 
  (:use [bartok.melody])
  (:use [bartok.melody.strategies])
  (:use [bartok.melody.step-pattern])
+ 
  (:use [bartok.harmony.harmony])
  (:use [bartok.harmony.h-function])
+ 
+ (:use [bartok.rythmn.rval])
+ (:use [bartok.rythmn.random-line])
+ 
+ (:use [bartok.structure.grid])
+ 
  (:use [bartok.litterals.identity])
- (:use [bartok.litterals.evaluation])
- )
+ (:use [bartok.litterals.evaluation]))
 
+(b-def bars [:4|4 :4|4 :3|4 :3|4])
+
+
+
+
+
+
+;****************************************************************************
 
 ; (def vep (midi-out "Gestionnaire IAC Bus IAC 2" ))
 

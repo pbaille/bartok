@@ -16,3 +16,6 @@
                       params
                       checks)}
          ~@tail))))
+
+(defmacro let-if [pred & body]
+  `(if ~pred (let ~@body)))

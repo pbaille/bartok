@@ -23,6 +23,7 @@
         (fit? generic-interval-pat n) :generic-interval
         (fit? degree-class-pat n) :degree-class
         (fit? h-function-pat n) :h-function
+        (fit? time-signature-pat n) :time-signature
         :else nil))))
 
 (defn b-type [x & more]

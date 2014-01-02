@@ -14,6 +14,7 @@
 (load "types/interval")
 (load "types/mode_class")
 (load "types/mode")
+(load "types/time_signature")
 
 
 

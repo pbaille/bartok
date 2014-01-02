@@ -33,7 +33,7 @@
 
 ;*************************** Public *************************************
 
-(defn melodic-domain
+(b-fn melodic-domain
   ;[Mode [Pitch Pitch]] -> MelodicDomain 
   ([mode bounds] (melodic-domain mode bounds false))
   ;[Mode [Pitch Pitch] Pitch] -> MelodicDomain 

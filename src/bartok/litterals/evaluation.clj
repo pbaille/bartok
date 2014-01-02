@@ -11,6 +11,8 @@
          (cond 
            (keyword? t) (call (name t) x) 
            (fn? x) (comp-b> x)
+           (vector? x) (vec (map b> x))
+           (set? x) (set (map b> x))
            :else x)))
   ([x & xs] (map b> (cons x xs))))
 
@@ -20,9 +22,12 @@
 (defn b>> [f & args]
   (apply (comp-b> f) args))
 
-(defmacro befn [n args & body]
+(defmacro b-fn [n args & body]
   `(do (defn ~n ~args ~@body)
        (def  ~n (comp-b> ~n))))
+
+(defmacro b-def [n x] 
+  `(def ~n (b> ~x)))
 
 ; (defmacro befmulti [n disp]
 ;   `(defmulti ~n (comp-b> ~disp)))

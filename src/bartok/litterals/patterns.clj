@@ -51,3 +51,7 @@
 
 (def mode-pat
   (pat-comp pitch-class-pat #"(\-)" mode-class-pat))
+
+(def time-signature-pat
+  #"[1-9][1-9]*\|(2|4|8|16)")
+
