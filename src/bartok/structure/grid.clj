@@ -24,14 +24,21 @@
       (conj g {:position pos})
       (conj g {:position (conj pos {:cycle (-> pos :cycle dec) :bar (-> g :bars count dec)})}))))
 
-(defn- set-sub [g s]
+(defn set-sub [g s]
   (conj g {:position (conj (:position g) {:sub s})}))
 
-(defn- current-bar [grid]
+(defn current-bar [grid]
   (-> grid :bars (nth (-> grid :position :bar))))
 
-(defn- previous-bar [grid]
+(defn previous-bar [grid]
   (-> grid :bars (nth (-> grid :position :bar dec (mod (count (:bars grid)))))))
+
+(defn cycle-val [grid]
+  (reduce + (map :val (:bars grid))))
+
+(defn previous-bars-val [grid]
+  (reduce + (take (-> grid :position :bar) 
+                  (->> grid :bars (map :val)))))
 
 (defn position-add [g rval]
   (let [sub (+ rval (-> g :position :sub))
@@ -47,3 +54,11 @@
           (+ sub (-> g :position :sub)))
       :else  
         (set-sub g sub))))
+
+(defn position-val [g]
+  (let [{:keys [cycle bar sub]} (:position g)]
+    (+ (* (cycle-val g) cycle) (previous-bars-val g) sub)))
+
+
+
+; (defn grid-to-ms [])

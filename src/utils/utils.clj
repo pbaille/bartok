@@ -42,6 +42,9 @@
   ([a b] (between a (first b) (second b)))
   ([a b1 b2] (and (>= a b1) (<= a b2))))
 
+(defn median [& args]
+  (/ (apply + args) (count args)))
+
 (defn count= [coll c] (-> coll count (= c)))
 
 (def not-nil? (complement nil?))
@@ -118,6 +121,4 @@
   (when (map? m)
     (if-let [v (kw m)] 
       v (in> (apply merge (filter map? (vals m))) kw))))
-
-
 

@@ -1,8 +1,9 @@
 (ns bartok.core
   
  (:use [midi])
- (:use [bartok.midi-fns])
+ (:use [bartok.midi.midi])
  (:use [utils.utils])
+ (:use [utils.interpolator])
  (:use [utils.macros])
  (:use clojure.inspector)
  

@@ -1,4 +1,4 @@
-(ns bartok.midi-fns
+(ns bartok.midi.midi
   (:use [midi])
   (:use [utils.utils])
   (:use [overtone.at-at]))
