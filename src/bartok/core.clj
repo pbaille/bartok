@@ -1,4 +1,5 @@
 (ns bartok.core
+  
  (:use [midi])
  (:use [bartok.midi-fns])
  (:use [utils.utils])
@@ -7,6 +8,7 @@
  
  (:use [bartok.multimethods])
  (:use [bartok.types])
+ (:use [bartok.note])
  
  (:use [bartok.melody])
  (:use [bartok.melody.strategies])

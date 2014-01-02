@@ -9,6 +9,7 @@
 (defn b> 
   ([x] (when-let [t (b-type x)] 
          (cond 
+           (or (= t :number)(= t :ratio)) x
            (keyword? t) (call (name t) x) 
            (fn? x) (comp-b> x)
            (vector? x) (vec (map b> x))

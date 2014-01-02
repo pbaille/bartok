@@ -16,8 +16,7 @@
 (defn- rand-rval [grid rvals]
   (rand-nth (allowed-rvals grid rvals)))
 
-(defn r-line
-  [grid rvals]
-   (lazy-seq
-     (let [v (rand-rval grid rvals)]
-       (cons v (r-line (position-add grid v) rvals)))))
+(defn r-line [grid rvals]
+  (lazy-seq 
+    (let [v (rand-rval grid rvals)]
+      (cons v (r-line (position-add grid v) rvals)))))

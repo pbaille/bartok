@@ -3,10 +3,8 @@
   (:use [bartok.structure.grid])
   (:use [clojure.math.combinatorics :as c]))
 
-(defn is-ratio? [r] (= (type r) clojure.lang.Ratio))
-
 (defn denom [r] 
-  (if (is-ratio? r) (denominator r) 1))
+  (if (ratio? r) (denominator r) 1))
 
 (defn to-ms [rational bpm]
   (* (/ 60000 bpm) rational))
