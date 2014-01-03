@@ -19,3 +19,20 @@
 
 (defmacro let-if [pred & body]
   `(if ~pred (let ~@body)))
+
+;doesn't work
+(defmacro def- [name val] `(def ^:private ~name ~val))
+
+(defmacro public-first [& body]
+  (let [body (sort-by
+               #(cond 
+                 (= (first %) 'defn-) 0
+                 (= (first %) 'def-)  0
+                 (= (first %) 'defn)  1
+                 (= (first %) 'def)   1 ) 
+               body)]
+    `(do ~@body)))
+
+; (public-first
+;   (defn m [a] (greet a))
+;   (defn- greet [a] (str "hello" a)))

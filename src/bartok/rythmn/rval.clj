@@ -1,6 +1,5 @@
 (ns bartok.rythmn.rval
   (:use [utils.utils])
-  (:use [bartok.structure.grid])
   (:use [clojure.math.combinatorics :as c]))
 
 (defn denom [r] 

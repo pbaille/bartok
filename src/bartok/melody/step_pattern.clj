@@ -1,14 +1,15 @@
 (ns bartok.melody.step-pattern
   (:use [utils.dom-part])
+  (:use [bartok.melody.melodic-domain])
   (:use [utils.utils]))
 
 ;************* helpers ********************
 
 (def ^:private default-params
-  {:steps (set (range -2 3))
-   :iterations #{2 3 4}
-   :cycle-steps (set (range -3 4))
-   :cycle-lengths #{3 4}})
+  {:steps #{-3 -2 2 3}
+   :iterations #{4}
+   :cycle-steps #{-3 -2 -1 1 2 3}
+   :cycle-lengths #{3 4 5}})
 
 (defn- keys-subset? [sub m]
   (clojure.set/subset? (set (keys sub)) (set (keys m))))
@@ -70,10 +71,18 @@
   (let [mps (step-patterns params)
         emps (shuffle (mapcat expand-step-pattern mps))
         cnt  (count emps)]
-    (fn [[down up]]
-      (select-first #(and (>= (get-in % [:amplitude :down]) down)
-                          (<= (get-in % [:amplitude :up]) up))
-                    (rotate emps (rand-int cnt))))))
+    (fn [md]
+      (let [[down up] (map :val (interval-bounds md))
+            res (select-first #(and (>= (get-in % [:amplitude :down]) down)
+                          (<= (get-in % [:amplitude :up]) up)) 
+                      (shuffle emps))]
+        res))))
+
+(defn step-patterns-line [md picker]
+  (lazy-seq 
+    (let [pat (vec (step-sequence md (:sequence (picker md))))
+          md (set-current md (last pat))]
+      (concat pat (step-patterns-line md picker)))))
 
  
  

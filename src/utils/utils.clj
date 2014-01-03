@@ -17,6 +17,9 @@
 (defn red-with-coll [f init coll] 
   (reduce #(f %1 %2 coll) init coll))
 
+(defn map-with-index [f coll]
+  (map f coll (range)))
+
 (defn named? [x]
   (or (keyword? x) (string? x) (symbol? x)))
 
@@ -96,14 +99,14 @@
   [seq elm]  
   (some #(= elm %) seq))
 
-(defn index [coll]
+(defn indexed [coll]
   (cond
     (map? coll) (seq coll)
     (set? coll) (map vector coll coll)
     :else (map vector (iterate inc 0) coll)))
 
 (defn pos [pred coll]
-  (for [[i v] (index coll) :when (pred v)] i))
+  (for [[i v] (indexed coll) :when (pred v)] i))
 
 (defn index-of [item coll] (first (pos #{item} coll)))
 

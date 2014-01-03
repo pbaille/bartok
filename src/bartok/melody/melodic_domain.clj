@@ -1,4 +1,9 @@
-(in-ns 'bartok.melody)
+(ns bartok.melody.melodic-domain
+  (:use [utils.utils])
+  (:use [bartok.types])
+  (:use [utils.dom-part])
+  (:use [bartok.litterals.identity])
+  (:use [bartok.litterals.evaluation]))
 
 ;******************* Private ************************
 
@@ -20,7 +25,7 @@
        :pitches (vec (for [x rng :when (contains? mpvs (mod12 x))]
                   (pitch (keyword-cat (mpvs (mod12 x)) (str (midi-octave x))))))})))
 
-(defn- add-current [md current]
+(defn set-current [md current]
   (let [p (if (type= current 'Pitch)
             (best #(< (distance current %1) (distance current %2))
                   (:pitches md))
@@ -39,7 +44,7 @@
   ;[Mode [Pitch Pitch] Pitch] -> MelodicDomain 
   ([mode bounds current]
   (let [md (init-and-compute-pitches mode bounds)
-        md (add-current md current)]
+        md (set-current md current)]
     md )))
 
 (defn interval-bounds [dom]

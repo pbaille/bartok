@@ -1,6 +1,6 @@
 (ns bartok.melody.strategies
   (:use [bartok.types])
-  (:use [bartok.melody])
+  (:use [bartok.melody.melodic-domain])
   (:use [bartok.litterals.evaluation])
   (:use [utils.prob])
   (:use [utils.utils]))
