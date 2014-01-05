@@ -20,9 +20,14 @@
     {:bars [(time-signature :4|4)]
      :tempo [[0 4 60]]}))
 
+(defn- sort-harmonies [g]
+  (if-let [h (:harmony g)] 
+    (conj g {:harmony (sort-by :position h)})
+    g))
+
 (defn grid 
   ([] (grid {}))
-  ([m] (conj default-grid m)))
+  ([m] (sort-harmonies (conj default-grid m))))
 
 (defn set-position [ pos cycle bar sub]
   (conj pos {:cycle cycle :bar bar :sub sub}))
@@ -32,7 +37,7 @@
 
 (defn- bar-inc [p] 
   (let [pos (conj p {:bar (-> p :bar inc)})]
-    (if (< (:bar pos) (count (p :grid :bars)))
+    (if (< (:bar pos) (count (-> p :grid :bars)))
       pos
       (conj pos {:cycle (-> pos :cycle inc) :bar 0}))))
 
@@ -42,8 +47,8 @@
       pos
       (conj pos {:cycle (-> pos :cycle dec) :bar (-> p :grid :bars count dec)}))))
 
-(defn current-bar [p]
-  (-> p :grid :bars (nth (-> p :bar))))
+(defn current-bar [pos]
+  (-> pos :grid :bars (nth (-> pos :bar))))
 
 (defn previous-bar [p]
   (-> p :grid :bars (nth (-> p :bar dec (mod (count (-> p :grid :bars)))))))
@@ -57,9 +62,7 @@
 
 (defn position-add [p rval]
   (let [sub (+ rval (-> p :sub))
-        current-bar-val (:val (current-bar p))
-        _ (p sub)
-        _ (p current-bar-val)]
+        current-bar-val (:val (current-bar p))]
     (cond 
       (>= sub current-bar-val)
         (position-add 

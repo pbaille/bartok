@@ -20,9 +20,11 @@
 (defmacro let-if [pred & body]
   `(if ~pred (let ~@body)))
 
-;doesn't work
-(defmacro def- [name val] `(def ^:private ~name ~val))
 
+(defmacro def- [name value]
+  `(def ~(vary-meta name assoc :private true) ~value))
+
+; evil don't use
 (defmacro public-first [& body]
   (let [body (sort-by
                #(cond 

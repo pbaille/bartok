@@ -71,12 +71,12 @@
   (let [mps (step-patterns params)
         emps (shuffle (mapcat expand-step-pattern mps))
         cnt  (count emps)]
-    (fn [md]
-      (let [[down up] (map :val (interval-bounds md))
-            res (select-first #(and (>= (get-in % [:amplitude :down]) down)
-                          (<= (get-in % [:amplitude :up]) up)) 
-                      (shuffle emps))]
-        res))))
+    (fn fun
+      ([md] (apply fun (map :val (interval-bounds md))))
+      ([down up] 
+       (select-first #(and (>= (-> % :amplitude :down) down)
+                           (<= (-> % :amplitude :up) up)) 
+                      (rotate emps (rand-int cnt)))))))
 
 (defn step-patterns-line [md picker]
   (lazy-seq 
@@ -84,5 +84,10 @@
           md (set-current md (last pat))]
       (concat pat (step-patterns-line md picker)))))
 
+(defn steps-line [bounds picker]
+  (lazy-seq 
+    (let [pat (apply picker bounds)
+          bounds (map #(- % (:total-step pat)) bounds)]
+      (concat (:sequence pat) (steps-line bounds picker)))))
  
  
