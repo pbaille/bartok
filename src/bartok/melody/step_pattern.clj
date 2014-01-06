@@ -1,6 +1,7 @@
 (ns bartok.melody.step-pattern
   (:use [utils.dom-part])
   (:use [bartok.melody.melodic-domain])
+  (:use [clojure.math.combinatorics :as c])
   (:use [utils.utils]))
 
 ;************* helpers ********************
@@ -8,7 +9,7 @@
 (def ^:private default-params
   {:steps #{-3 -2 2 3}
    :iterations #{4}
-   :cycle-steps #{-3 -2 -1 1 2 3}
+   :cycle-steps #{-3 -2 2 3}
    :cycle-lengths #{3 4 5}})
 
 (defn- keys-subset? [sub m]
@@ -35,13 +36,14 @@
 ;                 cl (:cycle-lengths params)]
 ;             {:cycle-length cl :cycle-step cs})))
 
+
 (defn- steps-calc [params]
   (apply concat 
     (for [cs (:cycle-steps params) 
           cl (:cycle-lengths params)]
-      (map #(conj {:cycle-length cl :cycle-step cs} 
-                  (hash-map :step-pattern %)) 
-           (dom-part (:steps params) cl cs)))))
+      (map #(assoc {:cycle-length cl :cycle-step cs} :step-pattern %) 
+           ; heavy ... maybe should compute permutations later in step-pattern-picker !!!!!!!!!!!
+           (mapcat c/permutations (dom-part (:steps params) cl cs))))))
 
 (defn- add-iterations [step-pattern iterations]
   (let [iters 

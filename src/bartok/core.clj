@@ -31,7 +31,7 @@
 (b-def bars [:4|4 :4|4 :4|4 :4|4])
 
 (def g (grid {:bars bars 
-              :tempo [[0 16 240]] 
+              :tempo [[0 16 180]] 
               :harmony [{:position [0 0] :mode (b> :C-Lyd)}
                         {:position [2 0] :mode (b> :Ab-Lyd)}]}))
 
@@ -43,12 +43,13 @@
                  (position-val pos)) 
             (-> pos :grid :harmony)))))
 
+
 (def n (note :C#1 1/2 (g-pos 0 1 1/2)))
 
 (def ab-lyd (melodic-domain :C-Lyd [:C-1 :G2] :C1))
 (def c-lyd  (melodic-domain :Ab-Lyd [:C-1 :G2] :C1))
 
-(def picker (step-pattern-picker {:cycle-lengths #{3 4 5 6} :iterations #{2 3 4}}))
+(def picker (step-pattern-picker {:cycle-lengths #{4 6} :iterations #{4} :steps #{-4 -3 -1 1 3 4}}))
 
 ;****************************************************************************
 
@@ -78,24 +79,25 @@
                   [] harmonic-chunks)]
     (map #(note %2 (:duration %1) (:position %1)) rl pitches)))
 
-(def notes 
+(defn notes [] 
   (sp-mel {:picker picker 
-           :rvals [1/2] 
+           :rvals [1/2 1/3] 
            :start-pos (g-pos 0 0 0) 
-           :end-pos (g-pos 3 0 0 )
+           :end-pos (g-pos 10 0 0 )
            :bounds [(b> :C-1)(b> :C2)] 
            :start-pitch (b> :C0)}))
 
-(def line (map #(vector (-> % :pitch :val) 80 (note-to-ms %)) notes ))
+(defn line [] (map #(vector (-> % :pitch :val) (rand-int-between 40 100) (note-to-ms %)) (notes) ))
   
 ;****************************************************************************
 
 (def vep (midi-out "Gestionnaire IAC Bus IAC 2" ))
 
 (defn -main [& args]
-
   (def player (partial play-line vep ))
+  (apply player (line)))
 
-  
-  (apply player line))
+;*************** test macros **************************
+
+
 
