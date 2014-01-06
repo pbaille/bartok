@@ -99,5 +99,11 @@
 
 ;*************** test macros **************************
 
-
-
+(defn mapp
+  ([f coll]
+   (lazy-seq
+    (when-let [s (seq coll)]
+      (cons (f (first s)) (map f (rest s)))))))
+  
+  
+  

@@ -6,6 +6,8 @@
 (defn type= [obj type-sym]
   (= (type obj) type-sym))
 
+
+
 (defn map-reduce [f init coll] 
   ((comp vec next) 
      (reduce (fn [acc el] 
@@ -57,6 +59,9 @@
 
 (defn select-first [pred coll]
   (first (filter pred coll)))
+
+(defn first-truthy [f coll]
+  (select-first (complement nil?) (map f coll)))
 
 (defn submap? [sub m] 
   (clojure.set/subset? (set sub) (set m)))

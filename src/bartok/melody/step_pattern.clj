@@ -8,7 +8,7 @@
 
 (def ^:private default-params
   {:steps #{-3 -2 2 3}
-   :iterations #{4}
+   :iterations #{1 2 3 4}
    :cycle-steps #{-3 -2 2 3}
    :cycle-lengths #{3 4 5}})
 
@@ -19,7 +19,7 @@
   (when (keys-subset? m default-params)
         (merge default-params m)))
 
-(defn- amplitude [step-sequence]
+(defn amplitude [step-sequence]
   (reduce (fn [{:keys [up down total-step]} el]
             (let [acc (+ total-step el)
                   up (if (> acc up) acc up)
@@ -27,15 +27,6 @@
               {:up up :down down :total-step acc}))
           {:down 0 :up 0 :total-step 0}
           step-sequence))
-      
-; (defn- steps-calc-old [params]
-;   (mapcat (fn [{:keys [cycle-length cycle-step] :as m}] 
-;             (map #(merge m (hash-map :step-pattern %)) 
-;                   (dom-part (:steps params) cycle-length cycle-step)))
-;           (for [cs (:cycle-steps params) 
-;                 cl (:cycle-lengths params)]
-;             {:cycle-length cl :cycle-step cs})))
-
 
 (defn- steps-calc [params]
   (apply concat 
@@ -55,10 +46,13 @@
                  :total-step total-step}}))]
     (merge step-pattern {:iterations (apply merge iters)})))
 
+
 (defn- expand-step-pattern [mp]
   (for [i (:iterations mp)]
     (let [mp (dissoc mp :iterations)]
       (conj mp (conj {:iterations (first i)} (second i))))))
+
+
 
 ;**************** public *********************
 
@@ -91,5 +85,49 @@
     (let [pat (apply picker bounds)
           bounds (map #(- % (:total-step pat)) bounds)]
       (concat (:sequence pat) (steps-line bounds picker)))))
+
+;********************* NEW ********************
  
+(defn- steps-calc-new [params]
+  (apply concat 
+    (for [cs (:cycle-steps params) 
+          cl (:cycle-lengths params)]
+      (map #(assoc {:cycle-length cl :cycle-step cs} :step-pattern %) 
+           (dom-part (:steps params) cl cs)))))
+
+(defn- assoc-margins [sp]
+  (let [{:keys [down up total-step]} (amplitude (:step-pattern sp))
+        [down up] (if (neg? total-step) 
+                    [(- down total-step) up]
+                    [down (- up total-step)])]
+    (assoc sp :margin {:down down :up up})))
+
+(defn sp-permutations [sp]
+  (map #(assoc sp :step-pattern %)
+       (c/permutations (:step-pattern sp))))
+
+(defn expand-iterations [step-seq n]
+  (apply concat (repeat n step-seq)))
+
+(defn step-patterns-new  
+  ([] (step-patterns-new {}))
+  ([params] (steps-calc-new (merge-with-defaults params))))
+
+(defn step-pattern-picker-new [params]
+  (let [mps (step-patterns-new params)
+        cnt (count mps)
+        iterations (or (:iterations params) (:iterations default-params))
+        ff (fn [dwn u x]
+             (first-truthy 
+               (fn [[per i]]
+                 (let [s (expand-iterations (:step-pattern per) i)
+                       {:keys [down up total-step]} (amplitude s)]
+                   (when (and (>= down dwn) (<= up u))
+                     (assoc per :sequence s :amplitude {:down down :up up} :total-step total-step)))) 
+               (for [per (sp-permutations x)
+                     i (shuffle iterations)]
+                 [per i])))]
+    (fn fun
+      ([md] (apply fun (map :val (interval-bounds md))))
+      ([down up] (first-truthy (partial ff down up) (rotate mps (rand-int cnt))))))) 
  
