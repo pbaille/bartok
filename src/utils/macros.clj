@@ -33,9 +33,17 @@
                body)]
     `(do ~@body)))
 
-; (public-first
-;   (defn m [a] (greet a))
-;   (defn- greet [a] (str "hello" a)))
+;(public-first 
+; (def aze 12) 
+; (defn azeaze [] "azeaze") 
+; (defn- qsd [] "qsd") 
+; (def- az 456))
+
+; => (do (defn- qsd [] "qsd") 
+       ; (def- az 456) 
+       ; (def aze 12) 
+       ; (defn azeaze [] "azeaze"))
+
 
 (defmacro defmult [name disp & body]
   `(do (defmulti ~name ~disp)
