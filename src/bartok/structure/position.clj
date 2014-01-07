@@ -9,10 +9,7 @@
 ; p => Position
 ; n => Note
 
-(defn position 
-  ([grid] (position grid 0 0 0))
-  ([grid cycl bar sub]
-    (with-type 'Position {:grid grid :cycle cycl :bar bar :sub sub})))
+;******************** grid ***************************
 
 (def ^:private default-grid
   (with-type 
@@ -20,14 +17,58 @@
     {:bars [(time-signature :4|4)]
      :tempo [[0 4 60]]}))
 
+
 (defn- sort-harmonies [g]
   (if-let [h (:harmony g)] 
     (conj g {:harmony (sort-by :position h)})
     g))
 
+(declare position position-val before? after? pos-between?)
+
 (defn grid 
   ([] (grid {}))
   ([m] (sort-harmonies (conj default-grid m))))
+
+
+(defn harmony-at [pos]
+  (last (filter #(<= (position-val (assoc pos :bar (-> % :position first) :sub (-> % :position second))) 
+                   (position-val pos)) 
+                (-> pos :grid :harmony))))
+
+(defn mode-at [pos]
+  (:mode (harmony-at pos)))
+
+(defn cycle-val [g]
+  (reduce + (map :val (:bars g))))
+
+(defn modes-between [start-pos end-pos]
+  (let [[hs he] (map harmony-at [start-pos end-pos])
+        g (:grid start-pos)
+        cycle-complete? (<= (cycle-val g) (apply - (map position-val [end-pos start-pos])))]
+    (if cycle-complete?
+      (->> g :harmony (map :mode))
+      (let [phsv ((juxt :bar :sub) start-pos) 
+            phev ((juxt :bar :sub) end-pos)
+            modes (set-map #(-> % :mode) [hs he])]
+        (cond 
+          (v-lt phsv phev) (reduce #(conj %1 (-> %2 :mode)) 
+                                    modes 
+                                    (filter (fn [{p :position}] (and (v-gt p phsv) (v-lt p phev))) 
+                                            (:harmony g))) 
+          (v-gt phsv phev) (reduce #(conj %1 (-> %2 :mode)) 
+                                    modes 
+                                   (filter (fn [{p :position}] (or (v-lt p phev) (v-gt p phsv))) 
+                                           (:harmony g))))))))
+
+(defn tempo-interpolator [g] 
+  (cyclic-interpolator (-> g :tempo) (cycle-val g)))
+
+;********************* position **********************
+
+(defn position 
+  ([grid] (position grid 0 0 0))
+  ([grid cycl bar sub]
+    (with-type 'Position {:grid grid :cycle cycl :bar bar :sub sub})))
 
 (defn set-position [ pos cycle bar sub]
   (conj pos {:cycle cycle :bar bar :sub sub}))
@@ -53,8 +94,7 @@
 (defn previous-bar [p]
   (-> p :grid :bars (nth (-> p :bar dec (mod (count (-> p :grid :bars)))))))
 
-(defn cycle-val [g]
-  (reduce + (map :val (:bars g))))
+
 
 (defn previous-bars-val [p]
   (reduce + (take (:bar p) 
@@ -79,8 +119,21 @@
   (let [{:keys [cycle bar sub]} p]
     (+ (* (cycle-val (:grid p)) cycle) (previous-bars-val p) sub)))
 
-(defn tempo-interpolator [g] 
-  (cyclic-interpolator (-> g :tempo) (cycle-val g)))
+(defn before? [pos1 pos2]
+  (pos? (apply - (map position-val [pos2 pos1]))))
+
+(defn after? [pos1 pos2]
+  (neg? (apply - (map position-val [pos2 pos1]))))
+
+(defn eq? [pos1 pos2]
+  (= 0 (apply - (map position-val [pos2 pos1]))))
+
+(defn pos-between? 
+  ([pos [pos1 pos2]] (pos-between? pos pos1 pos2))
+  ([pos pos1 pos2]
+   (let [[pos1 pos2] (if (before? pos1 pos2) [pos1 pos2] [pos2 pos1])]
+     (or (and (after? pos pos1) (before? pos pos2)) 
+         (or (eq? pos pos1) (eq? pos pos2))))))
 
 (defn note-to-ms [n]
   (let [dur (:duration n)
@@ -88,3 +141,7 @@
         med-tempo ((tempo-interpolator (-> n :position :grid)) pos-val (+ pos-val dur))]
     (to-ms dur med-tempo)))
 
+(defn pos-to-ms [p]
+  (let [dur (position-val p)
+        med-tempo ((tempo-interpolator (:grid p)) 0 dur)]
+    (to-ms dur med-tempo)))

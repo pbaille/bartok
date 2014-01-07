@@ -60,8 +60,22 @@
 (defn select-first [pred coll]
   (first (filter pred coll)))
 
+;map with f and remove falsy vals
+(defn filt-map [f coll]
+  (filter (complement nil?) (map f coll)))
+
+;(filt-map #(when (< 0 %) %) [-1 2 3])
+;=> (2 3)
+
+;like filt-map but just first
 (defn first-truthy [f coll]
   (select-first (complement nil?) (map f coll)))
+
+;(first-truthy #(when (< 0 %) %) [-1 2 3])
+;=> 2
+
+(defn set-map [f coll]
+  (set (map f coll)))
 
 (defn submap? [sub m] 
   (clojure.set/subset? (set sub) (set m)))
@@ -129,4 +143,25 @@
   (when (map? m)
     (if-let [v (kw m)] 
       v (in> (apply merge (filter map? (vals m))) kw))))
+
+
+; **************** vectors comparaisons ********************
+
+(defn v-eq [v1 v2]
+  (= 0 (compare v1 v2)))
+
+(defn v-lt [v1 v2]
+  (= -1 (compare v1 v2)))
+
+(defn v-gt [v1 v2]
+  (= 1 (compare v1 v2)))
+
+(defn v-gte [v1 v2]
+  (let [c (compare v1 v2)]
+    (or (= 0 c) (= 1 c))))
+
+(defn v-lte [v1 v2]
+  (let [c (compare v1 v2)]
+    (or (= 0 c) (= -1 c))))
+
 

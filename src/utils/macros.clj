@@ -64,4 +64,10 @@
 ;   ([x clojure.lang.Keyword]
 ;     (name x)))
 
+(defmacro dehfn [name & body]
+  `(defn- ~name ~@body))
+
+; (defn declare-helpers []
+;   ())
+
 

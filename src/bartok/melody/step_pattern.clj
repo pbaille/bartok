@@ -2,15 +2,16 @@
   (:use [utils.dom-part])
   (:use [bartok.melody.melodic-domain])
   (:use [clojure.math.combinatorics :as c])
+  (:use utils.profile)
   (:use [utils.utils]))
 
 ;************* helpers ********************
 
 (def ^:private default-params
-  {:steps #{-3 -2 2 3}
-   :iterations #{1 2 3 4}
-   :cycle-steps #{-3 -2 2 3}
-   :cycle-lengths #{3 4 5}})
+  {:steps #{-4 -3 -2 2 3 4}
+   :iterations #{3 4 5 6}
+   :cycle-steps #{-4 -3 -2 2 3 4}
+   :cycle-lengths #{3 4 5 6}})
 
 (defn- keys-subset? [sub m]
   (clojure.set/subset? (set (keys sub)) (set (keys m))))
@@ -64,9 +65,9 @@
         (add-iterations sp (:iterations params))))))
 
 (defn step-pattern-picker [params]
-  (let [mps (step-patterns params)
-        emps (shuffle (mapcat expand-step-pattern mps))
-        cnt  (count emps)]
+  (let [mps (prof :mps (step-patterns params))
+        emps (prof :emps (mapcat expand-step-pattern mps))
+        cnt  (prof :count (count emps))]
     (fn fun
       ([md] (apply fun (map :val (interval-bounds md))))
       ([down up] 
@@ -88,19 +89,19 @@
 
 ;********************* NEW ********************
  
+; (defn- assoc-margins [sp]
+;   (let [{:keys [down up total-step]} (amplitude (:step-pattern sp))
+;         [down up] (if (neg? total-step) 
+;                     [(- down total-step) up]
+;                     [down (- up total-step)])]
+;     (assoc sp :margin {:down down :up up})))
+
 (defn- steps-calc-new [params]
   (apply concat 
-    (for [cs (:cycle-steps params) 
-          cl (:cycle-lengths params)]
+    (for [cs (shuffle (:cycle-steps params)) 
+          cl (shuffle (:cycle-lengths params))]
       (map #(assoc {:cycle-length cl :cycle-step cs} :step-pattern %) 
            (dom-part (:steps params) cl cs)))))
-
-(defn- assoc-margins [sp]
-  (let [{:keys [down up total-step]} (amplitude (:step-pattern sp))
-        [down up] (if (neg? total-step) 
-                    [(- down total-step) up]
-                    [down (- up total-step)])]
-    (assoc sp :margin {:down down :up up})))
 
 (defn sp-permutations [sp]
   (map #(assoc sp :step-pattern %)
@@ -113,21 +114,51 @@
   ([] (step-patterns-new {}))
   ([params] (steps-calc-new (merge-with-defaults params))))
 
-(defn step-pattern-picker-new [params]
-  (let [mps (step-patterns-new params)
-        cnt (count mps)
-        iterations (or (:iterations params) (:iterations default-params))
-        ff (fn [dwn u x]
-             (first-truthy 
-               (fn [[per i]]
-                 (let [s (expand-iterations (:step-pattern per) i)
-                       {:keys [down up total-step]} (amplitude s)]
-                   (when (and (>= down dwn) (<= up u))
-                     (assoc per :sequence s :amplitude {:down down :up up} :total-step total-step)))) 
-               (for [per (sp-permutations x)
-                     i (shuffle iterations)]
-                 [per i])))]
+; apparently slower than regular step-pattern-picker on little sets
+(defn lazy-step-pattern-picker [params]
+  (let [params (merge-with-defaults params)]
     (fn fun
       ([md] (apply fun (map :val (interval-bounds md))))
-      ([down up] (first-truthy (partial ff down up) (rotate mps (rand-int cnt))))))) 
+      ([down up] 
+       (prof :main (let [mps (step-patterns-new params)
+             ff (prof :ff (fn [dwn u x]
+                  (first-truthy 
+                    (fn [[per i]]
+                      (let [s (expand-iterations (:step-pattern per) i)
+                            {:keys [down up total-step]} (amplitude s)]
+                        (when (and (>= down dwn) (<= up u))
+                          (assoc per :sequence s :amplitude {:down down :up up} :total-step total-step)))) 
+                    (for [i (shuffle (:iterations params))
+                          :when (let [step (* i (:cycle-step x))]
+                                  (cond
+                                    (and (<= 0 step) (> step up)) false
+                                    (and (> 0 step) (< step down)) false
+                                    :else true))
+                          per (sp-permutations x)]
+                      [per i]))))] 
+         (first-truthy (partial ff down up) mps))))))) 
+
+;similar performance ...
+; (defn lazy-step-pattern-picker2 [params]
+;   (let [params (merge-with-defaults params)]
+;     (fn fun
+;       ([md] (apply fun (map :val (interval-bounds md))))
+;       ([down up] 
+;        (prof :main(let [mps (step-patterns-new params)
+;              ff (fn [dwn u x]
+;                   (first-truthy 
+;                     (fn [[per i]]
+;                       (let [s (expand-iterations (:step-pattern per) i)
+;                             {:keys [down up total-step]} (amplitude s)]
+;                         (when (and (>= down dwn) (<= up u))
+;                           (assoc per :sequence s :amplitude {:down down :up up} :total-step total-step)))) 
+;                     (let [iters (filter  #(let [step (* % (:cycle-step x))] 
+;                                             (cond
+;                                               (and (<= 0 step) (> step up)) false
+;                                               (and (> 0 step) (< step down)) false
+;                                               :else true)) 
+;                                         (:iterations params))]
+;                       (for [i iters per (sp-permutations x)]
+;                         [per i]))))] 
+;          (first-truthy (partial ff down up) mps))))))) 
  

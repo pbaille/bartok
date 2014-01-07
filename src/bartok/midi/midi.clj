@@ -1,9 +1,12 @@
 (ns bartok.midi.midi
   (:use [midi])
   (:use [utils.utils])
+  (:use bartok.structure.position)
   (:use [overtone.at-at]))
 
 (def pool (mk-pool))
+
+
 
 (defn play-note
 
@@ -23,6 +26,11 @@
     (if-let
       [nexts (next notes)]
       (recur nexts (+ at (last (first notes)))))))
+
+(defn play-new [out notes]
+  (let [notes (sort-by #(-> % :position position-val) notes)
+        quads (map #(vector (-> % :pitch :val) (rand-int-between 60 80) (note-to-ms %) (pos-to-ms (:position %))) notes)]
+    (for [q quads] (apply (partial play-note out) q))))
 
 (defn lazy-drunk
   [range-bounds max-step start]

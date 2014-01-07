@@ -16,8 +16,14 @@
 (defn- rand-rval [p rvals]
   (rand-nth (allowed-rvals p rvals)))
 
-(defn r-line [p rvals]
-  (lazy-seq 
-    (let [v (rand-rval p rvals)]
-      (cons {:position p :duration v} 
-            (r-line (position-add p v) rvals)))))
+(defn r-line 
+  ([p rvals]
+    (lazy-seq 
+      (let [v (rand-rval p rvals)]
+        (cons {:position p :duration v} 
+              (r-line (position-add p v) rvals)))))
+  ([p rvals start-pos end-pos]
+     (take-while #(< (position-val (:position %)) 
+                     (position-val end-pos)) 
+                 (r-line start-pos rvals))))
+
