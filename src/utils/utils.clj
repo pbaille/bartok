@@ -164,4 +164,15 @@
   (let [c (compare v1 v2)]
     (or (= 0 c) (= -1 c))))
 
+;***************** maps *********************
+
+(defn dissoc-in [m key-vec]
+  (let [firsts (vec (butlast key-vec))
+        node (dissoc (get-in m firsts) (last key-vec))]
+    (assoc-in m firsts node)))
+
+;**************** vectors *******************
+
+ (defn vec-if-not [x]
+   (if (vector? x) x (vector x)))
 
