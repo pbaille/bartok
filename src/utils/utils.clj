@@ -5,6 +5,8 @@
 
   (defn pp [x] (clojure.pprint/pprint x))
   (def not-nil? (complement nil?))
+  
+
 
 ;********** strings and keywords ************
 
@@ -189,3 +191,14 @@
     {:pre [(named? t)]}
     (with-meta obj {:type t}))
 
+;*************** experiments ****************
+
+  (defn repeater [coll]
+    (mapcat (fn [[n & els]] 
+              (if (count= els 1)
+                (repeat n (first els)) 
+                (a concat (repeat n (mapcat #(repeater [%]) els))))) 
+            (map #(if (vector? %) % (vector 1 %)) coll)))
+  
+  ;(repeater [[2 [3 [2 :foo] :bar] :woz] :bim [2 :yo]])
+  ;=> (:foo :foo :bar :foo :foo :bar :foo :foo :bar :woz :foo :foo :bar :foo :foo :bar :foo :foo :bar :woz :bim :yo :yo)

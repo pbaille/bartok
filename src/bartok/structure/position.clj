@@ -17,17 +17,22 @@
     {:bars [(time-signature :4|4)]
      :tempo [[0 4 60]]}))
 
+(defn- expand-harmonies [g]
+  (let [h (:harmony g)
+        mh (if (map? h) h (a hash-map h))
+        final (map (fn [[k v]] 
+                     (hash-map :position k :mode (mode v))) 
+                   mh)]
+    (assoc g :harmony (sort-by :position final))))
 
-(defn- sort-harmonies [g]
-  (if-let [h (:harmony g)] 
-    (conj g {:harmony (sort-by :position h)})
-    g))
+(defn- expand-bars [g]
+  (assoc g :bars (map time-signature (repeater (:bars g)))))
 
 (declare position position-val before? after? pos-between?)
 
 (defn grid 
   ([] (grid {}))
-  ([m] (sort-harmonies (conj default-grid m))))
+  ([m] ((c expand-bars expand-harmonies) (conj default-grid m))))
 
 
 (defn harmony-at [pos]

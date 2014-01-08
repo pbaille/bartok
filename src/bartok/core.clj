@@ -29,24 +29,22 @@
  
  (:use [bartok.structure.position]))
 
-(b-def bars [:4|4 :4|4 :4|4 :4|4 :4|4 :4|4 ])
-
-(def g (grid {:bars bars 
+(def g (grid {:bars [[6 :4|4]] 
               :tempo [[0 16 120]] 
-              :harmony [{:position [0 0] :mode (b> :C-Lyd)}
-                        {:position [1 0] :mode (b> :Ab-Lyd)}
-                        {:position [2 0] :mode (b> :Eb-Lyd)}
-                        {:position [3 0] :mode (b> :B-Lyd)}
-                        {:position [4 0] :mode (b> :A-Lyd)}
-                        {:position [5 0] :mode (b> :F-Lyd)}
-                        ]}))
+              :harmony {[0 0] :C-Lyd
+                        [1 0] :Ab-Lyd
+                        [2 0] :Eb-Lyd
+                        [3 0] :B-Lyd
+                        [4 0] :A-Lyd
+                        [5 0] :F-Lyd}}))
 
-(def g-pos (partial position g))
+(def g-pos (p position g))
 
-(def picker (lazy-step-pattern-picker {:cycle-lengths #{3 4 5 6} 
-                                       :iterations #{2 3 4} 
-                                       :steps #{ -4 -3 -1 1 3 4 }
-                                       :cycle-steps #{-3 -2 -1 1 2 3}}))
+(def picker (lazy-step-pattern-picker 
+              {:cycle-lengths #{3 4 5 6} 
+               :iterations #{2 3 4} 
+               :steps #{ -4 -3 -1 1 3 4 }
+               :cycle-steps #{-3 -2 -1 1 2 3}}))
 
 ;****************************************************************************
 
