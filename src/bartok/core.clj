@@ -32,7 +32,7 @@
 (b-def bars [:4|4 :4|4 :4|4 :4|4 :4|4 :4|4 ])
 
 (def g (grid {:bars bars 
-              :tempo [[0 16 140]] 
+              :tempo [[0 16 120]] 
               :harmony [{:position [0 0] :mode (b> :C-Lyd)}
                         {:position [1 0] :mode (b> :Ab-Lyd)}
                         {:position [2 0] :mode (b> :Eb-Lyd)}
@@ -45,7 +45,7 @@
 
 (def picker (lazy-step-pattern-picker {:cycle-lengths #{3 4 5 6} 
                                        :iterations #{2 3 4} 
-                                       :steps #{ -3 -2 -1 1 2 3}
+                                       :steps #{ -4 -3 -1 1 3 4 }
                                        :cycle-steps #{-3 -2 -1 1 2 3}}))
 
 ;****************************************************************************
@@ -71,15 +71,15 @@
 
 (defn notes [] 
   (sp-mel {:picker picker 
-           :rvals [1/2] 
+           :rvals [1/3 1/5 1/4] 
            :start-pos (g-pos 0 0 0) 
            :end-pos (g-pos 1 0 0 )
            :bounds [(b> :C0)(b> :C2)] 
            :start-pitch (b> :C1)}))
 
 
-(p (partition 8 8 (map #(-> % :pitch :name) (notes))))
-(p (map #(-> % :position (dissoc :grid)) (sort-by #(-> % :position position-val) (notes))))
+; (pp (partition 8 8 (map #(-> % :pitch :name) (notes))))
+; (pp (map #(-> % :position (dissoc :grid)) (sort-by #(-> % :position position-val) (notes))))
 
 (b-fn make-chord [p & gis]
   (reduce #(conj %1 (transpose p %2)) [p] gis))
@@ -88,7 +88,7 @@
 
 (b-fn note-line-from [pos dur & notes-and-chords]
   (reduce #(let [l (last %1)
-                 l-pos (cond (nil? l) (do (p "prout") (position-add pos (- dur)))
+                 l-pos (cond (nil? l) (position-add pos (- dur))
                              (vector? l) (-> l last :position) 
                              :else (:position l))
                  next-pos (position-add  l-pos dur)]
@@ -103,12 +103,14 @@
 (defn- flat-line-chords [line]
   (mapcat vec-if-not line))
 
-(def chords (flat-line-chords (note-line-from (g-pos 0 0 0) 4 [:C-1 :G-1 :A-1]
-                                                              [:Ab-2 :Eb-1 :F-1]
-                                                              [:Eb-1 :Bb-1 :F0]
-                                                              [:B-2 :F#-1 :C#-1]
-                                                              [:A-2 :E-1 :B-1]
-                                                              [:F-1 :C0 :G0])))
+(def make-lyd-chord
+  #(make-chord % :P5-u :M6-u :M2-u1 :+4-u1))
+
+(def chords 
+  (map #(assoc % :velocity 40)
+       (flat-line-chords 
+         (ap note-line-from (g-pos 0 0 0) 4 
+           (map make-lyd-chord [:C-1 :Ab-2 :Eb-1 :B-2 :A-2 :F-1])))))
 
 (declare basses)
 ;temp print helper
@@ -122,6 +124,7 @@
     (mapcat (fn [[n line]]
               (map #(update-in % [:position] position-add (* n end-pos-val)) line)) 
             (for [nn (range n)] [nn line]))))
+
 ;****************************************************************************
 
 (def vep (midi-out "Gestionnaire IAC Bus IAC 2" ))
@@ -130,6 +133,6 @@
   (def player (partial play-new vep))
   (player (loop-line (concat chords (notes)) 4)))
 
-  
+
   
   

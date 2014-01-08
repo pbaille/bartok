@@ -29,7 +29,11 @@
 
 (defn play-new [out notes]
   (let [notes (sort-by #(-> % :position position-val) notes)
-        quads (map #(vector (-> % :pitch :val) (rand-int-between 60 80) (note-to-ms %) (pos-to-ms (:position %))) notes)]
+        quads (map #(vector (-> % :pitch :val) 
+                            (or (:velocity %)(rand-int-between 60 80)) 
+                            (note-to-ms %) 
+                            (pos-to-ms (:position %))) 
+                   notes)]
     (for [q quads] (apply (partial play-note out) q))))
 
 (defn lazy-drunk

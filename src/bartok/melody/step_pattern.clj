@@ -134,7 +134,7 @@
                                     (and (<= 0 step) (> step up)) false
                                     (and (> 0 step) (< step down)) false
                                     :else true))
-                          per (sp-permutations x)]
+                          per (shuffle (sp-permutations x))]
                       [per i]))))] 
          (first-truthy (partial ff down up) mps))))))) 
 

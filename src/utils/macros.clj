@@ -67,7 +67,13 @@
 (defmacro dehfn [name & body]
   `(defn- ~name ~@body))
 
-; (defn declare-helpers []
-;   ())
+(defmacro declare-helpers []
+  `(declare ~@(map symbol 
+                   (re-seq #"(?<=dehfn\s)[a-zA-Z+!\-_?0-9*~#@''`/.$=]*(?=\s)" 
+                           (slurp (str "src/" *file*))))))
+
+; (declare-helpers)
+; (defn hello-user [name] (greet name))
+; (dehfn greet [name] (str "Hello my dear " name))
 
 

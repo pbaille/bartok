@@ -1,7 +1,7 @@
 (ns utils.utils
   (:require clojure.pprint))
 
-(defn p [x] (clojure.pprint/pprint x))
+(defn pp [x] (clojure.pprint/pprint x))
 
 (defn type= [obj type-sym]
   (= (type obj) type-sym))
@@ -175,4 +175,18 @@
 
  (defn vec-if-not [x]
    (if (vector? x) x (vector x)))
+ 
+;*************** functionc ******************
 
+;shortcuts
+(def p partial)
+(def c comp)
+(def a apply)
+
+(defn ap [f & args]
+  (apply (apply partial f (butlast args)) (last args)))
+;(ap + 2 3 [1 2 3 4])
+
+;*********** file **************************
+
+(defn current-file-path [] *file*)
