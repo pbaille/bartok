@@ -69,7 +69,6 @@
   ([coll bounds start-pitch]
    (reduce
       (fn [acc {:keys [steps mode]}]
-        (pp mode steps)
         (let [md (melodic-domain mode bounds (or (last acc) start-pitch))
               s (step-sequence md steps)]
           (if (nil? s) (pp "halt!!!!! out of bounds step-sequence !!!!"))

@@ -21,6 +21,8 @@
 
 (defmulti interval b-types)
 
+(defmethod interval 'Interval [i] i)
+
 (defmethod interval :interval [n] 
   (let [[dn diroct] (dash-split n)
          class (degree (keyword dn))

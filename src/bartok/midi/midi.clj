@@ -44,7 +44,7 @@
   ([{:keys [pitch position] :as n} vel chan]
   (m-note (:val pitch) (note-to-ms n) (pos-to-ms position) vel chan)))
 
-(defn play-new [out notes]
+(defn play [out notes]
   (let [notes (map to-midi (expand-chords notes))]
     (for [{p :pitch v :velocity d :duration pos :position} notes] 
       (play-note out p v d pos))))

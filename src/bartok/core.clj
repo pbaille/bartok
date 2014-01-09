@@ -27,7 +27,10 @@
  (:use [bartok.rythmn.random-line])
  (:use [bartok.rythmn.analysis])
  
- (:use [bartok.structure.position]))
+ (:use [bartok.structure.position])
+ 
+ (:use bartok.composition.rythmic-step-pattern)
+ (:use bartok.composition.utils))
 
 (grid {:bars [[7 :4|4]] 
        :tempo [[0 16 120]] 
@@ -40,86 +43,35 @@
                  [6 0] :F-Melm}})
 
 (def picker (lazy-step-pattern-picker 
-              {:cycle-lengths #{2 3 4} 
-               :iterations #{2 3 4} 
+              {:cycle-lengths #{3} 
+               :iterations #{2 3 4 5} 
                :steps #{ -4 -3 -1 1 3 4 }
                :cycle-steps #{-3 -2 -1 1 2 3}}))
 
-;****************************************************************************
-
-(defn sp-mel [options-map]
-  (let [{:keys [picker rvals bounds start-pitch start-pos end-pos]} options-map
-        rl (r-line start-pos rvals start-pos end-pos)
-        global-bounds (global-bounds start-pos end-pos bounds start-pitch)
-        steps (take (count rl) (steps-line global-bounds picker))
-        harmonic-chunks 
-          (map #(assoc % :position (-> % :position vals vec)
-                         :mode (:name (mode-at (pos+ (:position %) (- (:duration %) 1/100))))) 
-               (map #(assoc %1 :step %2) rl steps)) 
-        harmonic-chunks 
-          (reduce (fn [acc {mode :mode :as x}]
-                    (if (= mode (or (:mode (last acc)) nil))
-                      (conj (vec (butlast acc)) 
-                            (update-in (last acc) [:steps] conj (:step x)))
-                      (conj acc {:mode mode :steps [(:step x)]}))) 
-                  [] (sort-by :position harmonic-chunks))
-        pitches (step-sequence harmonic-chunks bounds start-pitch)]
-    (map #(note %2 (:duration %1) (:position %1)) rl pitches)))
-
-(defn notes [] 
-  (sp-mel {:picker picker 
-           :rvals [1/4] 
-           :start-pos (g-pos 0 0 0) 
-           :end-pos (g-pos 2 0 0 )
-           :bounds [(b> :C0)(b> :C2)] 
-           :start-pitch (b> :C1)}))
-
-(b-fn note-line-from [pos dur & notes-and-chords]
-  (reduce #(let [l (last %1)
-                 l-pos (cond (nil? l) (pos- pos dur)
-                             (vector? l) (-> l last :position) 
-                             :else (:position l))
-                 next-pos (pos+  l-pos dur)]
-             (conj %1 (if (type= %2 'Pitch)
-                        (note %2 dur next-pos)
-                        (chord2 %2 dur next-pos)))) 
-          [] notes-and-chords))
-
-;pitch vectors represent chords
-;(note-line-from (g-pos 0 0 0) 1 [:C#1 :D2] :C#0 :A2 [:C#1 :E1])
-
-(defn- flat-line-chords [line]
-  (mapcat vec-if-not line))
-
-(def make-lyd-chord
-  #(p-chord % :M6-u :M2-u1 :+4-u1))
-
-(def make-lyd+-chord
-  #(p-chord % :M7-u :M3-u1 :+5-u1))
+(def notes 
+  (rythmic-step-pattern 
+    {:picker picker 
+     :rvals [1/4] 
+     :start-pos (g-pos 0 0 0) 
+     :end-pos (g-pos 2 0 0 )
+     :bounds [(b> :C0)(b> :C2)] 
+     :start-pitch (b> :C1)}))
 
 (def chords 
-  (note-line-from (g-pos 0 0 0) 4 
-    (make-lyd+-chord :C-1)              
-    (p-chord :C-1 :P5-u :m6-u :M2-u1 :M3-u1)              
-    (p-chord :C-1 :M6-u :M7-u :M2-u1 :m3-u1 :P5-u1)              
-    (make-lyd+-chord :B-2)              
-    (p-chord :B-2 :P5-u :m7-u :M2-u :P4-u)
-    (p-chord :A-2 :m6-u :M3-u1 :P5-u1 :m7-u1 :M2-u2)              
-    (p-chord :F-1 :P5-u :M2-u1 :m3-u1 :M7-u1)))
-  
-(defn loop-line [line n]
-  (let [end-pos-val (pos-val (pos+ (:position (last line))(:duration (last line))))]
-    (mapcat (fn [[n line]]
-              (map #(update-in % [:position] pos+ (* n end-pos-val)) line)) 
-            (for [nn (range n)] [nn line]))))
-
-;****************************************************************************
+  (loop-line 2
+    (ap note-line-from (g-pos 0 0 0) 4 
+     (map #(a p-chord %) 
+      [[:C-1 :M7-u :M3-u1 :+5-u1]
+       [:C-1 :P5-u :m6-u :M2-u1 :M3-u1]
+       [:C-1 :M6-u :M7-u :M2-u1 :m3-u1 :P5-u1]
+       [:B-2 :M7-u :M3-u1 :+5-u1]
+       [:B-2 :P5-u :m7-u :M2-u :P4-u]
+       [:A-2 :m6-u :M3-u1 :P5-u1 :m7-u1 :M2-u2]
+       [:F-1 :P5-u :M2-u1 :m3-u1 :M7-u1]]))))
 
 (def vep (midi-out "Gestionnaire IAC Bus IAC 2" ))
 
-(defn -main [& args]
-  (def player (p play-new vep))
-  (player (concat (loop-line chords 2) (notes))))
+(defn go [] (play vep (concat chords notes)))
 
 
 
