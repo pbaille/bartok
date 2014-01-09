@@ -4,8 +4,11 @@
   (:use bartok.types)
   (:use bartok.litterals.evaluation))
 
-(b-fn note [pitch dur pos]
-  (with-type 'Note {:pitch pitch :duration dur :position pos}))
+(b-fn note 
+  ([pitch dur pos]
+    (with-type 'Note {:pitch pitch :duration dur :position pos}))
+  ([pitch dur pos vel chan]
+    (with-type 'Note {:pitch pitch :duration dur :position pos :velocity vel :channel chan})))
 
 (b-fn p-chord 
   [pitch & intervals-and-or-degrees]

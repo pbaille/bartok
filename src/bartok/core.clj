@@ -1,6 +1,6 @@
 (ns bartok.core
   
- (:use [midi])
+ (:use [bartok.midi.overtone-midi])
  (:use [bartok.midi.midi])
  (:use [utils.utils])
  (:use [clojure.math.combinatorics :as c])
@@ -32,8 +32,10 @@
  (:use bartok.composition.rythmic-step-pattern)
  (:use bartok.composition.utils))
 
+;***********************************************************
+
 (grid {:bars [[7 :4|4]] 
-       :tempo [[0 16 120]] 
+       :tempo [[0 20 120][24 140]] 
        :harmony {[0 0] :C-Lyd+
                  [1 0] :Ab-Lyd+
                  [2 0] :Eb-Lyd+
@@ -43,9 +45,9 @@
                  [6 0] :F-Melm}})
 
 (def picker (lazy-step-pattern-picker 
-              {:cycle-lengths #{3} 
-               :iterations #{2 3 4 5} 
-               :steps #{ -4 -3 -1 1 3 4 }
+              {:cycle-lengths #{4 3 5 6 7 8} 
+               :iterations #{1 2 3 4} 
+               :steps #{-4 -3 -1 1 3 4}
                :cycle-steps #{-3 -2 -1 1 2 3}}))
 
 (def notes 
@@ -54,29 +56,29 @@
      :rvals [1/4] 
      :start-pos (g-pos 0 0 0) 
      :end-pos (g-pos 2 0 0 )
-     :bounds [(b> :C0)(b> :C2)] 
-     :start-pitch (b> :C1)}))
+     :bounds [:C0 :C2] 
+     :start-pitch :C1 }))
+
+(def notes (map #(assoc % :velocity (rand-int-between 50 80)) notes))
 
 (def chords 
   (loop-line 2
-    (ap note-line-from (g-pos 0 0 0) 4 
+    (ap m-note-line-from 
+     (g-pos 0 0 0) 4 40 1
      (map #(a p-chord %) 
-      [[:C-1 :M7-u :M3-u1 :+5-u1]
-       [:C-1 :P5-u :m6-u :M2-u1 :M3-u1]
-       [:C-1 :M6-u :M7-u :M2-u1 :m3-u1 :P5-u1]
-       [:B-2 :M7-u :M3-u1 :+5-u1]
-       [:B-2 :P5-u :m7-u :M2-u :P4-u]
-       [:A-2 :m6-u :M3-u1 :P5-u1 :m7-u1 :M2-u2]
-       [:F-1 :P5-u :M2-u1 :m3-u1 :M7-u1]]))))
+      [[:C-1 :M6 :M7 :M3-u1 :+5-u1]
+       [:C-1 :P5 :m6 :M2-u1 :M3-u1]
+       [:C-1 :M6 :M7 :M2-u1 :m3-u1 :P5-u1]
+       [:B-2 :M6 :M7 :M3-u1 :+5-u1]
+       [:B-2 :P5 :m7 :M2-u1 :P4-u1]
+       [:A-2 :m6 :M3-u1 :P5-u1 :m7-u1 :M2-u2]
+       [:F-1 :P5 :M2-u1 :m3-u1 :M7-u1]]))))
+
+(def basses (loop-line 2 (ap m-note-line-from (g-pos 0 0 0) 4 50 1
+                             [:C-2 :C-2 :C-2 :B-3 :B-3 :A-3 :F-2])))
 
 (def vep (midi-out "Gestionnaire IAC Bus IAC 2" ))
 
-(defn go [] (play vep (concat chords notes)))
+(defn go [] (play vep (concat basses chords notes)))
 
 
-
-  
-
-
-
-  

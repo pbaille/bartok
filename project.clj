@@ -4,7 +4,6 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.6.0-alpha3"]
-                 [overtone/midi-clj "0.1"]
                  [overtone/at-at "1.2.0"]
                  [org.clojure/math.combinatorics "0.0.7"]
                  [org.clojure/clojure-contrib "1.2.0"]]

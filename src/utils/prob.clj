@@ -16,3 +16,22 @@
 
 ;take a map of object/prob pairs
 (defn weight-pick-one [m] ((weight-picker m)))
+
+;return a drunk function
+(defn drunk-sequencer 
+  ([range-bounds max-step] 
+    (drunk-sequencer range-bounds max-step (int (a median range-bounds)) false))
+  ([range-bounds max-step start] 
+    (drunk-sequencer range-bounds max-step start false))
+  ([range-bounds max-step start rep-bool]
+  (let [r (- (second range-bounds) (first range-bounds))
+        steps (if rep-bool 
+                (range (- max-step) (inc max-step))
+                (concat (range (- max-step ) 0)
+                        (range 1 (inc max-step))))]
+    (fn fun 
+      ([] (fun start))
+      ([start]
+      (let [available-steps (filter #(between (+ start %) range-bounds) steps)
+            next (+ start (rand-nth available-steps))]
+        (lazy-seq (concat [start] (fun next)))))))))

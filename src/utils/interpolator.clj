@@ -1,5 +1,6 @@
 (ns utils.interpolator
-  (:use utils.utils))
+  (:use utils.utils)
+  (:use utils.macros))
 
 (defn- expand-triplets [points]
   (reduce 
@@ -50,10 +51,18 @@
     (fn fun 
       ([x] (f (mod x len)))
       ([xa xb] 
-       (let [xa (mod xa len)
+       (let [[complete-cycles reminder] (-> (- xb xa) (div-mod len))
+             xa (mod xa len)
              xb (mod xb len)
              xb (if (> xa xb) (+ xb len) xb)]
-         (f xa xb))))))
+         ; (show-env)
+         (cond
+           (= 0 complete-cycles) (f xa xb)
+           (= 0 reminder) (f 0 len)
+           :else (let [comp-rem-rat (/ reminder (* len complete-cycles))]
+                   ; (show-env)
+                   (/ (+ (* complete-cycles (f 0 len))(* comp-rem-rat (f xa xb))) 
+                      (+ complete-cycles comp-rem-rat)))))))))
 
 ;; => (map (interpolator [[0 0] [1 1] [3 2] [4 3]]) (range 0 9/2 1/2))
 ;; (0 1/2 1 5/4 3/2 7/4 2 5/2 3)

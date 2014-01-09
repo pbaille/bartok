@@ -4,7 +4,8 @@
   (:use utils.utils)
   (:use bartok.litterals.evaluation))
 
-(b-fn note-line-from [pos dur & notes-and-chords]
+(b-fn note-line-from 
+  [pos dur & notes-and-chords]
   (reduce #(let [l (last %1)
                  l-pos (cond (nil? l) (pos- pos dur)
                              (vector? l) (-> l last :position) 
@@ -14,6 +15,11 @@
                         (note %2 dur next-pos)
                         (chord %2 dur next-pos)))) 
           [] notes-and-chords))
+
+(b-fn m-note-line-from 
+  [pos dur vel chan & notes-and-chords]
+  (map #(assoc % :channel chan :velocity vel) 
+       (ap note-line-from pos dur notes-and-chords)))
 
 ;pitch vectors represent chords
 ;(note-line-from (g-pos 0 0 0) 1 [:C#1 :D2] :C#0 :A2 [:C#1 :E1])

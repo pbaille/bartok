@@ -1,5 +1,6 @@
 (ns bartok.composition.rythmic-step-pattern
   (:use bartok.structure.position)
+  (:use bartok.litterals.evaluation)
   (:use bartok.note)
   (:use utils.utils)
   
@@ -15,7 +16,8 @@
   (:use [bartok.rythmn.analysis]))
 
 (defn rythmic-step-pattern [options-map]
-  (let [{:keys [picker rvals bounds start-pitch start-pos end-pos]} options-map
+  (let [options-map (zipmap (keys options-map) (map b> (vals options-map)))
+        {:keys [picker rvals bounds start-pitch start-pos end-pos]} options-map
         rl (r-line start-pos rvals start-pos end-pos)
         global-bounds (global-bounds start-pos end-pos bounds start-pitch)
         steps (take (count rl) (steps-line global-bounds picker))

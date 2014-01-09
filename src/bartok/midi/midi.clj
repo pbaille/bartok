@@ -1,5 +1,5 @@
 (ns bartok.midi.midi
-  (:use [midi])
+  (:use [bartok.midi.overtone-midi])
   (:use [utils.utils])
   (:use [utils.macros])
   (:use bartok.structure.position)
@@ -12,13 +12,15 @@
 (defn stop-all []
   (stop-and-reset-pool! pool))
 
+
 (defn play-note
-  ([out pitch] (play-note out pitch 100 1000 0))
-  ([out pitch vel](play-note out pitch vel 1000 0))
-  ([out pitch vel dur](play-note out pitch vel dur 0))
-  ([out pitch vel dur at]
-   (after at #(midi-note-on out pitch vel) pool)
-   (after (+ at dur) #(midi-note-off out pitch) pool)))
+  ([out pitch] (play-note out pitch 100 1000 0 1))
+  ([out pitch vel](play-note out pitch vel 1000 0 1))
+  ([out pitch vel dur](play-note out pitch vel dur 0 1))
+  ([out pitch vel dur at](play-note out pitch vel dur at 1))
+  ([out pitch vel dur at chan]
+   (after at #(midi-note-on out pitch vel chan) pool)
+   (after (+ at dur) #(midi-note-off out pitch chan) pool)))
 
 ;expand chords into notes
 (defn expand-chords [notes&chords]
@@ -26,8 +28,9 @@
             (cond 
               (type= el 'Note) (vector el)
               (type= el 'Chord) 
-                (let [{dur :duration pos :position ps :pitches} el]
-                  (map #(note % dur pos) ps)))) 
+                (let [{:keys [duration position velocity channel pitches]} el
+                      w-pitches (dissoc el :pitches)]
+                  (map #(note % duration position velocity channel) pitches)))) 
           (sort-by (c pos-val :position) notes&chords)))
 
 (defn m-note 
@@ -40,14 +43,18 @@
      :channel channel}))
 
 (defn to-midi
-  ([n] (to-midi n 70 1)) 
-  ([{:keys [pitch position] :as n} vel chan]
-  (m-note (:val pitch) (note-to-ms n) (pos-to-ms position) vel chan)))
+  [{:keys [pitch position velocity channel] 
+      :or {pitch    60 
+           position 0 
+           velocity 60 
+           channel  0}
+      :as note }]
+  (m-note (:val pitch) (note-to-ms note) (pos-to-ms position) velocity channel))
 
 (defn play [out notes]
   (let [notes (map to-midi (expand-chords notes))]
-    (for [{p :pitch v :velocity d :duration pos :position} notes] 
-      (play-note out p v d pos))))
+    (for [{p :pitch v :velocity d :duration pos :position c :channel} notes]
+      (play-note out p v d pos c))))
 
 ;************* old ***************
 
