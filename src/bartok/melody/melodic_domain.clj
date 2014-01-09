@@ -27,7 +27,7 @@
 
 (defn set-current [md current]
   (let [p (if (type= current 'Pitch)
-            (best #(< (distance current %1) (distance current %2))
+            (select-first #(is-alteration-of % current)
                   (:pitches md))
             (-> md :pitches first))
         i (index-of p (:pitches md))]
@@ -59,10 +59,22 @@
       (conj md {:current {:index new-index :pitch curr-pitch}})
       nil)))
 
-(defn step-sequence [md steps]
+(defn step-sequence 
+  ;single domain
+  ([md steps]
   (let [indexes (map-reduce + (-> md :current :index) (map if-val steps))]
     (when (every? #(valid-domain-index? md %) indexes)
       (map #(-> md :pitches (nth %)) indexes))))
+  ;[{:mode mode-name :steps [step ...]}...] / [Pitch Pitch] / Pitch
+  ([coll bounds start-pitch]
+   (reduce
+      (fn [acc {:keys [steps mode]}]
+        (pp mode steps)
+        (let [md (melodic-domain mode bounds (or (last acc) start-pitch))
+              s (step-sequence md steps)]
+          (if (nil? s) (pp "halt!!!!! out of bounds step-sequence !!!!"))
+          (concat acc s))) 
+      [] coll)))
 
  
 

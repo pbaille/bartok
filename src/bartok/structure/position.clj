@@ -28,7 +28,7 @@
 (defn- expand-bars [g]
   (assoc g :bars (map time-signature (repeater (:bars g)))))
 
-(declare position position-val before? after? pos-between?)
+(declare position pos-val before? after? pos-between?)
 
 (defn grid 
   ([] (grid {}))
@@ -36,8 +36,8 @@
 
 
 (defn harmony-at [pos]
-  (last (filter #(<= (position-val (assoc pos :bar (-> % :position first) :sub (-> % :position second))) 
-                   (position-val pos)) 
+  (last (filter #(<= (pos-val (assoc pos :bar (-> % :position first) :sub (-> % :position second))) 
+                   (pos-val pos)) 
                 (-> pos :grid :harmony))))
 
 (defn mode-at [pos]
@@ -49,7 +49,7 @@
 (defn modes-between [start-pos end-pos]
   (let [[hs he] (map harmony-at [start-pos end-pos])
         g (:grid start-pos)
-        cycle-complete? (<= (cycle-val g) (apply - (map position-val [end-pos start-pos])))]
+        cycle-complete? (<= (cycle-val g) (apply - (map pos-val [end-pos start-pos])))]
     (if cycle-complete?
       (->> g :harmony (map :mode))
       (let [phsv ((juxt :bar :sub) start-pos) 
@@ -105,33 +105,35 @@
   (reduce + (take (:bar p) 
                   (->> p :grid :bars (map :val)))))
 
-(defn position-add [p rval]
+(defn pos+ [p rval]
   (let [sub (+ rval (-> p :sub))
         current-bar-val (:val (current-bar p))]
     (cond 
       (>= sub current-bar-val)
-        (position-add 
+        (pos+ 
           (bar-inc (set-sub p 0)) 
           (- sub current-bar-val))
       (neg? sub)
-        (position-add 
+        (pos+ 
           (bar-dec (set-sub p (-> p previous-bar :val))) 
           (+ sub (-> p :sub)))
       :else  
         (set-sub p sub))))
 
-(defn position-val [p]
+(defn pos- [p rval] (pos+ p (- rval)))
+
+(defn pos-val [p]
   (let [{:keys [cycle bar sub]} p]
     (+ (* (cycle-val (:grid p)) cycle) (previous-bars-val p) sub)))
 
 (defn before? [pos1 pos2]
-  (pos? (apply - (map position-val [pos2 pos1]))))
+  (pos? (apply - (map pos-val [pos2 pos1]))))
 
 (defn after? [pos1 pos2]
-  (neg? (apply - (map position-val [pos2 pos1]))))
+  (neg? (apply - (map pos-val [pos2 pos1]))))
 
 (defn eq? [pos1 pos2]
-  (= 0 (apply - (map position-val [pos2 pos1]))))
+  (= 0 (apply - (map pos-val [pos2 pos1]))))
 
 (defn pos-between? 
   ([pos [pos1 pos2]] (pos-between? pos pos1 pos2))
@@ -142,11 +144,11 @@
 
 (defn note-to-ms [n]
   (let [dur (:duration n)
-        pos-val (->> n :position position-val)
+        pos-val (->> n :position pos-val)
         med-tempo ((tempo-interpolator (-> n :position :grid)) pos-val (+ pos-val dur))]
     (to-ms dur med-tempo)))
 
 (defn pos-to-ms [p]
-  (let [dur (position-val p)
+  (let [dur (pos-val p)
         med-tempo ((tempo-interpolator (:grid p)) 0 dur)]
     (to-ms dur med-tempo)))

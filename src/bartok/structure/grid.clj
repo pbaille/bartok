@@ -54,33 +54,33 @@
 ;   (reduce + (take (-> g :position :bar) 
 ;                   (->> g :bars (map :val)))))
 
-; (defn position-add [g rval]
+; (defn pos+ [g rval]
 ;   (let [sub (+ rval (-> g :position :sub))
 ;         current-bar-val (:val (current-bar g))]
 ;     (cond 
 ;       (>= sub current-bar-val)
-;         (position-add 
+;         (pos+ 
 ;           (bar-inc (set-sub g 0)) 
 ;           (- sub current-bar-val))
 ;       (neg? sub)
-;         (position-add 
+;         (pos+ 
 ;           (bar-dec (set-sub g (-> g previous-bar :val))) 
 ;           (+ sub (-> g :position :sub)))
 ;       :else  
 ;         (set-sub g sub))))
 
-; (defn position-val 
+; (defn pos-val 
 ;   ([g]
 ;     (let [{:keys [cycle bar sub]} (:position g)]
 ;       (+ (* (cycle-val g) cycle) (previous-bars-val g) sub)))
-;   ([g p] (position-val (set-position g p))))
+;   ([g p] (pos-val (set-position g p))))
 
 ; (defn tempo-interpolator [g] 
 ;   (cyclic-interpolator (:tempo g) (cycle-val g)))
 
 ; (defn note-to-ms [g n]
 ;   (let [dur (:duration n)
-;         pos-val (->> n :position (position-val g))
+;         pos-val (->> n :position (pos-val g))
 ;         med-tempo ((tempo-interpolator g) pos-val (+ pos-val dur))]
 ;     (to-ms dur med-tempo)))
 

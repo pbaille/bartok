@@ -23,7 +23,8 @@
 (def name->pitch (reduce #(into %1 {(:name %2) %2}) {} pitches))
 (def val->pitch  (reduce #(into %1 {(:val %2) %2}) {} default-name-pitches))
 
-; ;*********** Constructor ***********
+;***************** Constructor ********************
+
 (defn- build-pitch [n v o pc]
   (with-type 'Pitch {:name n :val v :octave o :pitch-class pc}))
 
@@ -44,6 +45,11 @@
   {:pre [(and (type= p1 'Pitch) (type= p2 'Pitch))]}
   (abs (- (:val p1) (:val p2))))
 
+(defn is-alteration-of [p1 p2]
+  {:pre [(and (type= p1 'Pitch) (type= p2 'Pitch))]}
+  (and (= (-> p1 :pitch-class :natural) (-> p2 :pitch-class :natural))
+       (= (:octave p1) (:octave p2))))
+        
 (defmethod transpose ['Pitch 'Interval] [this interval]
     (let [pc (transpose (:pitch-class this) interval)
           v (+ (:val this) (:val interval))

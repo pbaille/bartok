@@ -47,13 +47,10 @@
                  :total-step total-step}}))]
     (merge step-pattern {:iterations (apply merge iters)})))
 
-
 (defn- expand-step-pattern [mp]
   (for [i (:iterations mp)]
     (let [mp (dissoc mp :iterations)]
       (conj mp (conj {:iterations (first i)} (second i))))))
-
-
 
 ;**************** public *********************
 
@@ -88,13 +85,6 @@
       (concat (:sequence pat) (steps-line bounds picker)))))
 
 ;********************* NEW ********************
- 
-; (defn- assoc-margins [sp]
-;   (let [{:keys [down up total-step]} (amplitude (:step-pattern sp))
-;         [down up] (if (neg? total-step) 
-;                     [(- down total-step) up]
-;                     [down (- up total-step)])]
-;     (assoc sp :margin {:down down :up up})))
 
 (defn- steps-calc-new [params]
   (apply concat 
@@ -115,6 +105,7 @@
   ([params] (steps-calc-new (merge-with-defaults params))))
 
 ; apparently slower than regular step-pattern-picker on little sets
+; but way way faster on larger
 (defn lazy-step-pattern-picker [params]
   (let [params (merge-with-defaults params)]
     (fn fun
@@ -134,6 +125,7 @@
                                     (and (<= 0 step) (> step up)) false
                                     (and (> 0 step) (< step down)) false
                                     :else true))
+                          ; this shuffle is bad for perf but good for randomness of the picker
                           per (shuffle (sp-permutations x))]
                       [per i]))))] 
          (first-truthy (partial ff down up) mps))))))) 

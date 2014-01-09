@@ -3,11 +3,10 @@
 
 ;***************** utils ********************
 
-  (defn pp [x] (clojure.pprint/pprint x))
+  (defn pp [& xs] (dorun (map clojure.pprint/pprint xs)))
+  (defn pev [x] (do (clojure.pprint/pprint x) x))
   (def not-nil? (complement nil?))
   
-
-
 ;********** strings and keywords ************
 
   (defn named? [x]

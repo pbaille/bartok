@@ -6,7 +6,8 @@
 
 (def pool (mk-pool))
 
-
+(defn stop-all []
+  (stop-and-reset-pool! pool))
 
 (defn play-note
 
@@ -28,7 +29,7 @@
       (recur nexts (+ at (last (first notes)))))))
 
 (defn play-new [out notes]
-  (let [notes (sort-by #(-> % :position position-val) notes)
+  (let [notes (sort-by #(-> % :position pos-val) notes)
         quads (map #(vector (-> % :pitch :val) 
                             (or (:velocity %)(rand-int-between 60 80)) 
                             (note-to-ms %) 

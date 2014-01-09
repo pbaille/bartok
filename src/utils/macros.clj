@@ -1,7 +1,7 @@
 (ns utils.macros
   (:use [utils.utils]))
 
-(defmacro defn-check [name check-fn args & tail]
+(defmacro chefn [name check-fn args & tail]
   (let [docstring (if (string? (first tail)) (first tail))
         tail (if docstring (next tail) tail)
         params (take-nth 2 args)
@@ -16,6 +16,13 @@
                       params
                       checks)}
          ~@tail))))
+
+;(chefn funky-add 
+;  odd? 
+; [x true 
+;  y false] 
+; "comment" 
+; (+ x y))
 
 (defmacro let-if [pred & body]
   `(if ~pred (let ~@body)))
@@ -64,6 +71,7 @@
 ;   ([x clojure.lang.Keyword]
 ;     (name x)))
 
+;to define helper function that is traced by declare-helpers macro
 (defmacro dehfn [name & body]
   `(defn- ~name ~@body))
 
@@ -76,4 +84,29 @@
 ; (defn hello-user [name] (greet name))
 ; (dehfn greet [name] (str "Hello my dear " name))
 
+(defmacro env-h [] 
+  (let [ks (keys &env)]
+    (zipmap (map keyword ks) (map symbol ks))))
 
+(defmacro show-env 
+  ([] `(show-env "env"))
+  ([message] 
+  (let [ks (keys &env)] 
+    `(do
+       (println (str "\n*** " ~message " ***"))
+       (clojure.pprint/pprint ~(zipmap (map keyword ks) (map symbol ks)))
+       (println "***\n"))))) 
+        
+;don't see the point of this...
+(defmacro show-form [] (println (next &form)))
+
+;NOOOB !
+; (defmacro p1-fn [name arg1 argv & body]
+;   `(do 
+;      (defn ~name ~argv ~@body)
+;      (def ~name (p ~name ~arg1))))
+
+; ;(macroexpand-1 '(p1-fn add 2 [aa b] (+ aa b)))
+; ;=>(do (clojure.core/defn add [a b] (+ a b)) (def add (utils.utils/p add 2)))
+; ;(p1-fn add 2 [a b] (+ a b))
+; ;(add 1) => 3
