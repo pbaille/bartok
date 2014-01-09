@@ -135,11 +135,14 @@
 ;************ higher order funs *************
   
   (defn map-reduce [f init coll] 
-    ((comp vec next) 
+    ((c vec next) 
        (reduce (fn [acc el] 
                  (conj acc (f (last acc) el))) 
                 [init] 
                 coll)))
+  
+  (defn map-with-coll [f coll]
+    (map f coll (repeat coll)))
   
   ; takes function that takes coll as third argument
   (defn red-with-coll [f init coll] 

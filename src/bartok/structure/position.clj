@@ -10,7 +10,8 @@
 ; n => Note
 
 ;main grid object
-;will be declare when grid function is call (most probably form from core)
+;will be declared when grid function is call 
+;(most probably from core.clj)
 (declare g)
 
 ;******************** grid ***************************
