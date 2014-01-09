@@ -29,17 +29,17 @@
  
  (:use [bartok.structure.position]))
 
-(def g (grid {:bars [[7 :4|4]] 
-              :tempo [[0 16 120]] 
-              :harmony {[0 0] :C-Lyd+
-                        [1 0] :Ab-Lyd+
-                        [2 0] :Eb-Lyd+
-                        [3 0] :B-Lyd+
-                        [4 0] :A-Lyd
-                        [5 0] :F-Lyd+
-                        [6 0] :F-Melm}}))
+(grid {:bars [[7 :4|4]] 
+       :tempo [[0 16 120]] 
+       :harmony {[0 0] :C-Lyd+
+                 [1 0] :Ab-Lyd+
+                 [2 0] :Eb-Lyd+
+                 [3 0] :B-Lyd+
+                 [4 0] :A-Lyd
+                 [5 0] :F-Lyd+
+                 [6 0] :F-Melm}})
 
-(def g-pos (p position g))
+; (def g-pos (p position g))
 
 (def picker (lazy-step-pattern-picker 
               {:cycle-lengths #{2 3 4} 
