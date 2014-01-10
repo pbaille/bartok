@@ -29,3 +29,36 @@
     (mapcat (fn [[n line]]
               (map #(update-in % [:position] pos+ (* n end-pos-val)) line)) 
             (for [nn (range n)] [nn line]))))
+
+
+(defn harmonic-chunks 
+  "takes a coll of {:position _ :duration _ ...} map and chunk it by harmony"
+  [r-line]
+  (let [harmonized (map #(assoc % :position (pos->vec (:position %))
+                         :mode (:name (mode-at (pos+ (:position %) (- (:duration %) 1/100))))) 
+                    r-line)
+        chunked (reduce (fn [acc {mode :mode :as x}]
+                    (if (= mode (or (:mode (last acc)) nil))
+                      (conj (vec (butlast acc)) 
+                            (update-in (last acc) [:elements] conj (dissoc x :mode)))
+                      (conj acc {:mode mode :elements [(dissoc x :mode)]}))) 
+                  [] (sort-by :position harmonized))]
+    chunked))
+
+; (harmonic-chunks [{:position {:cycle 0, :bar 0, :sub 0}, :duration 1/2}
+;                   {:position {:cycle 0, :bar 0, :sub 1N}, :duration 1/2}
+;                   {:position {:cycle 0, :bar 0, :sub 7/2}, :duration 1/2}
+;                   {:position {:cycle 0, :bar 1, :sub 0N}, :duration 1/2}
+;                   {:position {:cycle 0, :bar 1, :sub 3/2}, :duration 1/2}
+;                   {:position {:cycle 0, :bar 1, :sub 2N}, :duration 1/2}])
+
+; [{:mode :C-Lyd+,
+;   :elements
+;   [{:position [0 0 0], :duration 1/2}
+;    {:position [0 0 1N], :duration 1/2}
+;    {:position [0 0 7/2], :duration 1/2}]}
+;  {:mode :Ab-Lyd+,
+;   :elements
+;   [{:position [0 1 0N], :duration 1/2}
+;    {:position [0 1 3/2], :duration 1/2}
+;    {:position [0 1 2N], :duration 1/2}]}]

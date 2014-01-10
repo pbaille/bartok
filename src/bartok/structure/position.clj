@@ -77,6 +77,9 @@
   ([cycl bar sub]
     (with-type 'Position {:cycle cycl :bar bar :sub sub})))
 
+(defn pos->vec [{:keys [cycle bar sub]}]
+  [cycle bar sub])
+
 (defn set-position [pos cycle bar sub]
   (assoc pos :cycle cycle :bar bar :sub sub))
 

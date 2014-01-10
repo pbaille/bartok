@@ -123,7 +123,6 @@
                                          (partition 2 2 ~argv) )]
        ~@body))))
 
-
 ;(defnaults aze [a 1 b 2] (+ a b))
 ;(aze 2 2 ) => 4
 ;(aze 2) => 4
