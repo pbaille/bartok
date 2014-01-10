@@ -1,5 +1,6 @@
 (ns utils.prob
-  (:use [utils.utils]))
+  (:use [utils.utils])
+  (:use [utils.macros]))
 
 ;take a map of object/prob pairs
 (defn weight-picker [m]
@@ -35,3 +36,20 @@
       (let [available-steps (filter #(between (+ start %) range-bounds) steps)
             next (+ start (rand-nth available-steps))]
         (lazy-seq (concat [start] (fun next)))))))))
+
+;exemple usage of the defnaults macro...
+
+; (defnaults drunk-sequencer-new 
+;   [range-bounds [0 100] max-step 10 start 50 rep-bool false]
+;   (let [r (- (second range-bounds) (first range-bounds))
+;         steps (if rep-bool 
+;                 (range (- max-step) (inc max-step))
+;                 (concat (range (- max-step ) 0)
+;                         (range 1 (inc max-step))))]
+;     (fn fun 
+;       ([] (fun start))
+;       ([start]
+;       (let [available-steps (filter #(between (+ start %) range-bounds) steps)
+;             next (+ start (rand-nth available-steps))]
+;         (lazy-seq (concat [start] (fun next))))))))
+

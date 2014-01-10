@@ -34,3 +34,5 @@
                   [] (sort-by :position harmonic-chunks))
         pitches (step-sequence harmonic-chunks bounds start-pitch)]
     (map #(note %2 (:duration %1) (:position %1)) rl pitches)))
+
+

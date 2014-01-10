@@ -75,6 +75,10 @@
   
   (defn count= [coll c] (-> coll count (= c)))
   
+  (defn fill-with [coll size el]
+    (let [tail (repeat (- size (count coll)) el)]
+      (concat coll tail)))
+  
 ;***************** maps *********************
   
   (defn dissoc-in [m key-vec]

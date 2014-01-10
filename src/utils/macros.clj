@@ -110,3 +110,26 @@
 ; ;=>(do (clojure.core/defn add [a b] (+ a b)) (def add (utils.utils/p add 2)))
 ; ;(p1-fn add 2 [a b] (+ a b))
 ; ;(add 1) => 3
+
+;function def with default for arguments, single arity function only
+(defmacro defnaults [name argv & body]
+  `(defn ~name 
+     ~@(let [cnt (/ (count argv) 2)]
+         (map #(let [args (vec (take % (take-nth 2 argv)))]
+                `(~args (a ~name ~(vec (fill-with args cnt :_))))) 
+              (range cnt)))
+     (~(vec (take-nth 2 argv)) 
+     (let [~(vec (take-nth 2 argv)) (map (fn [[a# b#]](if (= a# :_) b# a#)) 
+                                         (partition 2 2 ~argv) )]
+       ~@body))))
+
+;(defnaults aze [a 1 b 2] (+ a b))
+;(aze 2 2 ) => 4
+;(aze 2) => 4
+;(aze) => 3
+;(aze :_ 2) => 3
+
+
+
+
+
