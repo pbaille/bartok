@@ -48,6 +48,21 @@
     "return steps between each adjacent items of coll"
     [coll] 
     (reduce #(conj %1 (apply - (reverse %2))) [] (partition 2 1 coll)))
+  
+  ;from overtone
+  (defn scale-range
+    "Scales a given input value within the specified input range to a
+    corresponding value in the specified output range using the formula:
+  
+             (out-max - out-min) (x - in-min)
+     f (x) = --------------------------------  + out-min
+                      in-max - in-min
+  
+  "
+    [x in-min in-max out-min out-max]
+    (+ (/ (* (- out-max out-min) (- x in-min))
+          (- in-max in-min))
+       out-min))
 
 ;***************** colls ********************
 
