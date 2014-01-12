@@ -51,7 +51,7 @@
         {:keys [prob-map rvals bounds start-pitch start-pos end-pos]} options-map
         rl (r-line start-pos rvals start-pos end-pos)
         hc (map #(-> % (dissoc :elements) (assoc :steps (count (:elements %)))) (harmonic-chunks rl))
-        gi-seq (map-reduce #(interval-prob-line 
+        gi-seq (reductions #(interval-prob-line 
                               (melodic-domain (:mode %2) bounds (-> % :domain :current :pitch)) 
                               prob-map (:steps %2)) 
                            (melodic-domain (-> hc first :mode) bounds start-pitch)

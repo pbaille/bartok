@@ -2,6 +2,7 @@
   (:use bartok.structure.position)
   (:use bartok.note)
   (:use utils.utils)
+  (:use vendors.debug-repl)
   (:use bartok.litterals.evaluation))
 
 (b-fn note-line-from 
@@ -32,17 +33,12 @@
 
 
 (defn harmonic-chunks 
-  "takes a coll of {:position _ :duration _ ...} map and chunk it by harmony"
+  "takes a position-sorted coll of {:position _ :duration _ ...} map and chunk it by harmony"
   [r-line]
-  (let [harmonized (map #(assoc % :position (pos->vec (:position %))
-                         :mode (:name (mode-at (pos+ (:position %) (- (:duration %) 1/100))))) 
-                    r-line)
-        chunked (reduce (fn [acc {mode :mode :as x}]
-                    (if (= mode (or (:mode (last acc)) nil))
-                      (conj (vec (butlast acc)) 
-                            (update-in (last acc) [:elements] conj (dissoc x :mode)))
-                      (conj acc {:mode mode :elements [(dissoc x :mode)]}))) 
-                  [] (sort-by :position harmonized))]
+  (let [harmonized (map #(assoc % :mode (:name (mode-at (pos+ (:position %) (- (:duration %) 1/100))))) r-line)
+        chunked (map #(hash-map :mode (:mode (first %)) 
+                                :elements (map (fn [e] (dissoc e :mode)) %)) 
+                     (partition-by :mode harmonized))]
     chunked))
 
 ; (harmonic-chunks [{:position {:cycle 0, :bar 0, :sub 0}, :duration 1/2}

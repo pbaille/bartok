@@ -1,10 +1,11 @@
 (ns utils.prob
   (:use [utils.utils])
+  (:use [vendors.debug-repl])
   (:use [utils.macros]))
 
 ;take a map of object/prob pairs
 (defn weight-picker [m]
-  (let [sums (cons 0 (map-reduce + 0 (vals m)))
+  (let [sums (reductions + 0 (vals m))
         parts (map #(hash-map :obj %1 :min (first %2) :max (second %2)) 
                     (keys m) 
                     (partition 2 1 sums))]

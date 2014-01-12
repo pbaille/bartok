@@ -153,12 +153,15 @@
   
 ;************ higher order funs *************
   
+  ; (defn map-reduce-old [f init coll] 
+  ;   ((c vec next) 
+  ;      (reduce (fn [acc el] 
+  ;                (conj acc (f (last acc) el))) 
+  ;               [init] 
+  ;               coll)))
+  
   (defn map-reduce [f init coll] 
-    ((c vec next) 
-       (reduce (fn [acc el] 
-                 (conj acc (f (last acc) el))) 
-                [init] 
-                coll)))
+    (next (reductions f init coll)))
   
   (defn map-with-coll [f coll]
     (map f coll (repeat coll)))
