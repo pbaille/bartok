@@ -1,11 +1,24 @@
 (ns utils.utils
-  (:require clojure.pprint))
+  (:require clojure.pprint)
+  (:require [clojure.contrib.math :as math]))
 
+(declare p a ap c)
 ;***************** utils ********************
 
   (defn pp [& xs] (dorun (map clojure.pprint/pprint xs)))
   (defn pev [x] (do (clojure.pprint/pprint x) x))
   (def not-nil? (complement nil?))
+  
+  ; max inclusive
+  (defn range-by 
+    ([end step] (range-by 0 end step))
+    ([start end step] 
+      (let [incf (if (> start end) - + )
+            amp (math/abs (- end start))]
+        (map #(-> (* % step) incf (+ start)) 
+           (range 0 ((c inc int) (/ amp step)))))))
+  
+  ;(range-by 10 0.25)
   
 ;********** strings and keywords ************
 
@@ -63,6 +76,10 @@
     (+ (/ (* (- out-max out-min) (- x in-min))
           (- in-max in-min))
        out-min))
+  
+  
+  (defn range-scaler [min-in max-in min-out max-out]
+    #(scale-range % min-in max-in min-out max-out))
 
 ;***************** colls ********************
 

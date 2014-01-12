@@ -7,8 +7,10 @@
                  [overtone/at-at "1.2.0"]
                  [org.clojure/math.combinatorics "0.0.7"]
                  [org.clojure/clojure-contrib "1.2.0"]
-                 [org.clojure/core.contracts "0.0.5"]]
+                 [org.clojure/core.contracts "0.0.5"]
+                 [org.codehaus.jsr166-mirror/jsr166y "1.7.0"]]
   :profiles {:dev {:dependencies [[midje "1.6.0"]]}}
   ;:repl-options {:nrepl-middleware [utils.nrepl-middleware/pprint-middleware]}
   :main bartok.core
-  :java-source-paths ["src/java/"])
+  :java-source-paths ["src/java/"]
+  :javac-target "1.7.0_45")

@@ -52,6 +52,9 @@
     [(generic-interval (* -1 i)) 
      (generic-interval (- (-> dom :pitches count dec) i))]))
 
+(defn md-amplitude [md]
+  (count (:pitches md)))
+
 (defn step [md g-interval]
   (let [i-val (if (number? g-interval) g-interval (:val g-interval))
         new-index (+ i-val (-> md :current :index))]

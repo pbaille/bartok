@@ -20,7 +20,7 @@
   ([out pitch vel dur at](play-note out pitch vel dur at 1))
   ([out pitch vel dur at chan]
    (after at #(midi-note-on out pitch vel chan) pool)
-   (after (+ at dur) #(midi-note-off out pitch chan) pool)))
+   (after (+ at (- dur 0.00001)) #(midi-note-off out pitch chan) pool)))
 
 ;expand chords into notes
 (defn expand-chords [notes&chords]

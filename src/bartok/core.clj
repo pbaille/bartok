@@ -7,6 +7,7 @@
  (:use [clojure.math.combinatorics :as c])
  (:use [utils.interpolator])
  (:use [utils.macros])
+ (:use [utils.noise])
  (:use clojure.inspector)
  (:use vendors.debug-repl)
  
@@ -28,6 +29,7 @@
  (:use [bartok.rythmn.rval])
  (:use [bartok.rythmn.random-line])
  (:use [bartok.rythmn.analysis])
+ (:use [bartok.rythmn.humanize])
  
  (:use [bartok.structure.position])
  
@@ -37,7 +39,7 @@
 ;***********************************************************
 
 (grid {:bars [[2 :4|4]] 
-       :tempo [[0 24 120][26 115]] 
+       :tempo [[0 2 120]] 
        :harmony {[0 0] :C-Lyd
                  [1 0] :Ab-Lyd}})
 
@@ -98,23 +100,3 @@
 (def vep (midi-out "Gestionnaire IAC Bus IAC 2" ))
 
 (defn go [] (play vep (concat chords notes)))
-
-;************** perlin line ****************
-
-(import '(render.Noise))
-
-(defn lazy-perlin1 [start step len min-out max-out]
-  (let [line (map #(. render.Noise noise %) 
-             (take len (iterate (p + step) start)))
-        ma (a max line)
-        mi (a min line)]
-    ; (debug-repl)
-    (pev (map #(-> % (scale-range mi ma min-out max-out) int) line))))
-
-(defn play-perlin-line1 [start step len min-out max-out]
-  (play vep 
-    (ap m-note-line-from 
-     (g-pos 0 0 0) 1/4 60 1
-     (map pitch (lazy-perlin1 start step len min-out max-out)))))
-
-

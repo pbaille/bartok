@@ -153,6 +153,14 @@
         med-tempo ((tempo-interpolator g) pos-val (+ pos-val dur))]
     (to-ms dur med-tempo)))
 
+(defn tempo-at [x]
+  (if (number? x)
+    ((tempo-interpolator g) x)
+    ((tempo-interpolator g)(pos-val x))))
+
+(defn num->pos [n]
+  (pos+ (g-pos 0 0 0) n))
+
 (defn pos-to-ms [p]
   (let [dur (pos-val p)
         med-tempo ((tempo-interpolator g) 0 dur)]
