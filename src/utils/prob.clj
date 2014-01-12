@@ -40,17 +40,20 @@
 
 ;exemple usage of the defnaults macro...
 
-; (defnaults drunk-sequencer-new 
-;   [range-bounds [0 100] max-step 10 start 50 rep-bool false]
-;   (let [r (- (second range-bounds) (first range-bounds))
-;         steps (if rep-bool 
-;                 (range (- max-step) (inc max-step))
-;                 (concat (range (- max-step ) 0)
-;                         (range 1 (inc max-step))))]
-;     (fn fun 
-;       ([] (fun start))
-;       ([start]
-;       (let [available-steps (filter #(between (+ start %) range-bounds) steps)
-;             next (+ start (rand-nth available-steps))]
-;         (lazy-seq (concat [start] (fun next))))))))
+(defnaults drunk-sequencer2
+  [range-bounds [0 1] 
+   max-step      1/5 
+   start         1/2 
+   rep-bool      false 
+   resolution    1/10   ]
+  (let [steps (if rep-bool 
+                (range-by (- max-step) max-step resolution)
+                (concat (range-by (- max-step ) (- 0 resolution) resolution)
+                        (range-by resolution max-step resolution)))]
+    (fn fun 
+      ([] (fun start))
+      ([start]
+      (let [available-steps (filter #(between (+ start %) range-bounds) steps)
+            next (+ start (rand-nth available-steps))]
+        (lazy-seq (concat [start] (fun next))))))))
 
