@@ -14,6 +14,7 @@
  
   (:use [bartok.rythmn.rval])
   (:use [bartok.rythmn.random-line])
+  (:use [bartok.rythmn.weighted-line])
   (:use [bartok.rythmn.analysis])
   
   (:use [bartok.composition.utils]))
@@ -21,7 +22,7 @@
 (defn rythmic-step-pattern [options-map]
   (let [options-map (zipmap (keys options-map) (map b> (vals options-map)))
         {:keys [picker rvals bounds start-pitch start-pos end-pos]} options-map
-        rl (r-line start-pos rvals start-pos end-pos)
+        rl (r-line rvals start-pos end-pos)
         global-bounds (global-bounds start-pos end-pos bounds start-pitch)
         rl-steps (map #(assoc %1 :step %2) rl (steps-line global-bounds picker))
         hcs (map #(-> % (dissoc :elements) 
@@ -43,6 +44,34 @@
 ;      :rvals [1/4] 
 ;      :start-pos (g-pos 0 0 0) 
 ;      :end-pos (g-pos 2 0 0 )
+;      :bounds [:C0 :C2] 
+;      :start-pitch :C1 }))
+
+(defn prob-rythmn-step-pattern [options-map]
+  (let [options-map (zipmap (keys options-map) (map b> (vals options-map)))
+        {:keys [picker prob-rvals bounds start-pitch start-pos end-pos]} options-map
+        rl (r-prob-line prob-rvals start-pos end-pos)
+        global-bounds (global-bounds start-pos end-pos bounds start-pitch)
+        rl-steps (map #(assoc %1 :step %2) rl (steps-line global-bounds picker))
+        hcs (map #(-> % (dissoc :elements) 
+                        (assoc :steps (reduce (fn [steps {s :step}](conj steps s)) 
+                                              [] (:elements %)))) 
+                (harmonic-chunks rl-steps))
+        pitches (step-sequence hcs bounds start-pitch)]
+    (map #(note %2 (:duration %1) (:position %1)) rl pitches)))
+
+; (def picker (lazy-step-pattern-picker 
+;               {:cycle-lengths #{4 3 5 6 7 8} 
+;                :iterations    #{1 2 3 4} 
+;                :steps         #{-4 -3 -1 1 3 4}
+;                :cycle-steps   #{-3 -2 -1 1 2 3}}))
+
+; (def notes 
+;   (prob-rythmn-step-pattern 
+;     {:picker picker 
+;      :prob-rvals {1/4 1 1/6 1/4} 
+;      :start-pos (g-pos 0 0 0) 
+;      :end-pos (g-pos 8 0 0 )
 ;      :bounds [:C0 :C2] 
 ;      :start-pitch :C1 }))
 

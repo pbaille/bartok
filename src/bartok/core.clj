@@ -28,18 +28,23 @@
  
  (:use [bartok.rythmn.rval])
  (:use [bartok.rythmn.random-line])
+ (:use [bartok.rythmn.weighted-line])
  (:use [bartok.rythmn.analysis])
- (:use [bartok.rythmn.humanize])
+ 
  
  (:use [bartok.structure.position])
  
  (:use bartok.composition.rythmic-step-pattern)
  (:use bartok.composition.utils))
 
+; (:use [bartok.rythmn.humanize])
 ;***********************************************************
 
+; (def opt
+;   {:tempo-humanize [1 5 2 1/2]})
+
 (grid {:bars [[2 :4|4]] 
-       :tempo [[0 2 120]] 
+       :tempo [[0 2 100]] 
        :harmony {[0 0] :C-Lyd
                  [1 0] :Ab-Lyd}})
 
@@ -56,9 +61,12 @@
                :cycle-steps   #{-3 -2 -1 1 2 3}}))
 
 (def notes 
-  (rythmic-step-pattern 
+  (prob-rythmn-step-pattern 
     {:picker picker 
-     :rvals [1/4] 
+     :prob-rvals {1/4 1 
+                  1/2 1/10
+                  1/3 1/10
+                  1/6 1/4} 
      :start-pos (g-pos 0 0 0) 
      :end-pos (g-pos 8 0 0 )
      :bounds [:C0 :C2] 
@@ -93,7 +101,7 @@
        ; [:A-2 :m6 :m3-u1 :P5-u1 :m7-u1 :M2-u2]
        ; [:F-1 :P5 :M2-u1 :m3-u1 :M7-u1]
        ]))))
-
+ 
 ; (def basses (loop-line 2 (ap m-note-line-from (g-pos 0 0 0) 4 60 1
 ;                              [:C-2 :C-2 :C-2 :B-3 :B-3 :A-3 :F-2])))
 

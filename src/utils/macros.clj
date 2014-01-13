@@ -113,24 +113,47 @@
 
 ;function def with default for arguments, single arity function only
 (defmacro defnaults [name argv & body]
-  (if (vector? argv)
-    `(defn ~name 
-       ~@(let [cnt (/ (count argv) 2)]
-           (map #(let [args (vec (take % (take-nth 2 argv)))]
-                  `(~args (a ~name ~(vec (fill-with args cnt :_))))) 
-                (range cnt)))
-       (~(vec (take-nth 2 argv)) 
-       (let [~(vec (take-nth 2 argv)) (map (fn [[a# b#]](if (= a# :_) b# a#)) 
-                                           (partition 2 2 ~argv) )]
-         ~@body)))))
+  `(defn ~name 
+     ~@(let [cnt (/ (count argv) 2)]
+         (map #(let [args (vec (take % (take-nth 2 argv)))]
+                `(~args (a ~name ~(vec (fill-with args cnt :_))))) 
+              (range cnt)))
+     (~(vec (take-nth 2 argv)) 
+     (let [~(vec (take-nth 2 argv)) (map (fn [[a# b#]](if (= a# :_) b# a#)) 
+                                         (partition 2 2 ~argv) )]
+       ~@body))))
 
-;(defnaults aze [a 1 b 2] (+ a b))
-;(aze 2 2 ) => 4
-;(aze 2) => 4
-;(aze) => 3
-;(aze :_ 2) => 3
-
+; (defnaults aze [a 1 b 2] (+ a b))
+; (aze 2 2 ) => 4
+; (aze 2) => 4
+; (aze) => 3
+; (aze :_ 2) => 3
 
 
+(defmacro aze [name argv & body]
+  `(defmacro ~name ~argv ~@body)) 
+
+;from mikera stackoverflow
+
+(defmacro functionize [macro]
+  `(fn [& args#] (eval (cons '~macro args#))))
+
+(defmacro apply-macro [macro args]
+   `(apply (functionize ~macro) ~args))
+
+;***
+
+;buggy
+; (defmacro defnaults2 [name argv & body]
+;   `(defmacro ~name 
+;      ~@(let [cnt (/ (count argv) 2)]
+;          (map #(let [args (vec (take % (take-nth 2 argv)))]
+;                 `(~args (apply-macro ~name ~(vec (fill-with args cnt :default))))) 
+;               (range cnt)))
+;      (~(vec (take-nth 2 argv)) 
+;      (let [~(vec (take-nth 2 argv)) (map #(if (= % '_) :default %) (vec (take-nth 2 ~argv)))
+;            ~(vec (take-nth 2 argv)) (map (fn [[a# b#]](if (= a# :default) b# a#)) 
+;                                          (partition 2 2 ~argv) )]
+;        ~@body))))
 
 

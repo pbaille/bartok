@@ -1,6 +1,8 @@
 (ns bartok.structure.position
   (:use utils.utils)
   (:use utils.interpolator)
+  (:use utils.macros)
+  (:use utils.prob)
   (:use bartok.rythmn.rval)
   (:use bartok.types))
 
@@ -14,7 +16,11 @@
 ;(most probably from core.clj)
 (declare g)
 
+
+
 ;******************** grid ***************************
+
+(declare position pos-val before? after? pos-between?)
 
 (def ^:private default-grid
   (with-type 
@@ -32,8 +38,6 @@
 
 (defn- expand-bars [g]
   (assoc g :bars (map time-signature (repeater (:bars g)))))
-
-(declare position pos-val before? after? pos-between?)
 
 (defn grid 
   ([] (grid {}))
