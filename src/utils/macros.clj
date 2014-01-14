@@ -72,8 +72,6 @@
     ([x clojure.lang.Keyword]
       (name x))))
 
-(defn aze [a :aze] )
-
 ;to define helper function that is traced by declare-helpers macro
 (defmacro dehfn [name & body]
   `(defn- ~name ~@body))

@@ -9,14 +9,7 @@
   (defn pev [x] (do (clojure.pprint/pprint x) x))
   (def not-nil? (complement nil?))
   
-  ; max inclusive
-  (defn range-by 
-    ([end step] (range-by 0 end step))
-    ([start end step] 
-      (let [incf (if (> start end) - + )
-            amp (math/abs (- end start))]
-        (map #(-> (* % step) incf (+ start)) 
-           (range 0 ((c inc int) (/ amp step)))))))
+
   
   ;print source
   (defmacro src [x] `(clojure.repl/source ~x))
@@ -84,6 +77,15 @@
   
   (defn range-scaler [min-in max-in min-out max-out]
     #(scale-range % min-in max-in min-out max-out))
+  
+    ; max inclusive
+  (defn range-by 
+    ([end step] (range-by 0 end step))
+    ([start end step] 
+      (let [incf (if (> start end) - + )
+            amp (math/abs (- end start))]
+        (map #(-> (* % step) incf (+ start)) 
+           (range 0 ((c inc int) (/ amp step)))))))
 
 ;***************** colls ********************
 
@@ -247,3 +249,27 @@
   
   ;(repeater [[2 [3 [2 :foo] :bar] :woz] :bim [2 :yo]])
   ;=> (:foo :foo :bar :foo :foo :bar :foo :foo :bar :woz :foo :foo :bar :foo :foo :bar :foo :foo :bar :woz :bim :yo :yo)
+  
+;************** namespaces ******************
+
+; https://groups.google.com/forum/#!topic/clojure/GAGF38uI1-o
+; by James reeves
+
+(defn- merge-meta! 
+  "Destructively merge metadata from a source object into a target." 
+  [source target] 
+  (.setMeta target 
+    (merge (meta source) 
+           (select-keys (meta target) [:name :ns])))) 
+
+(defn immigrate 
+  "Add all the public vars in a list of namespaces to the current 
+namespace." 
+  [& namespaces] 
+  (doseq [ns namespaces] 
+    (require ns) 
+    (doseq [[sym v] (ns-publics (find-ns ns))] 
+      (merge-meta! v 
+        (if (.isBound v) 
+          (intern *ns* sym (var-get v)) 
+          (intern *ns* sym)))))) 
