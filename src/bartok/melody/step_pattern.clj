@@ -6,7 +6,7 @@
   (:use bartok.rythmn.analysis)
   (:use bartok.note)
   (:use bartok.structure.position)
-  (:use utils.profile)
+  (:use vendors.profile)
   (:use [utils.utils]))
 
 ;************* helpers ********************

@@ -1,4 +1,4 @@
-(ns utils.nrepl-middleware)
+(ns vendors.nrepl-middleware)
 
 (defn pprint-middleware [h]
   (fn [{:keys [code op] :as msg}]

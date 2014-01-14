@@ -1,8 +1,8 @@
 (ns bartok.litterals.evaluation
-  (:use [bartok.litterals.identity])
+  (:use utils.utils)
+  (:use [bartok.litterals.types])
   (:use [bartok.litterals.patterns])
-  (:use [utils.utils])
-  (:use [bartok.types]))
+  (:use [bartok.litterals.identity]))
 
 (declare comp-b>)
 

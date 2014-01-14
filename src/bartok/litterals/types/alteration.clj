@@ -1,6 +1,4 @@
-(in-ns 'bartok.types)
-
-;"blabla"
+(in-ns 'bartok.litterals.types)
 
 (defn- make-alterations-set [m]
   (reduce #(conj %1 (with-type 'Alteration (zipmap [:name :val] %2))) #{} m))

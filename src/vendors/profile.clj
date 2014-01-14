@@ -35,7 +35,7 @@ multiplication 274 0 53000 10000 2747000
 Times are measured in nanoseconds, to the maximum precision available
 under the JVM. See the function documentation for more details.
 "}
-  utils.profile)
+  vendors.profile)
 
 (def ^:dynamic *profile-data* nil)
 
