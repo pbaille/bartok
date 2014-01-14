@@ -1,10 +1,7 @@
 (ns bartok.structure.position
-  (:use utils.utils)
-  (:use utils.interpolator)
-  (:use utils.macros)
-  (:use utils.prob)
+  (:use utils.all)
   (:use bartok.rythmn.rval)
-  (:use bartok.types))
+  (:use bartok.litterals.all))
 
 ; functions arguments: 
 ; g => Grid

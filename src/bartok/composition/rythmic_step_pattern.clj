@@ -1,22 +1,11 @@
 (ns bartok.composition.rythmic-step-pattern
+  (:use utils.all)
+  (:use bartok.types.note)
+  (:use bartok.litterals.all)
+  (:use bartok.melody.all)
+  (:use bartok.harmony.all)
+  (:use bartok.rythmn.all)
   (:use bartok.structure.position)
-  (:use bartok.litterals.evaluation)
-  (:use bartok.note)
-  (:use utils.utils)
-  (:use utils.macros)
-  
-  (:use [bartok.melody.melodic-domain])
-  (:use [bartok.melody.strategies])
-  (:use [bartok.melody.step-pattern])
- 
-  (:use [bartok.harmony.harmony])
-  (:use [bartok.harmony.h-function])
- 
-  (:use [bartok.rythmn.rval])
-  (:use [bartok.rythmn.random-line])
-  (:use [bartok.rythmn.weighted-line])
-  (:use [bartok.rythmn.analysis])
-  
   (:use [bartok.composition.utils]))
 
 (defn rythmic-step-pattern [options-map]

@@ -1,8 +1,6 @@
 (ns bartok.rythmn.humanize
-  (:use utils.utils)
   (:use bartok.structure.position)
-  (:use utils.prob)
-  (:use utils.interpolator))
+  (:use [utils utils prob interpolator]))
 
 
 (defn humanize-tempo [grid rate delt-bpm motion detail]

@@ -1,9 +1,7 @@
 (ns bartok.melody.strategies
-  (:use [bartok.types])
   (:use [bartok.melody.melodic-domain])
-  (:use [bartok.litterals.evaluation])
-  (:use [utils.prob])
-  (:use [utils.utils]))
+  (:use bartok.litterals.all)
+  (:use [utils utils prob]))
 
 (def ^:private default-prob-map 
   (apply hash-map 

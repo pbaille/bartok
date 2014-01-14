@@ -21,13 +21,13 @@
                :cycle-steps   #{-3 -2 -1 1 2 3}}))
 
 (def notes 
-  (rythmic-step-pattern 
+  (prob-rythmn-step-pattern 
     {:picker picker
-     :rvals [1/4 1/2] 
-     ; :prob-rvals {1/4 1 
-     ;              1/2 1/10
-     ;              1/3 1/10
-     ;              1/6 1/4} 
+     ; :rvals [1/4 1/2] 
+     :prob-rvals {1/4 1 
+                  1/2 1/10
+                  1/3 1/10
+                  1/6 1/4} 
      :start-pos (g-pos 0 0 0) 
      :end-pos (g-pos 8 0 0 )
      :bounds [:C0 :C2] 

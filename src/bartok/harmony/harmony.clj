@@ -1,10 +1,8 @@
 (ns bartok.harmony.harmony
   (:use [utils.utils])
-  (:use [bartok.types])
   (:use [bartok.multimethods])
-  (:use [bartok.litterals.evaluation])
   (:use [bartok.harmony.h-function])
-  (:use [bartok.litterals.evaluation]))
+  (:use bartok.litterals.all))
 
 (defn harmonic-context 
   ([current] (harmonic-context (mother-mode (b> current)) current))

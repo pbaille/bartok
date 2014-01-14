@@ -1,13 +1,12 @@
 (ns bartok.melody.step-pattern
-  (:use [utils.dom-part])
-  (:use [bartok.melody.melodic-domain])
+  (:use [utils utils dom-part])
   (:use [clojure.math.combinatorics :as c])
+  (:use [bartok.melody.melodic-domain])
   (:use bartok.composition.utils)
   (:use bartok.rythmn.analysis)
-  (:use bartok.note)
+  (:use bartok.types.note)
   (:use bartok.structure.position)
-  (:use vendors.profile)
-  (:use [utils.utils]))
+  (:use vendors.profile))
 
 ;************* helpers ********************
 

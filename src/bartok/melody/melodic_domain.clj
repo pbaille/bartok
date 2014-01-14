@@ -1,6 +1,5 @@
 (ns bartok.melody.melodic-domain
-  (:use [utils.utils])
-  (:use [utils.dom-part])
+  (:use [utils utils dom-part])
   (:use [bartok.litterals.all]))
 
 ;******************* Private ************************

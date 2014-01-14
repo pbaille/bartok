@@ -1,9 +1,8 @@
 (ns bartok.midi.midi
   (:use [bartok.midi.overtone-midi])
-  (:use [utils.utils])
-  (:use [utils.macros])
+  (:use [utils utils macros])
   (:use bartok.structure.position)
-  (:use bartok.note)
+  (:use bartok.types.note)
   (:use [overtone.at-at]))
 
 (def pool (mk-pool))

@@ -1,9 +1,9 @@
 (ns bartok.composition.utils
   (:use bartok.structure.position)
-  (:use bartok.note)
+  (:use bartok.types.note)
   (:use utils.utils)
   (:use vendors.debug-repl)
-  (:use bartok.litterals.evaluation))
+  (:use bartok.litterals.all))
 
 (b-fn note-line-from 
   [pos dur & notes-and-chords]

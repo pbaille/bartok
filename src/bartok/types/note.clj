@@ -1,8 +1,7 @@
-(ns bartok.note
+(ns bartok.types.note
   (:use utils.utils)
   (:use bartok.multimethods)
-  (:use bartok.types)
-  (:use bartok.litterals.evaluation))
+  (:use bartok.litterals.all))
 
 (b-fn note 
   ([pitch dur pos]
