@@ -2,6 +2,10 @@
   (:use [utils.dom-part])
   (:use [bartok.melody.melodic-domain])
   (:use [clojure.math.combinatorics :as c])
+  (:use bartok.composition.utils)
+  (:use bartok.rythmn.analysis)
+  (:use bartok.note)
+  (:use bartok.structure.position)
   (:use utils.profile)
   (:use [utils.utils]))
 
@@ -104,6 +108,34 @@
   ([] (step-patterns-new {}))
   ([params] (steps-calc-new (merge-with-defaults params))))
 
+(defn step-patternify 
+  "[{:duration _ :position _}...] 
+    step-pattern-picker picker 
+    [Pitch] bounds 
+    Pitch start-pitch
+    => [Note]"
+  [prvals picker bounds start-pitch]
+  (let [sorted-prvals (sort-by #(-> % :position pos-val) prvals)
+        start-pos (:position (first sorted-prvals))
+        end-pos ((fn [{p :position d :duration}](pos+ p d)) (last sorted-prvals))
+        global-bounds (global-bounds start-pos end-pos bounds start-pitch)
+        rl-steps (map #(assoc %1 :step %2) sorted-prvals (steps-line global-bounds picker))
+        hcs (map #(-> % (dissoc :elements) 
+                        (assoc :steps (reduce (fn [steps {s :step}](conj steps s)) 
+                                              [] (:elements %)))) 
+                (harmonic-chunks rl-steps))
+        pitches (step-sequence hcs bounds start-pitch)]
+    (map #(note %2 (:duration %1) (:position %1)) sorted-prvals pitches)))
+
+; (def notes
+;   (step-patternify
+;     (r-prob-line {1/4 1 1/2 1/10 1/3 1/10 1/6 1/4} 
+;                  (g-pos 0 0 0) 
+;                  (g-pos 8 0 0))
+;     picker
+;     [:C0 :C2]
+;     :C1))
+
 ; apparently slower than regular step-pattern-picker on little sets
 ; but way way faster on larger
 (defn lazy-step-pattern-picker [params]
@@ -111,8 +143,8 @@
     (fn fun
       ([md] (apply fun (map :val (interval-bounds md))))
       ([down up] 
-       (prof :main (let [mps (step-patterns-new params)
-             ff (prof :ff (fn [dwn u x]
+       (let [mps (step-patterns-new params)
+             ff (fn [dwn u x]
                   (first-truthy 
                     (fn [[per i]]
                       (let [s (expand-iterations (:step-pattern per) i)
@@ -127,8 +159,8 @@
                                     :else true))
                           ; this shuffle is bad for perf but good for randomness of the picker
                           per (shuffle (sp-permutations x))]
-                      [per i]))))] 
-         (first-truthy (partial ff down up) mps))))))) 
+                      [per i])))] 
+         (first-truthy (partial ff down up) mps)))))) 
 
 ;similar performance ...
 ; (defn lazy-step-pattern-picker2 [params]

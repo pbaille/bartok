@@ -22,15 +22,8 @@
 (defn rythmic-step-pattern [options-map]
   (let [options-map (zipmap (keys options-map) (map b> (vals options-map)))
         {:keys [picker rvals bounds start-pitch start-pos end-pos]} options-map
-        rl (r-line rvals start-pos end-pos)
-        global-bounds (global-bounds start-pos end-pos bounds start-pitch)
-        rl-steps (map #(assoc %1 :step %2) rl (steps-line global-bounds picker))
-        hcs (map #(-> % (dissoc :elements) 
-                        (assoc :steps (reduce (fn [steps {s :step}](conj steps s)) 
-                                              [] (:elements %)))) 
-                (harmonic-chunks rl-steps))
-        pitches (step-sequence hcs bounds start-pitch)]
-    (map #(note %2 (:duration %1) (:position %1)) rl pitches)))
+        rl (r-line rvals start-pos end-pos)]
+    (step-patternify rl picker bounds start-pitch)))
 
 ; (def picker (lazy-step-pattern-picker 
 ;               {:cycle-lengths #{4 3 5 6 7 8} 
@@ -50,15 +43,8 @@
 (defn prob-rythmn-step-pattern [options-map]
   (let [options-map (zipmap (keys options-map) (map b> (vals options-map)))
         {:keys [picker prob-rvals bounds start-pitch start-pos end-pos]} options-map
-        rl (r-prob-line prob-rvals start-pos end-pos)
-        global-bounds (global-bounds start-pos end-pos bounds start-pitch)
-        rl-steps (map #(assoc %1 :step %2) rl (steps-line global-bounds picker))
-        hcs (map #(-> % (dissoc :elements) 
-                        (assoc :steps (reduce (fn [steps {s :step}](conj steps s)) 
-                                              [] (:elements %)))) 
-                (harmonic-chunks rl-steps))
-        pitches (step-sequence hcs bounds start-pitch)]
-    (map #(note %2 (:duration %1) (:position %1)) rl pitches)))
+        rl (r-prob-line prob-rvals start-pos end-pos)]
+    (step-patternify rl picker bounds start-pitch)))
 
 ; (def picker (lazy-step-pattern-picker 
 ;               {:cycle-lengths #{4 3 5 6 7 8} 
@@ -78,7 +64,7 @@
 (defn rythmic-prob-step [options-map]
   (let [options-map (zipmap (keys options-map) (map b> (vals options-map)))
         {:keys [prob-map rvals bounds start-pitch start-pos end-pos]} options-map
-        rl (r-line start-pos rvals start-pos end-pos)
+        rl (r-line rvals start-pos end-pos)
         hc (map #(-> % (dissoc :elements) (assoc :steps (count (:elements %)))) (harmonic-chunks rl))
         gi-seq (reductions #(interval-prob-line 
                               (melodic-domain (:mode %2) bounds (-> % :domain :current :pitch)) 
@@ -100,3 +86,18 @@
 ;      :end-pos (g-pos 2 0 0 )
 ;      :bounds [:C0 :C2] 
 ;      :start-pitch :C1 }))
+
+; (defn rythmn-first [options-map]
+;   (let [options-map (zipmap (keys options-map) (map b> (vals options-map)))
+;         {:keys [picker prob-rvals bounds start-pitch start-pos end-pos]} options-map]
+;     ))
+
+
+; (rythmn-first
+;   {:r [r-prob-line {1/2 1 1/4 1}]
+;    :m [step-pattern ]
+;    :start [0 0 0]
+;    :end   [1 0 0]
+;    :m-bounds [:C-1 :C1]
+;    :start-pitch :C0})
+

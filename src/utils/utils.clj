@@ -18,6 +18,10 @@
         (map #(-> (* % step) incf (+ start)) 
            (range 0 ((c inc int) (/ amp step)))))))
   
+  ;print source
+  (defmacro src [x] `(clojure.repl/source ~x))
+  (defn pex [expr] (pp (macroexpand-1 expr)))
+  
   ;(range-by 10 0.25)
   
 ;********** strings and keywords ************

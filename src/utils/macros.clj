@@ -61,15 +61,18 @@
                  `(defmethod ~name ~types ~params ~@fun-body))) 
             body)))
 
-; (defmult multest b-types
-;   ([x :pitch
-;     y :pitch]
-;     ((b> distance) x y))
-;   ([x1 :mode
-;     x2 :pitch]
-;    ((b> vector) x1 x2))
-;   ([x clojure.lang.Keyword]
-;     (name x)))
+(comment 
+  (defmult multest b-types
+    ([x :pitch
+      y :pitch]
+      ((b> distance) x y))
+    ([x1 :mode
+      x2 :pitch]
+     ((b> vector) x1 x2))
+    ([x clojure.lang.Keyword]
+      (name x))))
+
+(defn aze [a :aze] )
 
 ;to define helper function that is traced by declare-helpers macro
 (defmacro dehfn [name & body]
@@ -111,27 +114,6 @@
 ; ;(p1-fn add 2 [a b] (+ a b))
 ; ;(add 1) => 3
 
-;function def with default for arguments, single arity function only
-(defmacro defnaults [name argv & body]
-  `(defn ~name 
-     ~@(let [cnt (/ (count argv) 2)]
-         (map #(let [args (vec (take % (take-nth 2 argv)))]
-                `(~args (a ~name ~(vec (fill-with args cnt :_))))) 
-              (range cnt)))
-     (~(vec (take-nth 2 argv)) 
-     (let [~(vec (take-nth 2 argv)) (map (fn [[a# b#]](if (= a# :_) b# a#)) 
-                                         (partition 2 2 ~argv) )]
-       ~@body))))
-
-; (defnaults aze [a 1 b 2] (+ a b))
-; (aze 2 2 ) => 4
-; (aze 2) => 4
-; (aze) => 3
-; (aze :_ 2) => 3
-
-
-(defmacro aze [name argv & body]
-  `(defmacro ~name ~argv ~@body)) 
 
 ;from mikera stackoverflow
 
@@ -143,17 +125,57 @@
 
 ;***
 
-;buggy
-; (defmacro defnaults2 [name argv & body]
-;   `(defmacro ~name 
-;      ~@(let [cnt (/ (count argv) 2)]
-;          (map #(let [args (vec (take % (take-nth 2 argv)))]
-;                 `(~args (apply-macro ~name ~(vec (fill-with args cnt :default))))) 
-;               (range cnt)))
-;      (~(vec (take-nth 2 argv)) 
-;      (let [~(vec (take-nth 2 argv)) (map #(if (= % '_) :default %) (vec (take-nth 2 ~argv)))
-;            ~(vec (take-nth 2 argv)) (map (fn [[a# b#]](if (= a# :default) b# a#)) 
-;                                          (partition 2 2 ~argv) )]
-;        ~@body))))
+;function def with default for arguments, single arity function only
+(defmacro defnaults [name & tail]
+  (let [docstring (when (string? (first tail))(first tail))
+        argv (if docstring (second tail) (first tail))
+        args (vec (take-nth 2 argv))
+        body (if docstring (nnext tail) (next tail))]
+   `(defn ~name 
+      ~@(when docstring [docstring])
+      ~@(let [cnt (/ (count argv) 2)]
+          (map (fn [x] (let [args (vec (take x args))]
+                 `(~args (do ()(~name ~@(fill-with args cnt :default)))))) 
+               (range cnt)))
+      (~args
+      (let [~args (map (fn [[a# b#]] (if (= a# :*) b# a#)) 
+                       (partition 2 2 ~argv))]
+        ~@body)))))
 
+(comment
+  (defnaults aze [a 1 b 2] (+ a b))
+  (aze 2 2)  ;=> 4
+  (aze 2)    ;=> 4
+  (aze)      ;=> 3
+  (aze :* 2) ;=> 3
+)
+
+(defmacro defnaults-old [name argv & body]
+  `(defn ~name 
+     ~@(let [cnt (/ (count argv) 2)]
+         (map #(let [args (vec (take % (take-nth 2 argv)))]
+                `(~args (a ~name ~(vec (fill-with args cnt :_))))) 
+              (range cnt)))
+     (~(vec (take-nth 2 argv)) 
+     (let [~(vec (take-nth 2 argv)) (map (fn [[a# b#]](if (= a# :_) b# a#)) 
+                                         (partition 2 2 ~argv) )]
+       ~@body))))
+
+(comment
+  (defnaults aze [a 1 b 2] (+ a b))
+  (aze 2 2)  ;=> 4
+  (aze 2)    ;=> 4
+  (aze)      ;=> 3
+  (aze :_ 2) ;=> 3
+)
+
+
+
+;buggy
+
+
+; (defnaults2 bob 
+;   "blabla"
+;   [a 1 b 2] 
+;   (+ a b))
 
