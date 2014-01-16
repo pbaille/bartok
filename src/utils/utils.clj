@@ -11,11 +11,38 @@
   
 
   
-  ;print source
-  (defmacro src [x] `(clojure.repl/source ~x))
+  ;print source :)
+  (defmacro src [x] `(do (pp (:file (meta (resolve '~x))))(clojure.repl/source ~x)))
+  
+  ;prettyprint macro expansion
   (defn pex [expr] (pp (macroexpand-1 expr)))
   
-  ;(range-by 10 0.25)
+  
+  (defmacro or= 
+    ([expr coll] `(or= ~expr ~@coll))
+    ([expr o & ors]
+    `(or ~@(map (fn [o] `(= ~expr ~o)) (cons o ors)))))
+  
+  (defmacro and= 
+    ([expr coll] `(and= ~expr ~@coll))
+    ([expr o & ors]
+    `(and ~@(map (fn [o] `(= ~expr ~o)) (cons o ors)))))
+  
+  (defmacro and-not= 
+    ([expr coll] `(and-not= ~expr ~@coll))
+    ([expr o & ors]
+    `(and ~@(map (fn [o] `(not= ~expr ~o)) (cons o ors)))))
+  
+  (defmacro or-not= 
+    ([expr coll] `(or-not= ~expr ~@coll))
+    ([expr o & ors]
+    `(or ~@(map (fn [o] `(not= ~expr ~o)) (cons o ors)))))
+  
+  (defmacro or-> [arg & exprs]
+    `(or ~@(map (fn [expr] (if (symbol? expr) 
+                             `(~expr ~arg)
+                             (cons (first expr) (cons arg (next expr))))) 
+                exprs)))
   
 ;********** strings and keywords ************
 
@@ -86,6 +113,8 @@
             amp (math/abs (- end start))]
         (map #(-> (* % step) incf (+ start)) 
            (range 0 ((c inc int) (/ amp step)))))))
+  
+  ;(range-by 10 0.25)
 
 ;***************** colls ********************
 
@@ -133,6 +162,9 @@
     (when (map? m)
       (if-let [v (kw m)] 
         v (in> (apply merge (filter map? (vals m))) kw))))
+  
+  (defn map-vals [f m]
+    (a merge (map (fn [[k v]] {k (f v)}) m)))
 
 ;**************** vectors *******************
 
@@ -273,3 +305,19 @@ namespace."
         (if (.isBound v) 
           (intern *ns* sym (var-get v)) 
           (intern *ns* sym)))))) 
+
+;stuart sierra version
+
+; (defn immigrate
+;   "Create a public var in this namespace for each public var in the
+;   namespaces named by ns-names. The created vars have the same name, root
+;   binding, and metadata as the original except that their :ns metadata
+;   value is this namespace."
+;   [& ns-names]
+;   (doseq [ns ns-names]
+;     (require ns)
+;     (doseq [[sym var] (ns-publics ns)]
+;       (let [sym (with-meta sym (assoc (meta var) :ns *ns*))]
+;         (if (.hasRoot var)
+;           (intern *ns* sym (.getRoot var))
+;           (intern *ns* sym))))))

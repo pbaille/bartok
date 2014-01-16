@@ -7,7 +7,7 @@
  (:use bartok.multimethods)
  (:use bartok.types.note)
  
- (:use [bartok.midi overtone-midi midi])
+ (:use [bartok.midi overtone-midi midi parser])
  (:use [bartok.structure position])
  
  (:use utils.all)
@@ -17,5 +17,5 @@
  (:use bartok.rythmn.all)
  (:use bartok.composition.all))
 
+
 ; (:use [bartok.rythmn.humanize])
-;***********************************************************

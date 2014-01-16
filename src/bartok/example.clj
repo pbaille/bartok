@@ -24,10 +24,7 @@
   (prob-rythmn-step-pattern 
     {:picker picker
      ; :rvals [1/4 1/2] 
-     :prob-rvals {1/4 1 
-                  1/2 1/10
-                  1/3 1/10
-                  1/6 1/4} 
+     :prob-rvals {1/4 1} 
      :start-pos (g-pos 0 0 0) 
      :end-pos (g-pos 8 0 0 )
      :bounds [:C0 :C2] 
@@ -69,6 +66,44 @@
 
 (defn go [] (play vep (concat chords notes)))
 
+;***********************************************************
+
+;ravel ma mere l'oye
+(def rmmlo 
+  {:1 [90 87 85 87 82 90 85 87 87 90 87 85 87 82 87 90 85 87 90 87 
+       85 87 82 85 80 82 78 80 75 80 82 85 87 80 82 75 78 80 82 85 
+       78 80 75 75 78 80 82 75 80 78 78 90 87 85 87 82 90 85 87 87 
+       90 87 85 87 82 87 90 85 87 90 87 85 87 82 85 80 82 78 80 78 
+       73 75 70 75 78 80 82], 
+   :2 [61 63 68 70 66 68 75 73 61 63 70 68 66 68 73 75 61 68 70 63
+       66 68 75 73 70 73 75 61 68 70 63 66 73 68 75 70 73 75 61 68
+       70 63 66 73 75 68 70 75 73 61 63 70 68 66 73 75 68 70 75 73 
+       61 63 70 68 66 68 75 73 70 75 73 61 71 68 66 63 61 71 68 66 
+       63 61 71 68 66 63 61 70 68 63 66 75 73 68 70 73 75 61 70 68 
+       63 66 73 75 68 70 73 75 61 70 68 63 66 75 73 68 70 73 61 63 56 66 63 61]})
+
+(def vep (midi-out "Gestionnaire IAC Bus IAC 2" ))
+
+(defn mc1 [len]
+  (->> (:1 rmmlo)
+       (markov-depth-analysis  3 [1 2 3])
+       (markov-chain len 90)
+       (map pitch)
+       (ap m-note-line-from (g-pos 0 0 0) 1/4 60 1)))
+
+(defn mc2 [len]
+  (->> (:2 rmmlo)
+       (markov-depth-analysis  3 [1 2 3])
+       (markov-chain len 61)
+       (map pitch)
+       (ap m-note-line-from (g-pos 0 0 0) 1/4 40 1)))
+
+(defn mc [] (play vep (concat (mc1 100) (map #(update-in % [:pitch] transpose (interval :P5-d1)) (mc1 100)))))
+
+(def channels (parse-midi-file "src/midi-files/jeuxdeau.mid"))
+(def score (map #(assoc % :channel 1)(get channels 2)))
 
 
-
+(doseq [{p :pitch v :velocity d :duration pos :position c :channel} score]
+  (play-note vep p v d pos c))
+  

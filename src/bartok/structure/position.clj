@@ -114,6 +114,7 @@
 (defn pos+ [p rval]
   (let [sub (+ rval (-> p :sub))
         current-bar-val (:val (current-bar p))]
+    ; (show-env)
     (cond 
       (>= sub current-bar-val)
         (pos+ 
