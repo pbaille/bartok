@@ -69,6 +69,9 @@
   (defn int-div [x div] (int (/ x div)))
   (defn median [& args] (/ (apply + args) (count args)))
   
+  (defn round [s n] 
+    (.setScale (bigdec n) s java.math.RoundingMode/HALF_EVEN)) 
+  
   (defn between
     ([a b] (between a (first b) (second b)))
     ([a b1 b2] (and (>= a b1) (<= a b2))))
@@ -284,27 +287,27 @@
   
 ;************** namespaces ******************
 
-; https://groups.google.com/forum/#!topic/clojure/GAGF38uI1-o
-; by James reeves
+  ; https://groups.google.com/forum/#!topic/clojure/GAGF38uI1-o
+  ; by James reeves
 
-(defn- merge-meta! 
-  "Destructively merge metadata from a source object into a target." 
-  [source target] 
-  (.setMeta target 
-    (merge (meta source) 
-           (select-keys (meta target) [:name :ns])))) 
-
-(defn immigrate 
-  "Add all the public vars in a list of namespaces to the current 
-namespace." 
-  [& namespaces] 
-  (doseq [ns namespaces] 
-    (require ns) 
-    (doseq [[sym v] (ns-publics (find-ns ns))] 
-      (merge-meta! v 
-        (if (.isBound v) 
-          (intern *ns* sym (var-get v)) 
-          (intern *ns* sym)))))) 
+  (defn- merge-meta! 
+    "Destructively merge metadata from a source object into a target." 
+    [source target] 
+    (.setMeta target 
+      (merge (meta source) 
+             (select-keys (meta target) [:name :ns])))) 
+  
+  (defn immigrate 
+    "Add all the public vars in a list of namespaces to the current 
+  namespace." 
+    [& namespaces] 
+    (doseq [ns namespaces] 
+      (require ns) 
+      (doseq [[sym v] (ns-publics (find-ns ns))] 
+        (merge-meta! v 
+          (if (.isBound v) 
+            (intern *ns* sym (var-get v)) 
+            (intern *ns* sym)))))) 
 
 ;stuart sierra version
 

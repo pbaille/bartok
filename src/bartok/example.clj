@@ -4,7 +4,7 @@
 ;   {:tempo-humanize [1 5 2 1/2]})
 
 (grid {:bars [[2 :4|4]] 
-       :tempo [[0 2 100]] 
+       :tempo [[0 2 30000000/208333]] 
        :harmony {[0 0] :C-Lyd
                  [1 0] :Ab-Lyd}})
 
@@ -100,10 +100,12 @@
 
 (defn mc [] (play vep (concat (mc1 100) (map #(update-in % [:pitch] transpose (interval :P5-d1)) (mc1 100)))))
 
-(def channels (parse-midi-file "src/midi-files/jeuxdeau.mid"))
-(def score (map #(assoc % :channel 1)(get channels 2)))
+(def jedo (parse-midi-file "src/midi-files/bumble_bee.mid"))
 
+(defn midi-event->note 
+  [{pos :position p :pitch d :duration c :channel v :velocity}]
+  (when v (note (pitch p) d (num->pos pos) v 1)))
 
-(doseq [{p :pitch v :velocity d :duration pos :position c :channel} score]
-  (play-note vep p v d pos c))
-  
+(def score (remove nil? (map midi-event->note jedo)))
+
+; (play vep score)

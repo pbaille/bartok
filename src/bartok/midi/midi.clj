@@ -54,8 +54,7 @@
 (defn play [out notes]
   (let [notes (map to-midi (expand-chords notes))]
     (for [{p :pitch v :velocity d :duration pos :position c :channel} notes]
-      (play-note out p v d pos c))
-    nil))
+      (play-note out p v d pos c))))
 
 ;************* old ***************
 
