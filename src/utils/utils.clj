@@ -271,7 +271,7 @@
   
   (defn with-type [t obj]
     {:pre [(named? t)]}
-    (with-meta obj {:type t}))
+    (when obj (with-meta obj {:type t})))
 
 ;*************** experiments ****************
 

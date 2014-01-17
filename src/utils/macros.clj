@@ -1,5 +1,5 @@
 (ns utils.macros
-  (:use [utils.utils]))
+  (:use utils.utils))
 
 (defmacro chefn [name check-fn args & tail]
   (let [docstring (if (string? (first tail)) (first tail))

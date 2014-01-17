@@ -40,6 +40,7 @@
   ([] (grid {}))
   ([m] (def g ((c expand-bars expand-harmonies) (conj default-grid m)))))
 
+(defn grid-assoc [& args] (def g (ap assoc g args)))
 
 (defn harmony-at [pos]
   (last (filter #(<= (pos-val (assoc pos :bar (-> % :position first) :sub (-> % :position second))) 

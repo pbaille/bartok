@@ -1,5 +1,5 @@
 (ns bartok.melody.strategies
-  (:use [bartok.melody.melodic-domain])
+  (:use bartok.melody.melodic-domain)
   (:use bartok.litterals.all)
   (:use [utils utils prob]))
 

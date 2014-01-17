@@ -38,16 +38,20 @@
   (or-> msg
         note-on?
         note-off?      
-        poly-after?    
-        control-change? 
-        program-change? 
-        chan-after?    
-        pitch-wheel?))
+        ;poly-after?    
+        ;control-change? 
+        ;program-change? 
+        ;chan-after?    
+        ;pitch-wheel?
+        ))
+
+(defn meta-msg-of-type [t m] (with-meta m {:type t :msg-type :meta}))
+(defn midi-msg-of-type [t m] (with-meta m {:type t :msg-type :midi}))
 
 (defn- parse-meta-message [msg tick]
   (cond
     (tempo-msg? msg)  
-      (with-type :tempo
+      (meta-msg-of-type :tempo
         {:position tick
          :bpm (->> (a format "0x%x%x%x" (.getData msg)) 
                    read-string 
@@ -55,12 +59,12 @@
                    float 
                    (round 1))})        
     (time-signature-msg? msg)
-      (with-type :time-signature
+      (meta-msg-of-type :time-signature
         {:position tick
          :signature (let [[n d] (.getData msg)]
                       [n (int (clojure.contrib.math/expt 2 d))])}) 
     (key-signature-msg? msg)
-      (with-type :key-signature
+      (meta-msg-of-type :key-signature
         {:position tick
          :key (get int->key (first (.getData msg)))})
     :else nil))
@@ -68,60 +72,80 @@
 (defn- parse-message [msg tick]
   (cond
     (note-msg? msg) 
-      (with-type :note
+      (midi-msg-of-type :note
         {:channel  (.getChannel msg)
          :pitch    (.getData1 msg)
          :velocity (if (note-on? msg) (.getData2 msg) 0) 
          :position tick})
     (poly-after? msg)
-      (with-type :polyphonic-aftertouch
+      (midi-msg-of-type :polyphonic-aftertouch
         {:channel  (.getChannel msg)
          :data     [(.getData1 msg)(.getData2 msg)]
          :position tick})
     (control-change? msg)
-      (with-type :control-change
+      (midi-msg-of-type :control-change
         {:channel  (.getChannel msg)
          :data     [(.getData1 msg)(.getData2 msg)]
          :position tick})
     (program-change? msg)
-      (with-type :program-change
+      (midi-msg-of-type :program-change
         {:channel  (.getChannel msg)
          :data     (.getData    msg)
          :position tick})
     (chan-after? msg)
-      (with-type :channel-aftertouch
+      (midi-msg-of-type :channel-aftertouch
         {:channel  (.getChannel msg)
          :data     (.getData    msg)
          :position tick})
     (pitch-wheel? msg)
-      (with-type :pitch-wheel
+      (midi-msg-of-type :pitch-wheel
         {:channel  (.getChannel msg)
          :data     (.getData    msg)
          :position tick})
     :else nil))
 
 ;set start-position to zero and convert durations and positions into beat unit
-(defn- time-format [resolution parsed]
-  (let [start-offset (:position (select-first #(= (type %) :note) parsed))]
-    (map (fn [event] 
-           (let [pos (/ (- (:position event) start-offset) resolution)
-                 event (assoc event :position pos)]
-             (if (:duration event)
-               (update-in event [:duration] / resolution)
-               event))) 
-         parsed)))
+; (defn- time-format [resolution parsed]
+;   (let [start-offset (:position (select-first #(= (type %) :note) parsed))]
+;     (map (fn [event] 
+;            (let [pos (/ (- (:position event) start-offset) resolution)
+;                  event (assoc event :position pos)]
+;              (if (:duration event)
+;                (update-in event [:duration] / resolution)
+;                event))) 
+;          parsed)))
+
+(defn- time-format [resolution track]
+  (map (fn [event] 
+         (let [pos (/ (:position event) resolution)
+               event (assoc event :position pos)]
+           (if (:duration event)
+             (update-in event [:duration] / resolution)
+             event))) 
+       track))
 
 ;grab all note-on and note-off message and couple them into :note type with duration
-(defn- on-off-coupling [parsed]
-    (let [{notes :note :as by-type} (group-by type parsed)
+(defn- on-off-coupling [track]
+    ; (debug-repl)
+    (let [{notes :note :as by-type} (group-by type track)
           {ons :ons offs :offs} (group-by #(if (zero? (:velocity %)) :offs :ons) notes)
-          coupled (map (fn [{pos-on :position :as m} {pos-off :position}]
-                         (assoc m :duration (- pos-off pos-on))) 
-                       ons offs)]
+           coupled (map (fn [{pos-on :position :as m} {pos-off :position}]
+                          (assoc m :duration (- pos-off pos-on))) 
+                        ons offs)]
         (->> (assoc by-type :note coupled) vals (a concat))))
 
-;(ByteBuffer/wrap (byte-array (drop 3 (from-java (.getMessage message)))))
-;(ByteBuffer/wrap (Arrays/copyOfRange (.getMessage message) 2 5))
+(defn  split-msg-type [track] (group-by #(:msg-type (meta %)) track))
+
+(defn- merge-meta [track]
+  (let [{metas :meta midis :midi} (split-msg-type track)]
+    (if-let 
+      [mmsgs (->> metas 
+             (group-by type) 
+             (map-vals #(map vals %))
+             (map-vals #(->> % (a concat) (a hash-map)))
+             (with-type :meta-messages))]
+      (if (seq midis) (conj midis mmsgs) [mmsgs])
+      midis)))
 
 (defn- parse-track [track] 
   ; (vendors.debug-repl/debug-repl)
@@ -146,10 +170,11 @@
         cnt (-> tracks from-java count)]
     ; (debug-repl)
     (->> (for [n (range cnt)] 
-           (parse-track (aget tracks n)))
-         (mapcat on-off-coupling)
-         (sort-by :position)
-         (time-format res))))
+           (->> (parse-track (aget tracks n))
+                on-off-coupling
+                (time-format res)
+                merge-meta))
+          (remove empty?))))
 
 ;(parse-midi-file "src/midi-files/rmmlo.mid")
 

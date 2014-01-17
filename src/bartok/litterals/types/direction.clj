@@ -1,4 +1,4 @@
-(in-ns 'bartok.litterals.types)
+(in-ns 'bartok.litterals.all)
 
 (def directions 
    {:up {:name :u :val 1}

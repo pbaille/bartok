@@ -1,7 +1,6 @@
 (ns bartok.harmony.harmony
-  (:use [utils.utils])
-  (:use [bartok.multimethods])
-  (:use [bartok.harmony.h-function])
+  (:use utils.utils)
+  (:use bartok.harmony.h-function)
   (:use bartok.litterals.all))
 
 (defn harmonic-context 

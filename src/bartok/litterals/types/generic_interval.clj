@@ -1,4 +1,4 @@
-(in-ns 'bartok.litterals.types)
+(in-ns 'bartok.litterals.all)
 
 (load "types/direction")
 
@@ -19,34 +19,32 @@
 
 ;************ generic interval class ******************
 
-(defmulti generic-interval-class b-types)
-
-(defmethod generic-interval-class :generic-interval-class [n] 
-  (name->generic-interval-class n))
-(defmethod generic-interval-class :generic-interval [gi] 
-  (name->generic-interval-class (-> gi dash-split first keyword)))
-(defmethod generic-interval-class :number [v] 
-  (val->generic-interval-class v))
+(b-construct generic-interval-class
+  [:generic-interval-class n] 
+    (name->generic-interval-class n)
+  [:generic-interval gi] 
+    (name->generic-interval-class (-> gi dash-split first keyword))
+  [:number v] 
+    (val->generic-interval-class v))
 
 ;*************** generic interval ***************
 
-(defmulti generic-interval b-types)
-
-(defmethod generic-interval :generic-interval [n] 
-  (let [[gin diroct] (dash-split n)
-         class (generic-interval-class (keyword gin))
-         [dir oct] (dir-oct-expand diroct)
-         val (* (:val dir) (+ (:val class) (* 7 oct)))]
-    (with-type 'GenericInterval 
-               {:name n :val val :class class :direction dir :octave-offset oct})))
-
-(defmethod generic-interval :generic-interval-class [n]
-  (generic-interval (keyword-cat n "0")))
-
-(defmethod generic-interval :number [v]
-  (let [[oct m] (div-mod (abs v) 7)
-        class (generic-interval-class m)
-        dir (direction (if (>= v 0) :u :d))
-        n (keyword-cat (:name class) "-" (:name dir) (if (= 0 oct) "" (str oct)))]
-    (with-type 'GenericInterval 
-               {:name n :val v :class class :direction dir :octave-offset oct})))
+(b-construct generic-interval 
+  [:generic-interval n] 
+    (let [[gin diroct] (dash-split n)
+           class (generic-interval-class (keyword gin))
+           [dir oct] (dir-oct-expand diroct)
+           val (* (:val dir) (+ (:val class) (* 7 oct)))]
+      (with-type 'GenericInterval 
+                 {:name n :val val :class class :direction dir :octave-offset oct}))
+  
+  [:generic-interval-class n]
+    (generic-interval (keyword-cat n "0"))
+  
+  [:number v]
+    (let [[oct m] (div-mod (abs v) 7)
+          class (generic-interval-class m)
+          dir (direction (if (>= v 0) :u :d))
+          n (keyword-cat (:name class) "-" (:name dir) (if (= 0 oct) "" (str oct)))]
+      (with-type 'GenericInterval 
+                 {:name n :val v :class class :direction dir :octave-offset oct})))

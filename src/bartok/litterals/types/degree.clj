@@ -1,4 +1,4 @@
-(in-ns 'bartok.litterals.types)
+(in-ns 'bartok.litterals.all )
 
 (load "types/degree_class")
 
@@ -25,18 +25,13 @@
 
 ;*********** construct *****************
 
-(defmulti degree b-types)
-
-(defmethod degree :degree [n] (name->degree n))
-(defmethod degree :degree-class [g] (degree-class->degree g))
-(defmethod degree :number [v] (val->degree (mod12 v)))
-(defmethod degree :interval [n] (name->degree (first (dash-split n))))
-
-;************* casts *******************
-
-(defmethod degree 'Mode [m] (-> m :mode-class :degree))
-(defmethod degree 'ModeClass [m] (:degree m))
-(defmethod degree 'Interval [m] (:class m))
+(b-construct degree
+  [:degree n] (name->degree n)
+  [:number v] (val->degree (mod12 v))
+  ['DegreeClass dc] (degree-class->degree (:name dc))
+  ['Mode m] (-> m :mode-class :degree)
+  ['ModeClass m] (:degree m)
+  ['Interval m] (:class m))
 
 ; *********** functions ******************
 

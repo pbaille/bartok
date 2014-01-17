@@ -1,4 +1,4 @@
-(in-ns 'bartok.litterals.types)
+(in-ns 'bartok.litterals.all)
 
 (declare generic-interval)
 
@@ -11,10 +11,9 @@
 
 ;************ construct ******************
 
-(defmulti natural-pitch-class b-types)
-
-(defmethod natural-pitch-class :natural-pitch-class [n] (name->natural-pitch-class n))
-(defmethod natural-pitch-class :number [v] (val->natural-pitch-class (mod v 7)))
+(b-construct natural-pitch-class 
+  [:natural-pitch-class n] (name->natural-pitch-class n)
+  [:number v] (val->natural-pitch-class (mod v 7)))
 
 ;**************** methods ****************
 

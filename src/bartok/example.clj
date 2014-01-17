@@ -4,7 +4,7 @@
 ;   {:tempo-humanize [1 5 2 1/2]})
 
 (grid {:bars [[2 :4|4]] 
-       :tempo [[0 2 30000000/208333]] 
+       :tempo [[0 2 120]] 
        :harmony {[0 0] :C-Lyd
                  [1 0] :Ab-Lyd}})
 
@@ -98,18 +98,3 @@
        (ap m-note-line-from (g-pos 0 0 0) 1/4 40 1)))
 
 (defn mc [] (play vep (concat (mc1 100) (map #(update-in % [:pitch] transpose (interval :P5-d1)) (mc1 100)))))
-
-;************** MIDI Parser ****************************************
-
-(def jedo (parse-midi-file "src/midi-files/bumble_bee.mid"))
-
-(defn midi-event->note 
-  [{pos :position p :pitch d :duration c :channel v :velocity}]
-  (when v (note (pitch p) d (num->pos pos) v 1)))
-
-(assoc g :tempo (map #(vector (:position %) (:bpm %)) 
-                        (filter-msg-type :tempo jedo)))
-
-(def score (remove nil? (map midi-event->note jedo)))
-
-; (play vep score)

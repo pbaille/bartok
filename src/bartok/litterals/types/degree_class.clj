@@ -1,4 +1,4 @@
-(in-ns 'bartok.litterals.types)
+(in-ns 'bartok.litterals.all)
 
 (load "types/generic_interval")
 
@@ -12,10 +12,7 @@
 (def name->degree-class (reduce #(into %1 {(:name %2) %2}) {} degree-classes))
 (def val->degree-class  (reduce #(into %1 {(:val %2) %2}) {} degree-classes))
 
-;************ construct ******************
-
-(defmulti degree-class b-types)
-
-(defmethod degree-class :degree-class [n] (name->degree-class n))
-(defmethod degree-class :generic-interval-class [gic] (val->degree-class (-> gic generic-interval-class :val)))
-(defmethod degree-class :number [v] (val->degree-class v))
+(b-construct degree-class
+  [:degree-class n] (name->degree-class n)
+  [:generic-interval-class gic] (val->degree-class (-> gic generic-interval-class :val))
+  [:number v] (val->degree-class v))

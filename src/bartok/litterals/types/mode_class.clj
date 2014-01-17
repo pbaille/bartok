@@ -1,4 +1,4 @@
-(in-ns 'bartok.litterals.types)
+(in-ns 'bartok.litterals.all)
 
 (load "types/degree")
 (load "types/pitch_class")
@@ -69,11 +69,10 @@
 
 ;;*********** Constructor ***********
 
-(defmulti mode-class b-types )
-
-(defmethod mode-class :mode-class [n] (name->mode-class n))
-(defmethod mode-class [:mode-class :number] [m d] 
-  (mode-class (-> mother-modes m :childs (nth (dec d)))))
+(b-construct mode-class 
+  [:mode-class n] (name->mode-class n)
+  ['ModeClass m :number d] 
+    (mode-class (-> mother-modes (:name m) :childs (nth (dec d)))))
 
 
 

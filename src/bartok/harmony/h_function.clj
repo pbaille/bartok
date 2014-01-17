@@ -1,5 +1,5 @@
 (ns bartok.harmony.h-function
-  (:use [utils.utils])
+  (:use utils.utils)
   (:use bartok.litterals.all))
 
 (def h-functions 

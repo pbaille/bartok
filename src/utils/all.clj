@@ -1,4 +1,5 @@
-(ns utils.all)
+(ns utils.all
+  (:require utils.utils))
 
 (utils.utils/immigrate
   'utils.utils

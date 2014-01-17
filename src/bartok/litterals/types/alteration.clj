@@ -1,4 +1,4 @@
-(in-ns 'bartok.litterals.types)
+(in-ns 'bartok.litterals.all)
 
 (defn- make-alterations-set [m]
   (reduce #(conj %1 (with-type 'Alteration (zipmap [:name :val] %2))) #{} m))
@@ -15,21 +15,10 @@
 (def name->alteration (reduce #(into %1 {(:name %2) %2}) {} alterations))
 (def val->alteration  (reduce #(into %1 {(:val %2) %2}) {} pitch-alterations))
 
-(defmulti alteration b-types )
-
-(defmethod alteration :alteration [n] (name->alteration n))
-(defmethod alteration :number [v] (val->alteration v))
-
-(defmethod alteration [:number clojure.lang.Keyword] [v t] 
-  (cond (= t :t1) (select-first #(= v (:val %)) degree-alterations-1)
-        (= t :t2) (select-first #(= v (:val %)) degree-alterations-2)
-        (= t :pitch) (select-first #(= v (:val %)) pitch-alterations)))
-
-
-; (b-construct alteration
-;   ([:alteration n] (name->alteration n))
-;   ([:number v] (val->alteration v))
-;   ([:number v clojure.lang.Keyword t] 
-;     (cond (= t :t1) (select-first #(= v (:val %)) degree-alterations-1)
-;           (= t :t2) (select-first #(= v (:val %)) degree-alterations-2)
-;           (= t :pitch) (select-first #(= v (:val %)) pitch-alterations))))
+(b-construct alteration
+  [:alteration n] (name->alteration n)
+  [:number v] (val->alteration v)
+  [:number v clojure.lang.Keyword t] 
+    (cond (= t :t1) (select-first #(= v (:val %)) degree-alterations-1)
+          (= t :t2) (select-first #(= v (:val %)) degree-alterations-2)
+          (= t :pitch) (select-first #(= v (:val %)) pitch-alterations)))

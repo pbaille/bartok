@@ -5,7 +5,6 @@
  (:use [vendors debug-repl profile])
  (:use camel-snake-kebab)
  
- (:use bartok.multimethods)
  (:use bartok.types.note)
  
  (:use [bartok.midi overtone-midi midi parser])

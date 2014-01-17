@@ -1,4 +1,4 @@
-(in-ns 'bartok.litterals.types)
+(in-ns 'bartok.litterals.all)
 
 (load "types/degree")
 (load "types/interval")
@@ -16,18 +16,17 @@
 
 ;************ construct **************
 
-(defmulti mode b-types)
-
-(defmethod mode :mode [n]
+(b-construct mode
+[:mode n]
   (let [[r mc] (dash-split n)
          r (pitch-class (keyword r))
          mc (mode-class (keyword mc))
          pcs (pitch-classes-calc r (:degrees mc))]
-    (build-mode n r mc pcs)))
+    (build-mode n r mc pcs))
 
-(defmethod mode [:mode :number] [mn d]
-  (let [mc (mode-class (keyword (second (dash-split mn))) d)
-        r (nth (:pitch-classes (mode mn)) (dec d))
+['Mode m :number d]
+  (let [mc (mode-class (keyword (second (dash-split (:name m)))) d)
+        r (nth (:pitch-classes (mode (:name m))) (dec d))
         n (keyword-cat (:name r) "-" (:name mc))
         pcs (pitch-classes-calc r (:degrees mc))]
     (build-mode n r mc pcs)))
