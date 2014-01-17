@@ -1,4 +1,4 @@
-(in-ns 'bartok.litterals.types)
+(in-ns 'bartok.litterals.alt)
 
 (defn- parse-ts [ts]
   (->> (re-find #"([1-9][1-9]*)\|(2|4|8|16)" ts)
@@ -15,15 +15,8 @@
        :numerator num
        :denominator den})))
 
-(defmulti time-signature b-types)
-
-(defmethod time-signature :time-signature [ts] (build-time-signature ts))
-(defmethod time-signature [:number :number] [n d] (build-time-signature n d))
-
-
-
-; (b-construct time-signature
-;   ([:time-signature ts] (build-time-signature ts))
-;   ([:number n :number d] (build-time-signature n d)))
+(b-construct time-signature
+  [:time-signature ts] (build-time-signature ts)
+  [:number n :number d] (build-time-signature n d))
 
 

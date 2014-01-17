@@ -3,6 +3,7 @@
  (:use [clojure.math.combinatorics :as c])
  (:use clojure.inspector)
  (:use [vendors debug-repl profile])
+ (:use camel-snake-kebab)
  
  (:use bartok.multimethods)
  (:use bartok.types.note)
@@ -19,3 +20,11 @@
 
 
 ; (:use [bartok.rythmn.humanize])
+(def settings
+  {:tempo-interpolation :step ;# {:step :linear} TODO curve interpolations
+   }) ;
+
+
+
+
+

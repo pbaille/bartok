@@ -26,3 +26,10 @@
         (= t :pitch) (select-first #(= v (:val %)) pitch-alterations)))
 
 
+; (b-construct alteration
+;   ([:alteration n] (name->alteration n))
+;   ([:number v] (val->alteration v))
+;   ([:number v clojure.lang.Keyword t] 
+;     (cond (= t :t1) (select-first #(= v (:val %)) degree-alterations-1)
+;           (= t :t2) (select-first #(= v (:val %)) degree-alterations-2)
+;           (= t :pitch) (select-first #(= v (:val %)) pitch-alterations))))

@@ -1,7 +1,7 @@
-(in-ns 'bartok.litterals.types)
+(in-ns 'bartok.litterals.alt)
 
-(load "types/alteration")
-(load "types/natural_pitch_class")
+(load "types_alt/alteration")
+(load "types_alt/natural_pitch_class")
 
 (def pitch-class)
 
@@ -28,27 +28,23 @@
 
 ;;*********** Constructor ***********
 
-(defmulti pitch-class b-types )
-
-(defmethod pitch-class :number [v] (val->pitch-class v))
-
-(defmethod pitch-class :pitch-class [n] (name->pitch-class n))
-
-(defmethod pitch-class :natural-pitch-class [n] (name->pitch-class n))
-
-(defmethod pitch-class 'Pitch [p] (:pitch-class p))
-
-(defmethod pitch-class 'PitchClass [pc] pc )
-
-(defmethod pitch-class ['NaturalPitchClass :number] [n v]
-  (select-first #(and (= (get-in % [:natural :name]) (:name n))
-                      (= (:val %) v))
-                pitch-classes))
-
-(defmethod pitch-class [:natural-pitch-class :number] [n v]
-  (select-first #(and (= (get-in % [:natural :name]) n)
-                      (= (:val %) v))
-                pitch-classes))
+(b-construct pitch-class 
+  [:number v] 
+    (val->pitch-class v)
+  [:pitch-class n] 
+    (name->pitch-class n)
+  [:natural-pitch-class n] 
+    (name->pitch-class n)
+  ['Pitch p] 
+    (:pitch-class p)
+  ['NaturalPitchClass n :number v] 
+    (select-first #(and (= (get-in % [:natural :name]) (:name n))
+                        (= (:val %) v))
+                  pitch-classes)
+  [:natural-pitch-class n :number v]
+    (select-first #(and (= (get-in % [:natural :name]) n)
+                        (= (:val %) v))
+                  pitch-classes))
 
 ;*************** functions **************
 

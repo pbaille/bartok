@@ -6,9 +6,6 @@
 (def natural-pitch-class-pat 
   #"([A-G])")
 
-; (def alteration-pat 
-;   #"([x#b]b*)")
-
 (def alteration-pat 
   #"(|bb|o|b|m|M|N|P|#|\+|x)")
 

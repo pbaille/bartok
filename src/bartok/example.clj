@@ -66,7 +66,7 @@
 
 (defn go [] (play vep (concat chords notes)))
 
-;***********************************************************
+;******************* Markov-analysis tests ************************
 
 ;ravel ma mere l'oye
 (def rmmlo 
@@ -80,9 +80,8 @@
        70 63 66 73 75 68 70 75 73 61 63 70 68 66 73 75 68 70 75 73 
        61 63 70 68 66 68 75 73 70 75 73 61 71 68 66 63 61 71 68 66 
        63 61 71 68 66 63 61 70 68 63 66 75 73 68 70 73 75 61 70 68 
-       63 66 73 75 68 70 73 75 61 70 68 63 66 75 73 68 70 73 61 63 56 66 63 61]})
-
-(def vep (midi-out "Gestionnaire IAC Bus IAC 2" ))
+       63 66 73 75 68 70 73 75 61 70 68 63 66 75 73 68 70 73 61 63 
+       56 66 63 61]})
 
 (defn mc1 [len]
   (->> (:1 rmmlo)
@@ -100,11 +99,16 @@
 
 (defn mc [] (play vep (concat (mc1 100) (map #(update-in % [:pitch] transpose (interval :P5-d1)) (mc1 100)))))
 
+;************** MIDI Parser ****************************************
+
 (def jedo (parse-midi-file "src/midi-files/bumble_bee.mid"))
 
 (defn midi-event->note 
   [{pos :position p :pitch d :duration c :channel v :velocity}]
   (when v (note (pitch p) d (num->pos pos) v 1)))
+
+(assoc g :tempo (map #(vector (:position %) (:bpm %)) 
+                        (filter-msg-type :tempo jedo)))
 
 (def score (remove nil? (map midi-event->note jedo)))
 

@@ -1,6 +1,6 @@
-(in-ns 'bartok.litterals.types)
+(in-ns 'bartok.litterals.alt)
 
-(load "types/pitch_class")
+(load "types_alt/pitch_class")
 
 (def pitches 
   (reduce conj #{}      
@@ -28,33 +28,41 @@
 (defn- build-pitch [n v o pc]
   (with-type 'Pitch {:name n :val v :octave o :pitch-class pc}))
 
-(defmulti pitch b-types)
+; (defmulti pitch b-types)
 
-(defmethod pitch :number [v] (val->pitch v))
-(defmethod pitch :pitch [n] (name->pitch n))
+(b-construct pitch 
+             
+  [:number v] (val->pitch v)
+  [:pitch n] (name->pitch n)
+  
+  ['PitchClass pc] 
+    (pitch (keyword-cat (:name pc) "0"))
+  
+  ['NaturalPitchClass npc :number n]
+    (let [[oct mod] (div-mod n 12)
+           alt (- mod (:pitch-val npc))
+           possible-alt? (between alt -2 2)]
+       ; (debug-repl)
+       (when possible-alt? (pitch (pitch-class npc alt) (- oct 5))))  
+    
+  ['PitchClass p :number o]
+    (pitch (keyword-cat (:name p) (str o)))
+  
+  ['Mode m :number n]
+    (let [[oct n-mod] (div-mod n 12)
+          [[nam dist][nam2 dist2]] 
+          (sort-by #(abs (second %)) (map (juxt :name #(- n-mod (:val %1))) (:pitch-classes m)))
+          [p1 p2] [(pitch nam (- oct 5)) (pitch nam2 (- oct 5))]]
+      ; (debug-repl)
+      (if (zero? dist) 
+        p1 
+        (or (pitch (-> p1 :pitch-class :natural :name) n) (pitch (-> p2 :pitch-class :natural :name) n))))
+    
+  ; [:number n 'Mode m]
+  ;   (let [n-mod (mod12 n)
+  ;         mnpcv (pev (map (c :pitch-val :natural) (:pitch-classes m)))])
 
-(defmethod pitch 'PitchClass [pc] 
-  (pitch (keyword-cat (:name pc) "0")))
-
-; (defmethod pitch ['NaturalPitchClass :number] [npc n]
-;   (let [[oct mod] (div-mod n 12)
-;         alt (- mod (:pitch-val npc))
-;         possible-alt? (between alt -2 2)]
-;     (debug-repl)
-;     (when possible-alt? (pitch (pitch-class npc alt) (- oct 5)))))
-
-(defmethod pitch [:pitch-class :number] [p o]
-  (pitch (keyword-cat p (str o))))
-
-(defmethod pitch ['PitchClass :number] [p o]
-  (pitch (keyword-cat (:name p) (str o))))
-
-; (defmethod pitch :default [& args] 
-;   (a pitch (bartok.litterals.evaluation/b> args)))
-
-; (defmethod pitch [:number 'Mode] [n m]
-;   (let [n-mod (mod12 n)
-;         mnpcv (pev (map (c :pitch-val :natural) (:pitch-classes m)))]))
+)
 
 ;**************** functions ******************
 

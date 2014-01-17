@@ -30,13 +30,24 @@
 (defmacro b-def [n x] 
   `(def ~n (b> ~x)))
 
-; (defmacro befmulti [n disp]
-;   `(defmulti ~n (comp-b> ~disp)))
+(defmacro b-multi [n disp]
+  (let [sym (symbol (str "b-multi-" n))]
+    `(do 
+       (defmulti ~sym ~disp)
+       (b-fn ~n [& args#] (a ~sym args#)))))
 
-; (defmacro befmethod [n disp-val args & body]
-;   `(defmethod ~n ~disp-val ~args 
-;      (comp-b> ~disp)))
+(defmacro b-method [n disp-val args & body]
+  (let [sym (symbol (str "b-multi-" n))]
+    `(defmethod ~sym ~disp-val ~args ~@body)))
 
+; (defmacro b-construct [n]
+;   (let [sym (symbol (str "b-multi-" n))]
+;     `(do 
+;        (defmulti ~sym b-types)
+;        (defn ~n [& args#] 
+;          (if (= (keyword '~n) (b-types (first args#)))
+;            (~sym (first args#))
+;            (a ~sym (b> args#)))))))
 
 
 

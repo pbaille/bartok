@@ -16,7 +16,29 @@
 ; => #{[1 20] [4 20] [8 34]}
 ; allow to pass easily constant val range into interpolator
 
-(defn interpolator [points]
+(defn step-interpolator [points]
+  (fn fun 
+    ([x]
+    (let [s-map (reduce merge (sorted-map) points)] 
+      (-> (filter #(>= x (key %)) s-map)
+          last second
+          (or (ffirst points)))))
+    ([xa xb]
+        (let [between-points (filter #(and (> (first %) xa) (< (first %) xb)) points)]
+          (if (seq between-points)
+            (let [weights (concat [(- (-> between-points first first) xa)]
+                                  (steps (map first between-points))
+                                  [(- xb (-> between-points last first))])
+                  xs (concat [xa] (map first between-points) [xb])
+                  meds (map fun xs)
+                  w-meds (map * meds weights)]
+              (/ (reduce + w-meds) (reduce + weights)))
+            (fun xa))))))
+
+;(def si (step-interpolator [[0 0][4 10][8 5][10 -10]]))
+;(si 0 12) => 5/2
+
+(defn linear-interpolator [points]
   (let [m (expand-triplets points)]
     (fn fun 
       ([x]
@@ -47,7 +69,7 @@
         (concat points 
                 (map (fn [[a b c]] (if c [(+ a len)(+ b len) c] [(+ a len) b])) 
                      points))
-        f (interpolator points)]
+        f (linear-interpolator points)]
     (fn fun 
       ([x] (f (mod x len)))
       ([xa xb] 
