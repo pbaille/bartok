@@ -1,5 +1,7 @@
 (ns utils.utils
   (:require clojure.pprint)
+  (:require vendors.debug-repl)
+  (:require [clojure.inspector :refer [inspect-tree]])
   (:require [clojure.contrib.math :as math]))
 
 (declare p a ap c)
@@ -9,10 +11,12 @@
   (defn pev [x] (do (clojure.pprint/pprint x) x))
   (def not-nil? (complement nil?))
   
-
-  
+  (defmacro dr [] `(vendors.debug-repl/debug-repl))
   ;print source :)
   (defmacro src [x] `(do (pp (:file (meta (resolve '~x))))(clojure.repl/source ~x)))
+  
+  ;inspect-tree shortcut
+  (defn tree [x] (inspect-tree x))
   
   ;prettyprint macro expansion
   (defn pex [expr] (pp (macroexpand-1 expr)))
@@ -53,7 +57,14 @@
     (when (named? x) (clojure.string/split (name x) #"\-")))
   
   (defn keyword-cat [& args] 
-    (-> (apply str (map name args)) keyword))
+    (->> args
+         (remove nil?)
+         (map #(if (isa? (type %) java.lang.Number) (str %) %))
+         (map name)
+         (a str)
+         keyword))
+  
+  (def kwcat keyword-cat)
   
   (defn parse-int [s] (Integer/parseInt (re-find #"\A-?\d+" s)))
   (defn kw->str [kw] (-> kw str (subs 1)))
@@ -151,11 +162,17 @@
   
 ;***************** maps *********************
   
+  (def h-map hash-map)
+  
+  (defn tups->h-map 
+    "(tups->h-map [[:a 1][:b 2]]) => {:a 1 :b 2}"
+    [tups-coll]
+    (a hash-map (a concat tups-coll)))
+  
   (defn dissoc-in [m key-vec]
     (let [firsts (vec (butlast key-vec))
           node (dissoc (get-in m firsts) (last key-vec))]
       (assoc-in m firsts node)))
-  
   
   (defn submap? [sub m] 
     (clojure.set/subset? (set sub) (set m)))
@@ -168,6 +185,14 @@
   
   (defn map-vals [f m]
     (a merge (map (fn [[k v]] {k (f v)}) m)))
+  
+  (defn map-h  [f m]
+    {:pre [(map? m)]}
+    (let [hms (map (fn [[k v]] (f k v)) m)]
+      (if (second hms) (a conj hms) (first hms))))
+  
+  ;(map-h (fn [k v] {k (inc v)}) {:a 1 :b 2})
+  ;=> {:a 2 :b 3}
 
 ;**************** vectors *******************
 
@@ -253,6 +278,8 @@
   
   (defn set-map [f coll]
     (set (map f coll)))
+  
+  
   
   ; (defn first-where [sub-map coll]
   ;   (select-first #(submap? sub-map %) coll))

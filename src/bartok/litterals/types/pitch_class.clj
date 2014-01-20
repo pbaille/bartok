@@ -44,7 +44,9 @@
   [:natural-pitch-class n :number v]
     (select-first #(and (= (get-in % [:natural :name]) n)
                         (= (:val %) v))
-                  pitch-classes))
+                  pitch-classes)
+  ['NaturalPitchClass npc 'Alteration a]
+    (pitch-class (kwcat (keyword (:name npc)) (:name a))))
 
 ;*************** functions **************
 

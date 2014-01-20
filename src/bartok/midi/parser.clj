@@ -104,17 +104,6 @@
          :position tick})
     :else nil))
 
-;set start-position to zero and convert durations and positions into beat unit
-; (defn- time-format [resolution parsed]
-;   (let [start-offset (:position (select-first #(= (type %) :note) parsed))]
-;     (map (fn [event] 
-;            (let [pos (/ (- (:position event) start-offset) resolution)
-;                  event (assoc event :position pos)]
-;              (if (:duration event)
-;                (update-in event [:duration] / resolution)
-;                event))) 
-;          parsed)))
-
 (defn- time-format [resolution track]
   (map (fn [event] 
          (let [pos (/ (:position event) resolution)
@@ -140,10 +129,10 @@
   (let [{metas :meta midis :midi} (split-msg-type track)]
     (if-let 
       [mmsgs (->> metas 
-             (group-by type) 
-             (map-vals #(map vals %))
-             (map-vals #(->> % (a concat) (a hash-map)))
-             (with-type :meta-messages))]
+               (group-by type) 
+               (map-vals #(map vals %))
+               (map-vals #(->> % (a concat) (a hash-map)))
+               (with-type :meta-messages))]
       (if (seq midis) (conj midis mmsgs) [mmsgs])
       midis)))
 

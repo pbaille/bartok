@@ -70,7 +70,12 @@
                                    (filter (fn [{p :position}] (or (v-lt p phev) (v-gt p phsv))) 
                                            (:harmony g))))))))
 
-(defn tempo-interpolator [g] (cyclic-interpolator (-> g :tempo) (cycle-val)))
+(defn tempo-interpolator 
+  ([g] (cyclic-interpolator (-> g :tempo) (cycle-val)))
+  ([g k] 
+   (case k
+     :linear (linear-interpolator (-> g :tempo))
+     :step (step-interpolator (-> g :tempo)))))
 
 ;********************* position **********************
 
@@ -113,9 +118,8 @@
                   (map :val (g :bars)))))
 
 (defn pos+ [p rval]
-  (let [sub (+ rval (-> p :sub))
+  (let [sub (+ rval (:sub p))
         current-bar-val (:val (current-bar p))]
-    ; (show-env)
     (cond 
       (>= sub current-bar-val)
         (pos+ 
@@ -150,11 +154,7 @@
      (or (and (after? pos pos1) (before? pos pos2)) 
          (or (eq? pos pos1) (eq? pos pos2))))))
 
-(defn note-to-ms [n]
-  (let [dur (:duration n)
-        pos-val (->> n :position pos-val)
-        med-tempo ((tempo-interpolator g) pos-val (+ pos-val dur))]
-    (to-ms dur med-tempo)))
+
 
 (defn tempo-at [x]
   (if (number? x)
@@ -164,7 +164,16 @@
 (defn num->pos [n]
   (pos+ (g-pos 0 0 0) n))
 
+;*************** ms ***************
+
+(defn note-to-ms 
+  [n]
+  (let [dur (:duration n)
+        pos-val (->> n :position pos-val)
+        med-tempo ((tempo-interpolator g :step) pos-val (+ pos-val dur))]
+    (with-precision 3 (bigdec (to-ms dur med-tempo)))))
+
 (defn pos-to-ms [p]
   (let [dur (pos-val p)
-        med-tempo ((tempo-interpolator g) 0 dur)]
-    (to-ms dur med-tempo)))
+        med-tempo ((tempo-interpolator g :step) 0 dur)]
+    (with-precision 3 (bigdec (to-ms dur med-tempo)))))

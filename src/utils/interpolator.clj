@@ -1,5 +1,6 @@
 (ns utils.interpolator
   (:use utils.utils)
+  (:use vendors.debug-repl)
   (:use utils.macros))
 
 (defn- expand-triplets [points]
@@ -55,6 +56,7 @@
             (+ y1 (* (- x x1) (/ (- y2 y1) (- x2 x1))))))
       ; median value of a range
       ([xa xb]
+        ; (debug-repl)
         (let [between-points (filter #(and (> (first %) xa) (< (first %) xb)) m)]
           (if (seq between-points)
             (let [weights (concat [(- (-> between-points first first) xa)]

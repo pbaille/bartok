@@ -49,11 +49,13 @@
            velocity 60 
            channel  0}
       :as note }]
-  (m-note (:val pitch) (note-to-ms note) (pos-to-ms position) velocity channel))
+  ; (dr)
+  (m-note (:val pitch) (round 3 (note-to-ms note)) (round 3 (pos-to-ms position)) velocity channel))
 
 (defn play [out notes]
-  (let [notes (map to-midi (expand-chords notes))]
-    (for [{p :pitch v :velocity d :duration pos :position c :channel} notes]
+  (let [notes_ (map to-midi (expand-chords notes))]
+    ; (dr)
+    (for [{p :pitch v :velocity d :duration pos :position c :channel} notes_]
       (play-note out p v d pos c))))
 
 ;************* old ***************

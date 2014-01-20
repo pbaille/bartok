@@ -43,7 +43,7 @@
            alt (- mod (:pitch-val npc))
            possible-alt? (between alt -2 2)]
        ; (debug-repl)
-       (when possible-alt? (pitch (pitch-class npc alt) (- oct 5))))  
+       (when possible-alt? (pitch (pitch-class npc (alteration alt)) (- oct 5))))  
     
   ['PitchClass p :number o]
     (pitch (keyword-cat (:name p) (str o)))
@@ -56,7 +56,10 @@
       ; (debug-repl)
       (if (zero? dist) 
         p1 
-        (or (pitch (-> p1 :pitch-class :natural :name) n) (pitch (-> p2 :pitch-class :natural :name) n))))
+        (or (pitch (-> p1 :pitch-class :natural :name) 
+                   n) 
+            (pitch (-> p2 :pitch-class :natural :name) 
+                   n))))
     
   ; [:number n 'Mode m]
   ;   (let [n-mod (mod12 n)
