@@ -22,8 +22,8 @@
 (defn- key-signature-msg?  [msg] (= (.getType msg) 0x59))
 
 (def int->key 
-  {0 :C -1 :Bb -2 :Eb -3 :Ab -4 :Db 
-   -5 :Gb -6 :Cb -7 :Fb 1 :G 2 :D 
+  {0 :C -1 :Bb -2 :Bb -3 :Eb -4 :Ab 
+   -5 :Db -6 :Gb -7 :Cb 1 :G 2 :D 
    3 :A 4 :E 5 :B 6 :F# 7 :C#})
 
 ; (defn- bpm-at [midi-pos parsed-file] ())

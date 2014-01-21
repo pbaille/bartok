@@ -1,19 +1,9 @@
 (ns utils.t-utils
   (:use midje.sweet)
-  (:use [utils.utils]))
+  (:require [utils.utils :refer :all]))
 
-(facts "about keyword-cat"
-  (fact "it concat two or more keywords"
-    (keyword-cat :foo :bar) => :foobar
-    (keyword-cat :foo :bar :aze) => :foobaraze)
-  (fact "it concat keywords with strings"
-    (keyword-cat :foo "bar") => :foobar
-    (keyword-cat "foo" :bar :aze) => :foobaraze)
-  (fact "it concat symbols keywords strings and ignore nil"
-    (keyword-cat :foo "b" nil 'ar) => :foobar
-    (keyword-cat nil :foo 'bar "aze" 1) => :foobaraze1))
 
-; ;***************** utils ********************
+;***************** utils ********************
   
   (fact "or= works"
     (or= 12 1 3 5 78 12) => true
@@ -35,18 +25,31 @@
     (or-> 12 (= 12) (> 11)) => true
     (or-> 12 (> 12) (= 1)) => false)
   
-; ;********** strings and keywords ************
-
-;   (defn named? [x]
-;     (or (keyword? x) (string? x) (symbol? x)))
   
+;********** strings and keywords ************
+ 
+  (fact "named? works"
+    (named? 'aze) => true
+    (named? :az) => true
+    (named? "az") => true
+    (named? 1) => false
+    (named? {:a 1}) => false
+    (named? [1 2]) => false)
+  
+  (facts "about keyword-cat"
+    (fact "it concat two or more keywords"
+      (keyword-cat :foo :bar) => :foobar
+      (keyword-cat :foo :bar :aze) => :foobaraze)
+    (fact "it concat keywords with strings"
+      (keyword-cat :foo "bar") => :foobar
+      (keyword-cat "foo" :bar :aze) => :foobaraze)
+    (fact "it concat symbols keywords strings and ignore nil"
+      (keyword-cat :foo "b" nil 'ar) => :foobar
+      (keyword-cat nil :foo 'bar "aze" 1) => :foobaraze1))
+
+ 
 ;   (defn dash-split [x] 
 ;     (when (named? x) (clojure.string/split (name x) #"\-")))
-  
-;   (defn keyword-cat [& args] 
-;     (-> (apply str (map name (remove nil? args))) keyword))
-  
-;   (def kwcat keyword-cat)
   
 ;   (defn parse-int [s] (Integer/parseInt (re-find #"\A-?\d+" s)))
 ;   (defn kw->str [kw] (-> kw str (subs 1)))
@@ -175,6 +178,12 @@
   
 ;   ;(map-h (fn [k v] {k (inc v)}) {:a 1 :b 2})
 ;   ;=> {:a 2 :b 3}
+
+  (fact "key-path"
+    (key-path :a {:aze {:b 1} :bifl {:qsd {:cv 23 :m {:z 1 :a 345} } :q 1}}) 
+      => [:bifl :qsd :m :a]
+    (key-path :a {:aze {:a 1} :bifl {:qsd {:cv 23 :m {:z 1 :a 345} } :q 1}}) 
+      => [:aze :a])
 
 ; ;**************** vectors *******************
 

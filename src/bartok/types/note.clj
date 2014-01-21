@@ -3,10 +3,10 @@
   (:use bartok.litterals.all))
 
 (b-fn note 
-  ([pitch dur pos]
-    (with-type 'Note {:pitch pitch :duration dur :position pos}))
-  ([pitch dur pos vel chan]
-    (with-type 'Note {:pitch pitch :duration dur :position pos :velocity vel :channel chan})))
+  ([p dur pos]
+    (with-type 'Note {:pitch (pitch p) :duration dur :position pos}))
+  ([p dur pos vel chan]
+    (with-type 'Note {:pitch (pitch p) :duration dur :position pos :velocity vel :channel chan})))
 
 (b-fn p-chord 
   [pitch & intervals-and-or-degrees]

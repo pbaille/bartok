@@ -150,6 +150,7 @@
       :else (map vector (iterate inc 0) coll)))
   
   (defn pos [pred coll]
+    ; (dr)
     (for [[i v] (indexed coll) :when (pred v)] i))
   
   (defn index-of [item coll] (first (pos #{item} coll)))
@@ -161,6 +162,10 @@
       (concat coll tail)))
   
 ;***************** maps *********************
+  
+  (defn map->sorted 
+    "given a hash-map return the corresponding sorted-map"
+    [m] (a sorted-map (a concat m)))
   
   (def h-map hash-map)
   
@@ -186,11 +191,27 @@
   (defn map-vals [f m]
     (a merge (map (fn [[k v]] {k (f v)}) m)))
   
+  (defn map-keys [f m]
+    (a merge (map (fn [[k v]] {(f k) v}) m)))
+  
   (defn map-h  [f m]
     {:pre [(map? m)]}
     (let [hms (map (fn [[k v]] (f k v)) m)]
       (if (second hms) (a conj hms) (first hms))))
   
+  (declare first-truthy type=)
+  
+  (defn key-path
+    "find the deepless path of given key in a map" 
+    ([k coll] (key-path k [] coll))
+    ([k pathv coll] 
+      (if (get-in coll (conj pathv k)) 
+        (conj pathv k) 
+        (first-truthy 
+          #(when (type= % clojure.lang.MapEntry) 
+              (when (map? (val %)) (key-path k (conj pathv (key %)) coll))) 
+          (get-in coll pathv)))))
+
   ;(map-h (fn [k v] {k (inc v)}) {:a 1 :b 2})
   ;=> {:a 2 :b 3}
 
@@ -226,13 +247,16 @@
   (def a apply)
   
   (defn ap [f & args]
+    "apply last argument to (partial f (butlast args))"
     (apply (apply partial f (butlast args)) (last args)))
   ;(ap + 2 3 [1 2 3 4])
   
   
   (defn call [^String nm & args]
-      (when-let [fun (ns-resolve *ns* (symbol nm))]
-          (apply fun args)))
+    "call a function by string name 
+    ex: (\"+\" 2 3)"
+    (when-let [fun (ns-resolve *ns* (symbol nm))]
+      (apply fun args)))
   
 ;************ higher order funs *************
   
@@ -247,14 +271,12 @@
     (next (reductions f init coll)))
   
   (defn map-with-coll [f coll]
+    "like map but f takes extra argument coll"
     (map f coll (repeat coll)))
   
-  ; takes function that takes coll as third argument
   (defn red-with-coll [f init coll] 
+    "same as reduce but takes a function that takes 3 arguments [acc el coll]"
     (reduce #(f %1 %2 coll) init coll))
-  
-  (defn map-with-index [f coll]
-    (map f coll (range)))
   
   (defn best [f coll]
     (reduce #(if (f %1 %2) %1 %2) coll))
@@ -262,21 +284,30 @@
   (defn select-first [pred coll]
     (first (filter pred coll)))
   
-  ;map with f and remove falsy vals
-  (defn filt-map [f coll]
-    (filter (complement nil?) (map f coll)))
-  
-  ;(filt-map #(when (< 0 %) %) [-1 2 3])
+  (defn remnil-map [f coll]
+    "map coll with f and filter nils"
+    (remove nil? (map f coll)))
+  ;(remnil-map #(when (< 0 %) %) [-1 2 3])
   ;=> (2 3)
   
-  ;like filt-map but just first
+  (defn filt-map [ff mf coll]
+    "map coll with mf then filter results with ff"
+    (filter ff (map mf coll)))
+    
+  (defn map-filt [mf ff coll]
+    "filter coll with ff then map results with mf"
+    (map mf (filter ff coll)))
+  
+  
   (defn first-truthy [f coll]
+    "take the first truthy element of (map f coll)"
     (select-first (complement nil?) (map f coll)))
   
   ;(first-truthy #(when (< 0 %) %) [-1 2 3])
   ;=> 2
   
   (defn set-map [f coll]
+    "call set on the result of map"
     (set (map f coll)))
   
   

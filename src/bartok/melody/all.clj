@@ -5,4 +5,5 @@
 (immigrate
   'bartok.melody.melodic-domain
   'bartok.melody.step-pattern
-  'bartok.melody.strategies)
+  'bartok.melody.strategies
+  'bartok.melody.analysis)

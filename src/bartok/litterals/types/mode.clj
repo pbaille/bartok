@@ -14,6 +14,12 @@
 (defn build-mode [n r mc pcs]
   (with-type 'Mode {:name n :root r :mode-class mc :pitch-classes pcs}))
 
+(def mothers 
+  (for [mc [:Lyd :Lyd+ :Lyd#2] 
+        r [:F :Bb :Eb :Ab :Db :Gb :Cb :Fb
+              :C  :G  :D  :A  :E  :B  :F#]]
+    (mode (kwcat r "-" mc))))
+
 ;************ construct **************
 
 (b-construct mode

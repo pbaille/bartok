@@ -4,6 +4,7 @@
  (:use clojure.inspector)
  (:use [vendors debug-repl profile])
  (:use camel-snake-kebab)
+ (:use midje.sweet)
  
  (:use bartok.types.note)
  
@@ -22,8 +23,4 @@
 (def settings
   {:tempo-interpolation :step ;# {:step :linear} TODO curve interpolations
    }) ;
-
-
-
-
 

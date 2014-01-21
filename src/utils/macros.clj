@@ -1,5 +1,6 @@
 (ns utils.macros
-  (:use utils.utils))
+  (:use utils.utils)
+  (:require [clojure.walk :as w]))
 
 (defmacro chefn [name check-fn args & tail]
   (let [docstring (if (string? (first tail)) (first tail))
@@ -167,7 +168,41 @@
   (aze :_ 2) ;=> 3
 )
 
+(defmacro f> [& funs] `#(-> % ~@funs))
+(defmacro f>> [& funs] `#(->> % ~@funs))
 
+;;;;;;;;;;;;;;;;; asf> and asf>> (mix of ( -> or ->>) and as->) ;;;;;;;;;;;;;;;;
+
+(defn- replace_ [x sym] 
+  (if (sequential? x)
+    (if (in? x '_) 
+      (map (fn [xx] (if (= '_ xx) sym xx)) x)
+      x)
+    x))
+
+(defmacro asf> [& funs] 
+(let [sym (gensym "x")]  
+  `#(as-> % ~sym
+      ~@(map (fn [x] 
+               (if (in? (flatten x) sym) 
+                 x 
+                 (list* (first x) sym (next x))))
+             (w/postwalk (fn [x] (replace_ x sym)) funs)))))
+
+;(asf> (+ 2 _ (* 3 _)) (- 3)) 
+;;=> #(as-> % x# (+ 2 x# (* 3 x#)) (- x# 3))
+
+(defmacro asf>> [& funs] 
+(let [sym (gensym "x")]  
+  `#(as-> % ~sym
+      ~@(map (fn [x] 
+               (if (in? (flatten x) sym) 
+                 x 
+                 (concat x [sym])))
+             (w/postwalk (fn [x] (replace_ x sym)) funs)))))
+
+;(asf> (+ 2 _ (* 3 _)) (- 3)) 
+;;=> #(as-> % x# (+ 2 x# (* 3 x#)) (- 3 x#))
 
 
 ;buggy
