@@ -35,7 +35,6 @@
                          {:pcs (->> %2 :pitch-classes (map :name)) 
                          :val 0}) 
                       {} mothers)]
-    ; (dr)
     (->> (reduce (fn [acc [{nam :name va :val} [mn {pcs :pcs}]]]
                    (if (in? pcs nam)
                      (if (mn acc) 
@@ -48,17 +47,15 @@
          reverse)))
 
 (defn closest-mothers2 [notes]
-  (let [nts (map #(as-> % x 
-                    (assoc x :val (/ (-> x :position :sub denom (* 2)))
-                             :name (-> x :pitch :pitch-class :name))
-                    (dissoc x :duration :position :pitch)) 
+  (let [nts (map (asf> (assoc _ :val (/ (-> _ :position :sub denom (* 2)))
+                                :name (-> _ :pitch :pitch-class :name))
+                       (dissoc :duration :position :pitch)) 
                  notes)
         *modat* (atom (reduce #(assoc %1 
                                  (:name %2) 
                                  {:pcs (->> %2 :pitch-classes (map :name)) 
                                  :val 0}) 
                               {} mothers))]
-    ; (dr)
     (doseq [{nam :name va :val} nts [mn {pcs :pcs}] @*modat*] 
       (when (in? pcs nam)
         (swap! *modat* #(update-in % [mn :val] + va))))

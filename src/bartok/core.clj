@@ -20,7 +20,7 @@
 
 
 ; (:use [bartok.rythmn.humanize])
-(def settings
+(def *settings* (atom
   {:tempo-interpolation :step ;# {:step :linear} TODO curve interpolations
-   }) ;
+   })) ;
 

@@ -61,6 +61,9 @@
             (pitch (-> p2 :pitch-class :natural :name) 
                    n))))
     
+  ['NaturalPitchClass npc 'Alteration a :number o]
+    (pitch (kwcat (:name npc)(:name a) o ))
+    
   ; [:number n 'Mode m]
   ;   (let [n-mod (mod12 n)
   ;         mnpcv (pev (map (c :pitch-val :natural) (:pitch-classes m)))])
