@@ -1,6 +1,6 @@
 (ns bartok.midi.xml-parser
   (:use utils.all)
-  (:use bartok.litterals.all)
+  (:use bartok.primitives)
   (:require [clojure.zip :as zip]
             [clojure.xml :as xml])
   (:use [clojure.data.zip.xml]))

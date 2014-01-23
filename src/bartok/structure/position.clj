@@ -1,7 +1,7 @@
 (ns bartok.structure.position
   (:use utils.all)
   (:use bartok.rythmn.rval)
-  (:use bartok.litterals.all))
+  (:use bartok.primitives))
 
 ; functions arguments: 
 ; g => Grid
@@ -170,10 +170,10 @@
   [n]
   (let [dur (:duration n)
         pos-val (->> n :position pos-val)
-        med-tempo ((tempo-interpolator g :step) pos-val (+ pos-val dur))]
+        med-tempo ((tempo-interpolator g) pos-val (+ pos-val dur))]
     (with-precision 3 (bigdec (to-ms dur med-tempo)))))
 
 (defn pos-to-ms [p]
   (let [dur (pos-val p)
-        med-tempo ((tempo-interpolator g :step) 0 dur)]
+        med-tempo ((tempo-interpolator g) 0 dur)]
     (with-precision 3 (bigdec (to-ms dur med-tempo)))))

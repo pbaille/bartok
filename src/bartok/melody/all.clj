@@ -1,6 +1,6 @@
 (ns bartok.melody.all
   (:use utils.utils)
-  (:use bartok.litterals.all))
+  (:use bartok.primitives))
 
 (immigrate
   'bartok.melody.melodic-domain

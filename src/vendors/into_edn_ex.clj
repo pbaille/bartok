@@ -1,6 +1,6 @@
 (ns vendors.into-edn-ex
   (:use utils.all)
-  (:use bartok.litterals.all)
+  (:use bartok.primitives)
   (:require [into-edn :refer [into-edn]]
             [clojure.zip :as zip]
             [clojure.data.xml :as xml]

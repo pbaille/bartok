@@ -1,6 +1,7 @@
 (ns bartok.melody.melodic-domain
-  (:use [utils utils dom-part])
-  (:use bartok.litterals.all))
+  (:use midje.sweet)
+  (:use utils.all)
+  (:use bartok.primitives))
 
 ;******************* Private ************************
 
@@ -16,6 +17,7 @@
   (let [rng (range (-> bounds first :val) 
                    (-> bounds second :val inc))
         mpvs (apply hash-map (mapcat (juxt :val :name) (:pitch-classes mode)))]
+    ; (dr)
     (with-type 'MelodicDomain 
       {:mode mode
        :bounds bounds
@@ -46,8 +48,8 @@
 
 (defn interval-bounds [dom]
   (let [i (-> dom :current :index)]
-    [(generic-interval (* -1 i)) 
-     (generic-interval (- (-> dom :pitches count dec) i))]))
+    [(d-interval (* -1 i)) 
+     (d-interval (- (-> dom :pitches count dec) i))]))
 
 (defn md-amplitude [md]
   (count (:pitches md)))
@@ -75,6 +77,14 @@
           (concat acc s))) 
       [] coll)))
 
- 
+
+(fact "melodic-domain"
+  (def- md (melodic-domain :C-Lyd [:C0 :C2] :C1))
+    (melodic-domain :C-Lyd [:C0 :C2]) => (melodic-domain :C-Lyd [:C0 :C2] :C0)
+    (interval-bounds md)
+      => [(d-interval :1st-d1) (d-interval :1st-u1)]
+    (md-amplitude md) => 15
+    (step md 1) => (melodic-domain :C-Lyd [:C0 :C2] :D1)
+    (step-sequence md [1 1 1]) => [(b> :D1)(b> :E1)(b> :F#1)])
 
 

@@ -6,7 +6,7 @@
   (:use bartok.rythmn.rval)
   (:use bartok.composition.utils)
   (:require [clojure.set :refer [subset?]] )
-  (:use bartok.litterals.all)
+  (:use bartok.primitives)
   (require [utils.all :refer :all]))
 
 (defn ginf [& keys] #(get-in % keys))
@@ -125,5 +125,5 @@
 (defn- voice->steps [voice]
   (let [just-pitches (map #(if (vector? %) (map :pitch %) (:pitch %)) voice)
         pitch-line (map #(if (sequential? %) (:name (a highest %)) %) just-pitches)]
-    (for [[p1 p2] (partition 2 1 pitch-line)] (do (dr)(interval p1 p2)))))
+    (for [[p1 p2] (partition 2 1 pitch-line)] (do (dr)(c-interval p1 p2)))))
 

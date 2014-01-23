@@ -1,7 +1,7 @@
 (ns bartok.composition.rythmic-step-pattern
   (:use utils.all)
   (:use bartok.types.note)
-  (:use bartok.litterals.all)
+  (:use bartok.primitives)
   (:use bartok.melody.all)
   (:use bartok.harmony.all)
   (:use bartok.rythmn.all)

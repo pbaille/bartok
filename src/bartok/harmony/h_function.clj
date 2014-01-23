@@ -1,6 +1,6 @@
 (ns bartok.harmony.h-function
   (:use utils.utils)
-  (:use bartok.litterals.all2))
+  (:use bartok.primitives))
 
 (def h-functions 
   (let [mms {:SD    :P4 

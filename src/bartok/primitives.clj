@@ -1,4 +1,4 @@
-(ns bartok.litterals.all2
+(ns bartok.primitives
   (:use utils.all)
   (:use midje.sweet)
   (:require [camel-snake-kebab :as csk])
@@ -130,7 +130,7 @@
          (keyword? t) (call (name t) x) 
          (fn? x) (comp-b> x)
          (set? x) (set (map b> x))
-         (and (not (map? x)) (seq x)) (vec (map b> x))
+         (and (not (map? x)) (sequential? x)) (vec (map b> x))
          :else x)))
     ([x & xs] (map b> (cons x xs))))
   
@@ -294,8 +294,7 @@
         (let [dist (mod (- (:val npc2)(:val npc1)) 7)]
           (d-interval-class dist)))
     
-        
-  ;;;;;;;;;;;;;;;;; DInterval ;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;;;;;;;;;;;;;;;;;;;; DInterval ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     
     (b-construct d-interval 
                  
@@ -388,7 +387,7 @@
       ;['ModeClass       
       )
     
-  ;;;;;;;;;;;;;;;;;;;; CInterval ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;;;;;;;;;;;;;;;;;;;; CInterval ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     
     (declare pitch)
     
@@ -476,6 +475,7 @@
       ;['PitchClass p1 'PitchClass p2]
       ;['Pitch p1 'Pitch p2]
     )
+  
   ;;;;;;;;;;;;;;;;; NaturalPitchClass ;;;;;;;;;;;;;;;;;;;;;;;
     
     (def natural-pitch-classes

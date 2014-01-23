@@ -3,7 +3,7 @@
   (:use bartok.types.note)
   (:use utils.utils)
   (:use vendors.debug-repl)
-  (:use bartok.litterals.all))
+  (:use bartok.primitives))
 
 (b-fn note-line-from 
   [pos dur & notes-and-chords]

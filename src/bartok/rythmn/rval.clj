@@ -6,7 +6,7 @@
   (if (ratio? r) (denominator r) 1))
 
 (defn to-ms [rational bpm]
-  (with-precision 50 (bigdec (* (/ 60000 bpm) rational))))
+  (* (/ 60000 bpm) rational))
 
 (defn allowed-subs [rval]
   (set (for [sub (-> rval denom prime-factors c/subsets)]

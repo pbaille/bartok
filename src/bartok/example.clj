@@ -97,4 +97,4 @@
        (map pitch)
        (ap m-note-line-from (g-pos 0 0 0) 1/4 40 1)))
 
-(defn mc [] (play vep (concat (mc1 100) (map #(update-in % [:pitch] transpose (interval :P5-d1)) (mc1 100)))))
+(defn mc [] (play vep (concat (mc1 100) (map #(update-in % [:pitch] transpose (c-interval :P5-d1)) (mc1 100)))))

@@ -4,7 +4,7 @@
   (:use [bartok.midi overtone-midi midi parser])
   (:use bartok.structure.position)
   (:use bartok.types.note)
-  (:use bartok.litterals.all)
+  (:use bartok.primitives)
   (:use bartok.midi.parser))
 
 (defn- total-length [tracks]
