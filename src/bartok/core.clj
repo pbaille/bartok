@@ -12,7 +12,7 @@
  (:use [bartok.structure position])
  
  (:use utils.all)
- (:use bartok.litterals.all)
+ (:use bartok.litterals.all2)
  (:use bartok.melody.all)
  (:use bartok.harmony.all)
  (:use bartok.rythmn.all)

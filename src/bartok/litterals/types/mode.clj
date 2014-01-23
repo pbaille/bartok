@@ -61,7 +61,7 @@
   (mode (:name (mother-mode m)) 
         (-> (degree-class-val m) (+ n) (mod 7) inc)))
 
-(defmethod transpose ['Mode 'Interval] [this interval]
+(b-meth transpose ['Mode 'Interval] [this interval]
   (let [r (transpose (:root this) interval)
         n (keyword-cat (:name r) "-" (:name (:mode-class this)))
         ps (map #(transpose % interval) (:pitch-classes this))]

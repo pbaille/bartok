@@ -16,7 +16,9 @@
                  [org.clojure/java.data "0.1.1"]
                  [byte-streams "0.1.7"]
                  [camel-snake-kebab "0.1.2"]
-                 [org.clojure/data.zip "0.1.1"]]
+                 [org.clojure/data.xml "0.0.7"]
+                 [org.clojure/data.zip "0.1.1"]
+                 [into-edn "1.0.2"]]
   :profiles {:dev {:dependencies [[midje "1.6.0"]]}}
   ;:repl-options {:nrepl-middleware [utils.nrepl-middleware/pprint-middleware]}
   :main bartok.core

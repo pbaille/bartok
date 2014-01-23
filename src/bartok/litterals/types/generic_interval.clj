@@ -39,8 +39,11 @@
                  {:name n :val val :class class :direction dir :octave-offset oct}))
   
   [:generic-interval-class n]
-    (generic-interval (keyword-cat n "0"))
+    (generic-interval (keyword-cat n "-u"))
   
+  ['GenericIntervalClass gic 'Direction d]
+    (generic-interval (keyword-cat (:name gic) "-" (:name d)))
+    
   [:number v]
     (let [[oct m] (div-mod (abs v) 7)
           class (generic-interval-class m)

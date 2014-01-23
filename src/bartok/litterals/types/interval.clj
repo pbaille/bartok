@@ -31,7 +31,7 @@
   [:generic-interval gi :number n]
     (let [dc (-> (generic-interval-class gi) :name degree-class)
           [d-val v] [(:degree-val dc)(:val dc)]
-          alt-n (let [x (- (mod12 n)(mod12 d-val))] 
+          alt-n (let [x (- (mod12 (abs n))(mod12 d-val))] 
                   (cond (< x -2) (+ x 12) (> x 2) (- x 12) :else x))
           alt (alteration alt-n (:alt-type dc))
           dir-oct (second (dash-split gi))]
@@ -48,8 +48,10 @@
            diff (- (:val p2) (:val p1))
            oct-diff (int-div diff 12)
            gicv (if (>= diff 0) (- p2v p1v) (-> (- p1v p2v) (+ 7) (mod 7) - ))
-           gen (generic-interval (+ gicv (* 7 oct-diff)))]
-      (interval (:name gen) (abs diff)))
+           gen (cond (zero? gicv) 
+                       (if (>= diff 0) :1st-u :1st-d)
+                     :else (:name (generic-interval (+ gicv (* 7 oct-diff)))))]
+      (interval gen diff))
   
   ['PitchClass p1 'PitchClass p2]
     (interval (pitch p1) (pitch p2)))

@@ -48,14 +48,12 @@
   ['NaturalPitchClass npc 'Alteration a]
     (pitch-class (kwcat (keyword (:name npc)) (:name a))))
 
-;*************** functions **************
+;;;;;;;;;;;;;;; functions ;;;;;;;;;;;;;;;;
 
-(defmethod transpose ['PitchClass 'Interval] [pc i]
+(b-meth transpose ['PitchClass 'Interval] [pc i]
     (let [nat (:name (transpose (:natural pc) (-> i :generic :val)))
           v (mod12 (+ (:val pc) (:val i)))]
       (pitch-class nat v)))
-
-
 
 
 

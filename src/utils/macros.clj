@@ -102,6 +102,12 @@
 ;don't see the point of this...
 (defmacro show-form [] (println (next &form)))
 
+(defmacro dr-e 
+  ([expr] 
+   `(dr-e "auto-catch repl" ~expr))
+  ([msg expr]
+   `(try ~expr (catch Exception e# (do (pp ~msg)(dr))))))
+
 ;NOOOB !
 ; (defmacro p1-fn [name arg1 argv & body]
 ;   `(do 

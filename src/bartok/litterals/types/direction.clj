@@ -1,8 +1,8 @@
 (in-ns 'bartok.litterals.all)
 
 (def directions 
-   {:up {:name :u :val 1}
-    :down {:name :d :val -1}})
+   {:up (with-type 'Direction {:name :u :val 1})
+    :down (with-type 'Direction {:name :d :val -1})})
 
 (defmulti direction b-types)
 

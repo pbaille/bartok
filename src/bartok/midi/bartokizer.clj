@@ -66,6 +66,6 @@
 ; (bartokize "src/midi-files/jeuxdeau.mid")
 
 (def vep (midi-out "Gestionnaire IAC Bus IAC 2" ))
-(def score (bartokize "src/midi-files/fur_elise.mid"))
+; (def score (bartokize "src/music-files/mid/fur_elise.mid"))
 
 

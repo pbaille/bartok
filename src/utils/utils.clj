@@ -165,7 +165,18 @@
   
   (defn map->sorted 
     "given a hash-map return the corresponding sorted-map"
-    [m] (a sorted-map (a concat m)))
+    [m] (a sorted-map (a concat m)))sort
+  
+  (defn sorted-map-by* 
+    "given a hash-map and a function return the corresponding sorted-map-by
+    the advantage over regular sorted-map-by is that f takes keyvals instead of keys"
+    ([f m] (a sorted-map-by 
+              #(f [%1 (%1 m)][%2 (%2 m)])
+              (a concat m)))
+    ; sorted by result of (ctor (f val1)(f val2))
+    ([ctor f m] (a sorted-map-by 
+                   #(comparator (f (%1 m))(f (%2 m)))
+                   (a concat m))))
   
   (def h-map hash-map)
   

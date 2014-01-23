@@ -5,60 +5,136 @@
             [clojure.xml :as xml])
   (:use [clojure.data.zip.xml]))
 
-(def score (zip/xml-zip (xml/parse (java.io.File. "src/midi-files/noct21.xml"))))
+; doesn't work
+; (def music-xml
+;    (with-open [in (java.util.zip.InflaterInputStream.
+;                     "src/music-files/xml/a-min.mxl")]
+;       (slurp in)))
+
+; (def score (zip/xml-zip (xml/parse (java.io.File. "src/music-files/xml/noct21.xml"))))
 
 (def- int->key 
-  {0 :C -1 :Bb -2 :Bb -3 :Eb -4 :Ab 
-   -5 :Db -6 :Gb -7 :Cb 1 :G 2 :D 
-   3 :A 4 :E 5 :B 6 :F# 7 :C#})
+  {0  :C  -1 :F -2 :Bb -3 :Eb -4 :Ab -5 :Db -6 :Gb -7 :Cb 
+           1 :G  2 :D   3 :A   4 :E   5 :B   6 :F#  7 :C#})
 
 (defn- attributes [loc] 
-  
-  (let [key (first (xml-> loc :key :fifths text))
-        mod (first (xml-> loc :key :mode text))
-        beats (first (xml-> loc :time :beats text))
-        beat-type (first (xml-> loc :time :beat-type text))
-        divs (first (xml-> loc :divisions text))]
+  (let [key       (xml1-> loc :key :fifths text)
+        mod       (xml1-> loc :key :mode text)
+        beats     (xml1-> loc :time :beats text)
+        beat-type (xml1-> loc :time :beat-type text)
+        divs      (xml1-> loc :divisions text)]
     {:key  [(when key (int->key (parse-int key)))
             (when mod (keyword mod))]
-   :time (when (and beats beat-type) 
-           (time-signature (parse-int beats)(parse-int beat-type)))
-   :divisions (when divs (parse-int divs))}))
+     :time  (when (and beats beat-type) 
+              (time-signature (parse-int beats)(parse-int beat-type)))
+     :divisions (when divs (parse-int divs))}))
 
 (defn- note [loc]
-  (let [step   (first (xml-> loc :pitch :step text))
-        octave (first (xml-> loc :pitch :octave text))
-        alter  (first (xml-> loc :pitch :alter text))
-        dur    (first (xml-> loc :duration text))
-        typ    (first (xml-> loc :type text))
-        staff  (first (xml-> loc :staff text))
-        voice  (first (xml-> loc :voice text))]
+  (let [step   (xml1-> loc :pitch :step text)
+        octave (xml1-> loc :pitch :octave text)
+        alter  (xml1-> loc :pitch :alter text)
+        dur    (xml1-> loc :duration text)
+        typ    (xml1-> loc :type text)
+        staff  (xml1-> loc :staff text)
+        voice  (xml1-> loc :voice text)
+        chord  (if (xml1-> loc :chord) true false)]
     
     {:pitch (if step 
               (kwcat 
                 (symbol step)
                 (:name (alteration (if alter (parse-int alter) 0))) 
-                (parse-int octave))
+                (- (parse-int octave) 5))
               :none)
      :staff (when staff (parse-int staff)) 
      :voice (when voice (parse-int voice))  
-     :duration (when dur (parse-int dur))
-     :type typ}))
+     :duration (if dur (parse-int dur) 0)
+     :type typ
+     :chord chord}))
 
 (defn- tempo [loc]
-  {:bpm (parse-int (first (xml-> loc :per-minute text)))
-   :unit (keyword (first (xml-> loc :beat-unit text)))})
+  (when (seq loc)
+    {:bpm (parse-int (xml1-> loc :per-minute text))
+     :unit (keyword (xml1-> loc :beat-unit text))}))
 
 (defn- measure [loc]
-  {:attributes (map attributes (xml-> loc :attributes))
-   :tempo (map tempo (xml-> loc :direction :direction-type :metronome))
+  {:attributes (some-> (xml1-> loc :attributes) attributes)
+   :tempo (some-> (xml-> loc :direction :direction-type :metronome) tempo)
    :notes (map note (xml-> loc :note))})
 
-(defn main []
-  (let [data {:measures (map measure (xml-> score :part :measure))}
-        divs (-> data :measures first :attributes first :divisions)]
-    (assoc data :measures 
-      (map (fn [measure] 
-              (assoc measure :notes (map #(assoc % :duration (/ (:duration %) divs)) 
-                                         (:notes measure))))
-           (:measures data)))))
+(defn- group-chords [notes]
+  (->> (reduce (fn [acc n]
+                 (if (:chord n) 
+                   (conj (vec (butlast acc)) (conj (vec-if-not (last acc)) n))
+                   (conj acc n))) 
+               [(first notes)] (next notes))
+       ;remove chord field
+       (map (fn [n] (if (vector? n) 
+                      (mapv #(dissoc % :chord) n) 
+                      (dissoc n :chord))))))
+
+(defn- add-positions [notes]
+  (reduce (fn [acc n]
+            (let [current-pos 
+                  (let [lacc (if (vector? (last acc)) 
+                               (first (last acc)) 
+                               (last acc))] 
+                    (+ (:duration lacc) (:position lacc)))]
+              (if (vector? n)
+                (conj acc (mapv #(assoc % :position current-pos) n))
+                (conj acc (assoc n :position current-pos))))) 
+          [(if (vector? (first notes))
+             (mapv #(assoc % :position 0) (first notes))
+             (assoc (first notes) :position 0))] 
+          (next notes)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;; PUBLIC ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn main [xml-path]
+  (let [score (zip/xml-zip (xml/parse (java.io.File. xml-path)))
+        data {:measures (map measure (xml-> score :part :measure))}
+        divs (-> data :measures first :attributes :divisions)]
+    (as-> data d 
+      (update-in d [:measures] 
+        (p map
+          (f> ;calc duration (unit beat)          
+              (update-in [:notes]
+                (p map #(assoc % :duration (when (:duration %) (/ (:duration %) divs)))))
+              ;remove staff field (useless for now)
+              (update-in [:notes]
+                (p map #(dissoc % :staff)))
+              ;group-by voice
+              (update-in [:notes] 
+                (p group-by :voice))
+              ;remove voice and type fields in each note
+              (update-in [:notes]
+                (p map-vals (fn [v] (map #(dissoc % :voice :type) v))))
+              ;rename notes field
+              (clojure.set/rename-keys {:notes :voices})
+              ;group chords
+              (update-in [:voices]
+                (p map-vals group-chords))
+              ;add position field
+              (update-in [:voices]
+                (p map-vals add-positions))
+              )))
+      ;index measures as ints and sort
+      (->> (map-indexed #(vector %1 %2) (:measures d))
+           (sort-by first)
+           (a concat)
+           (a sorted-map)))))
+
+;buggy
+; (defn extract-mxl [path]
+;    (let [[_ filename] (re-matches #"(.*)\.mxl$" (.getName (java.io.File. path)))
+;          _ (pp "filename => " filename)
+;          zipfile (java.util.zip.ZipFile. path)
+;          _ (pp "zipfile => " zipfile)
+;          zipentry (.getEntry zipfile (str filename "uz.xml"))
+;          _ (pp "zipentry => "zipentry)
+;          in (.getInputStream zipfile zipentry)
+;          _ (pp "in => " in)] 
+;      (slurp in)))
+
+
+
+

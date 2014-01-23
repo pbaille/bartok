@@ -13,6 +13,6 @@
 (def val->degree-class  (reduce #(into %1 {(:val %2) %2}) {} degree-classes))
 
 (b-construct degree-class
-  [:degree-class n] (name->degree-class n)
-  [:generic-interval-class gic] (val->degree-class (-> gic generic-interval-class :val))
+  ['DegreeClass n] (name->degree-class (:name n))
+  ['GenericIntervalClass gic] (val->degree-class (-> gic :val))
   [:number v] (val->degree-class v))

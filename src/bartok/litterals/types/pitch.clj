@@ -81,12 +81,15 @@
   (and (= (-> p1 :pitch-class :natural) (-> p2 :pitch-class :natural))
        (= (:octave p1) (:octave p2))))
 
+(b-fn highest [& pitches]
+  (best #(> (:val %1)(:val %2)) pitches))
+
 ; (defn alt [p n] 
 ;   (let [a (alteration n)
 ;         int-kw (keyword-cat (:name a) "1-u")]
 ;     (transpose p (interval int-kw))))
         
-(defmethod transpose ['Pitch 'Interval] [this interval]
+(b-meth transpose ['Pitch 'Interval] [this interval]
     (let [pc (transpose (:pitch-class this) interval)
           v (+ (:val this) (:val interval))
           o (+ (:octave this) (:octave-offset interval))

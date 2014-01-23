@@ -3,7 +3,7 @@
   (:require [camel-snake-kebab :as csk])
   (:use vendors.debug-repl))
 
-;************ Patterns ***************
+;;;;;;;;; Patterns ;;;;;;;;;;
 
 (defn- pat-comp [& args]
   (java.util.regex.Pattern/compile (apply str args)))
@@ -62,12 +62,13 @@
 (def time-signature-pat
   #"[1-9][1-9]*\|(2|4|8|16)")
 
-;*********************** Identity *********************************
+;;;;;;;;;;;;;;;; Identity ;;;;;;;;;;;;;;;;;;;;;;
 
 (defn- fit? [regex str]
   (if (re-matches regex str) true false))
 
 (defn b? [x]
+  ; (pp 'b> x)
   (when (named? x)
     (let [n (name x)
           c (count n)]
@@ -98,7 +99,7 @@
   ([arg] (b-type arg))
   ([arg & more] (vec (map b-type (concat [arg] more)))))
 
-;********************** Eval ***************************
+;;;;;;;;;;;;;;;; Eval ;;;;;;;;;;;;;;;;;;
 
 ; types delaration
 (declare alteration 
@@ -116,14 +117,16 @@
 (declare comp-b>)
 
 (defn b> 
-  ([x] (when-let [t (b-type x)] 
-         (cond 
-           (or (= t :number)(= t :ratio)) x
-           (keyword? t) (call (name t) x) 
-           (fn? x) (comp-b> x)
-           (set? x) (set (map b> x))
-           (and (not (map? x)) (seq x)) (vec (map b> x))
-           :else x)))
+  ([x] 
+   ; (pp 'b> x)
+   (when-let [t (b-type x)] 
+     (cond 
+       (or (= t :number)(= t :ratio)) x
+       (keyword? t) (call (name t) x) 
+       (fn? x) (comp-b> x)
+       (set? x) (set (map b> x))
+       (and (not (map? x)) (seq x)) (vec (map b> x))
+       :else x)))
   ([x & xs] (map b> (cons x xs))))
 
 (defn comp-b> [f]
@@ -149,39 +152,75 @@
   (let [sym (symbol (str "b-multi-" n))]
     `(defmethod ~sym ~disp-val ~args ~@body)))
 
-(defmacro b-construct [n & body]
+; (defmacro b-construct [n & body]
+;   `(do (defmulti ~n b-types)
+;      ~@(map (fn [[v & fun-body]]
+;                (let [types (vec (take-nth 2 v))
+;                      args  (vec (take-nth 2 (next v)))
+;                      types (if (count= types 1) (first types) types)]
+;                  `(defmethod ~n ~types ~args ~@fun-body))) 
+;             (partition 2 2 body))
+;      (defmethod ~n '~(csk/->CamelCase (symbol (name n))) [x#] x#)
+;      (defmethod ~n :default [& args#] 
+;         ; (debug-repl)
+;         (let [b-args# (if (count= args# 1) (b> (first args#)) (b> args#))
+;               disp-vals# (if (count= args# 1) (b-types b-args#) (a b-types b-args#))]
+;           (if (contains? (methods ~n) disp-vals#)
+;             (if (vector? disp-vals#) 
+;               (a ~n b-args#) 
+;               (~n b-args#))
+;             (throw (Exception. 
+;               (str "*** No dispatch value " 
+;                    disp-vals# 
+;                    " for bartok-multimethod " 
+;                    (name '~n) " ***"))))))))
+
+(defmacro b-multi [n]
   `(do (defmulti ~n b-types)
+     (defmethod ~n :default [& args#] 
+       (let [b-args# (if (count= args# 1) (b> (first args#)) (b> args#))
+             disp-vals# (if (count= args# 1) (b-types b-args#) (a b-types b-args#))]
+         (if (contains? (methods ~n) disp-vals#)
+           (if (vector? disp-vals#) 
+             (a ~n b-args#) 
+             (~n b-args#))
+           (throw (Exception. 
+             (str "*** No dispatch value " 
+                  disp-vals# 
+                  " for bartok-multimethod " 
+                  (name '~n) " ***"))))))))
+
+(defmacro b-construct [n & body]
+  `(do (b-multi ~n)
+     (defmethod ~n '~(csk/->CamelCase (symbol (name n))) [x#] x#)
      ~@(map (fn [[v & fun-body]]
                (let [types (vec (take-nth 2 v))
                      args  (vec (take-nth 2 (next v)))
                      types (if (count= types 1) (first types) types)]
                  `(defmethod ~n ~types ~args ~@fun-body))) 
-            (partition 2 2 body))
-     (defmethod ~n '~(csk/->CamelCase (symbol (name n))) [x#] x#)
-     (defmethod ~n :default [& args#] 
-        ; (debug-repl)
-        (let [b-args# (if (count= args# 1) (b> (first args#)) (b> args#))
-              disp-vals# (if (count= args# 1) (b-types b-args#) (a b-types b-args#))]
-          (if (contains? (methods ~n) disp-vals#)
-            (if (vector? disp-vals#) 
-              (a ~n b-args#) 
-              (~n b-args#))
-            (throw (Exception. 
-              (str "*** No dispatch value " 
-                   disp-vals# 
-                   " for bartok-multimethod " 
-                   (name '~n) " ***"))))))))
+            (partition 2 2 body))))
 
-;**************** multi-methods *********************
+;for readibility of b-multi methods
+(defmacro b-meth [& args] `(defmethod ~@args))
 
-(defmulti transpose b-types)
+
+
+;;;;;;;;;;;; multi-methods ;;;;;;;;;;;;;;
+
+(b-multi transpose)
 
 ;modal-moves
-(defmulti intra-abs-move b-types)
-(defmulti intra-rel-move b-types)
-(defmulti relative b-types)
+(b-multi intra-abs-move)
+(b-multi intra-rel-move)
+(b-multi relative)
 
-;************** Types ********************************
+;;;;;;;;;;; generic methods ;;;;;;;;;;;;;;
+
+;passing
+(defn chrom-up [x] (transpose x :m2-u))
+(defn chrom-down [x] (transpose x :m2-d))
+
+;;;;;;;;;; Types ;;;;;;;;;;;;;;;;;;;;;;
 
 (load "types/alteration"
       "types/direction"

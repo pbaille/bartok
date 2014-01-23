@@ -1,6 +1,6 @@
 (ns bartok.harmony.h-function
   (:use utils.utils)
-  (:use bartok.litterals.all))
+  (:use bartok.litterals.all2))
 
 (def h-functions 
   (let [mms {:SD    :P4 
@@ -17,21 +17,18 @@
   (with-type 'ModalMove
     {:name n :degree degree}))
 
-(defmulti h-function b-types)
+(b-construct h-function
+  [:h-function n] 
+    (build-h-function n (c-interval-class (h-functions n)))
+  [:degree d] 
+    (build-h-function (d h-functions) (c-interval-class d))
+  ['Degree d] 
+    (build-h-function (-> d :name h-functions) d)
+  [:interval i] 
+    (build-h-function ((-> i c-interval-class :name) h-functions) (c-interval-class i))
+  ['Interval i] 
+    (build-h-function ((-> i c-interval-class :name) h-functions) (c-interval-class i))
+)
 
-(defmethod h-function :h-function [n] 
-  (build-h-function n (degree (h-functions n))))
-
-(defmethod h-function :degree [d] 
-  (build-h-function (d h-functions) (degree d)))
-
-(defmethod h-function 'Degree [d] 
-  (build-h-function (-> d :name h-functions) d))
-
-(defmethod h-function :interval [i] 
-  (build-h-function ((-> i degree :name) h-functions) (degree i)))
-
-(defmethod h-function 'Interval [i] 
-  (build-h-function ((-> i degree :name) h-functions) (degree i)))
 
 

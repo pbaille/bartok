@@ -17,11 +17,8 @@
 
 ;**************** methods ****************
 
-(defmethod transpose ['NaturalPitchClass 'GenericInterval] [this gi]
+(b-meth transpose ['NaturalPitchClass 'GenericInterval] [this gi]
   (natural-pitch-class (+ (:val this) (:val gi))))
 
-(defmethod transpose ['NaturalPitchClass :generic-interval] [this gin]
-  (natural-pitch-class (+ (:val this) (:val (generic-interval gin)))))
-
-(defmethod transpose ['NaturalPitchClass :number] [this n]
+(b-meth transpose ['NaturalPitchClass :number] [this n]
   (natural-pitch-class (+ (:val this) n)))
