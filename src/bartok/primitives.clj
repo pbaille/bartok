@@ -262,7 +262,7 @@
       (alteration -2 :t1) => {:val -2, :name :o}
       (alteration 2 :pitch) => {:val 2, :name :x})        
     
-  ;;;;;;;;;;;;;;; GenericIntervalClass ;;;;;;;;;;;;;;;;;;;;;;
+  ;;;;;;;;;;;;;;;;;; DIntervalClass ;;;;;;;;;;;;;;;;;;;;;;;;;
     
     (def d-interval-classes 
       (map #(with-type 'DIntervalClass (zipmap [:alt-type :degree-val :val :name] [%4 %3 %2 %1]))
@@ -339,7 +339,7 @@
       (d-interval :7th :d) 
       => {:name :7th-d, :val -6, :class {:name :7th, :val 6, :degree-val 11, :alt-type :t1}, :direction {:name :d, :val -1}, :octave-offset 0})
     
-  ;;;;;;;;;;;;;;;;;;;;; Degree ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;;;;;;;;;;;;;;;;;; CIntervalClass ;;;;;;;;;;;;;;;;;;;;;;;;;
     
     (def c-interval-classes
         (for [{cn :name cv :val ddv :degree-val ct :alt-type :as dc} d-interval-classes
@@ -370,7 +370,18 @@
       ['DIntervalClass dc] (d-interval-class->c-interval-class (:name dc))
       ['Mode m] (-> m :mode-class :c-interval-class)
       ['ModeClass m] (:c-interval-class m)
-      ['CInterval m] (:class m))
+      ['CInterval m] (:class m)
+      
+      ['DIntervalClass di :number n]
+        (let [dv (:degree-val di)
+              alt (alteration (- n dv) (:alt-type di))]
+          (when alt (c-interval-class (kwcat (:name alt) (inc (:val di))))))
+        
+      ['PitchClass pc1 'PitchClass pc2]
+        (let [dic (d-interval-class (:natural pc1) (:natural pc2))
+              diff (mod12 (- (:val pc2)(:val pc1)))]
+          ; (dr)
+          (c-interval-class dic diff)))
     
     ;;; functions ;;;
     
@@ -384,7 +395,9 @@
       (c-interval-class 1) => {:name :m2, :val 1, :d-class {:name :2nd, :val 1, :degree-val 2, :alt-type :t1}}
       (c-interval-class :2nd) => {:name :M2, :val 2, :d-class {:name :2nd, :val 1, :degree-val 2, :alt-type :t1}}
       ;['Mode m] 
-      ;['ModeClass       
+      ;['ModeClass  
+      ; (c-interval-class :7th 9)     
+        
       )
     
   ;;;;;;;;;;;;;;;;;;;; CInterval ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -423,10 +436,9 @@
                       (cond (< x -2) (+ x 12) (> x 2) (- x 12) :else x))
               alt (alteration alt-n (:alt-type dc))
               dir-oct (:octave-offset gi)]
-          (dr)
           (c-interval (kwcat (:name alt) (str (inc v)) "-" dir-oct)))
       
-      ['DInterval gi] 
+      ['DInterval gi]
         (c-interval (kwcat (-> gi :class c-interval-class :name)
                           "-"
                           (-> gi :direction :name)
@@ -472,7 +484,7 @@
       => {:name :m2-u, :val 1, :class (c-interval-class :m2) :generic (d-interval :2nd-u), :direction {:name :u, :val 1}, :octave-offset 0}
       (c-interval-class (c-interval :m2-u1))
       => {:name :m2, :val 1, :d-class {:name :2nd, :val 1, :degree-val 2, :alt-type :t1}}
-      ;['PitchClass p1 'PitchClass p2]
+      ; (c-interval :C :E)
       ;['Pitch p1 'Pitch p2]
     )
   
@@ -571,6 +583,8 @@
       (pitch-class 'A :#) => {:name :A#, :val 10, :natural {:name 'A, :val 5, :pitch-val 9}, :alteration {:val 1, :name :#}} 
       ;['Pitch p] 
       (transpose :C# :m2-d) => (pitch-class :B#)
+      (c-interval-class  :Bb :C#) => (c-interval-class :#2)   
+      (c-interval-class  :C# :Bb) => (c-interval-class :o7) 
       )
     
   ;;;;;;;;;;;;;;;;;;;;;; Pitch ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
