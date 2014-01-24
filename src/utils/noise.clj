@@ -50,14 +50,14 @@
 
 ; (defn play-perlin-line [steps md len]
 ;   (play vep 
-;     (ap m-note-line-from 
+;     (m-note-line-from 
 ;      (g-pos 0 0 0) 1/4 60 1
 ;      (map #(nth (:pitches md) %)
 ;           (scaled-perlin steps 0 (dec (md-amplitude md)) len)))))
 
 ; (defn play-simplex-line [steps md len]
 ;   (play vep 
-;     (ap m-note-line-from 
+;     (m-note-line-from 
 ;      (g-pos 0 0 0) 1/4 60 1
 ;      (map #(nth (:pitches md) %)
 ;           (scaled-simplex steps 0 (dec (md-amplitude md)) len)))))

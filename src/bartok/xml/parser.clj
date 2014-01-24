@@ -24,8 +24,9 @@
         beats     (xml1-> loc :time :beats text)
         beat-type (xml1-> loc :time :beat-type text)
         divs      (xml1-> loc :divisions text)]
-    {:key  [(when key (int->key (parse-int key)))
-            (when mod (keyword mod))]
+    {:key  (when (and key mod)
+             [(int->key (parse-int key))
+              (keyword mod)])
      :time  (when (and beats beat-type) 
               (time-signature (parse-int beats)(parse-int beat-type)))
      :divisions (when divs (parse-int divs))}))
@@ -90,10 +91,11 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;; PUBLIC ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn main [xml-path]
+(defn parse-xml [xml-path]
   (let [score (zip/xml-zip (xml/parse (java.io.File. xml-path)))
         data {:measures (map measure (xml-> score :part :measure))}
         divs (-> data :measures first :attributes :divisions)]
+    ; (dr)
     (as-> data d 
       (update-in d [:measures] 
         (p map
@@ -124,6 +126,41 @@
            (a concat)
            (a sorted-map)))))
 
+; (defn parse-xml-2 [xml-path]
+  ; (let [score (zip/xml-zip (xml/parse (java.io.File. xml-path)))
+  ;       parts (xml-> score :part)
+  ;       a {:measures (map measure (xml-> score :part))}
+  ;       divs (-> data :measures first :attributes :divisions)]
+  ;   (for [data parts]
+  ;     (as-> data d 
+  ;       (update-in d [:measures] 
+  ;         (p map
+  ;           (f> ;calc duration (unit beat)          
+  ;               (update-in [:notes]
+  ;                 (p map #(assoc % :duration (when (:duration %) (/ (:duration %) divs)))))
+  ;               ;remove staff field (useless for now)
+  ;               (update-in [:notes]
+  ;                 (p map #(dissoc % :staff)))
+  ;               ;group-by voice
+  ;               (update-in [:notes] 
+  ;                 (p group-by :voice))
+  ;               ;remove voice and type fields in each note
+  ;               (update-in [:notes]
+  ;                 (p map-vals (fn [v] (map #(dissoc % :voice :type) v))))
+  ;               ;rename notes field
+  ;               (clojure.set/rename-keys {:notes :voices})
+  ;               ;group chords
+  ;               (update-in [:voices]
+  ;                 (p map-vals group-chords))
+  ;               ;add position field
+  ;               (update-in [:voices]
+  ;                 (p map-vals add-positions))
+  ;               )))
+  ;       ;index measures as ints and sort
+  ;       (->> (map-indexed #(vector %1 %2) (:measures d))
+  ;            (sort-by first)
+  ;            (a concat)
+  ;            (a sorted-map))))))
 
 
 

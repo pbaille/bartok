@@ -20,14 +20,14 @@
        (markov-depth-analysis  3 [1 2 3])
        (markov-chain len 90)
        (map pitch)
-       (ap m-note-line-from (g-pos 0 0 0) 1/4 60 1)))
+       (m-note-line-from (g-pos 0 0 0) 1/4 60 1)))
 
 (defn mc2 [len]
   (->> (:2 rmmlo)
        (markov-depth-analysis  3 [1 2 3])
        (markov-chain len 61)
        (map pitch)
-       (ap m-note-line-from (g-pos 0 0 0) 1/4 40 1)))
+       (m-note-line-from (g-pos 0 0 0) 1/4 40 1)))
 
 (def vep (midi-out "Gestionnaire IAC Bus IAC 2" ))
 

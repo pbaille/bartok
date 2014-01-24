@@ -9,6 +9,7 @@
  (:use bartok.types.note)
  
  (:use [bartok.midi overtone-midi midi parser])
+ (:use [bartok.xml parser transform analysis])
  (:use [bartok.structure position])
  
  (:use utils.all)

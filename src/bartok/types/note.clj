@@ -8,6 +8,13 @@
   ([p dur pos vel chan]
     (with-type 'Note {:pitch (pitch p) :duration dur :position pos :velocity vel :channel chan})))
 
+;rest (rest fun allready exist in clojure.core...)
+(defn r-note 
+  ([dur pos]
+    (with-type 'Rest {:duration dur :position pos}))
+  ([dur pos chan]
+    (with-type 'Rest {:duration dur :position pos :channel chan})))
+
 (b-fn p-chord 
   [pitch & intervals-and-or-degrees]
   (with-type 'PChord (reduce #(conj %1 (transpose pitch %2)) [pitch] 

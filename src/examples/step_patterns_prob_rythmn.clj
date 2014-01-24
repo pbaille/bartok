@@ -47,7 +47,7 @@
 
 (def chords 
   (loop-line 8
-    (ap m-note-line-from 
+    (m-note-line-from 
      (g-pos 0 0 0) 4 40 1
      (map #(a p-chord %) 
       [[:C-1 :P5 :M6 :M2-u1 :+4-u1]
@@ -59,7 +59,7 @@
        ; [:F-1 :P5 :M2-u1 :m3-u1 :M7-u1]
        ]))))
  
-; (def basses (loop-line 2 (ap m-note-line-from (g-pos 0 0 0) 4 60 1
+; (def basses (loop-line 2 (m-note-line-from (g-pos 0 0 0) 4 60 1
 ;                              [:C-2 :C-2 :C-2 :B-3 :B-3 :A-3 :F-2])))
 
 (def vep (midi-out "Gestionnaire IAC Bus IAC 2" ))

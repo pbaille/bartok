@@ -183,6 +183,9 @@
                    #(comparator (f (%1 m))(f (%2 m)))
                    (a concat m))))
   
+  (defn if-nil-merge [m1 m2]
+    (merge-with #(if (or %1 %2) (if %1 %1 %2) nil) m1 m2))
+  
   (def h-map hash-map)
   
   (defn tups->h-map 
