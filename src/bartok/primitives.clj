@@ -71,6 +71,7 @@
   (defn- fit? [regex str]
     (if (re-matches regex str) true false))
   
+  ; TODO use core.match for this part
   (defn b? [x]
     ; (pp 'b> x)
     (when (named? x)
@@ -196,6 +197,16 @@
   (b-multi intra-rel-move)
   (b-multi relative)
   
+  ;arithmetics
+  (b-multi b:+)
+  (b-multi b:-)
+  
+  ;comparators
+  (b-multi b:>)
+  (b-multi b:<)
+  (b-multi b:>=)
+  (b-multi b:<=)
+  
 ;----------------------------------------------------------------
 ;;;;;;;;;;;;;;;;;;;;;;;; generic methods ;;;;;;;;;;;;;;;;;;;;;;;;
 ;----------------------------------------------------------------
@@ -203,6 +214,23 @@
   ;passing
   (defn chrom-up [x] (transpose x :m2-u))
   (defn chrom-down [x] (transpose x :m2-d))
+  
+  ;comparators
+  (b-fn b:> [x y] 
+    {:pre [(same-type? x y)]}
+    (> (:val x) (:val y)))
+  
+  (b-fn b:< [x y] 
+    {:pre [(same-type? x y)]}
+    (< (:val x) (:val y)))
+    
+  (b-fn b:>= [x y] 
+    {:pre [(same-type? x y)]}
+    (>= (:val x) (:val y)))
+      
+  (b-fn b:<= [x y] 
+    {:pre [(same-type? x y)]}
+    (<= (:val x) (:val y)))
   
 ;----------------------------------------------------------------
 ;;;;;;;;;;;;;;;;;;;;;;;;;;; Types ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -221,12 +249,6 @@
       [:number n]
         (if (= n 1) (directions :up) 
                     (directions :down)))
-    
-    ;;; Tests ;;;
-    
-    (fact "direction construct"
-      (direction :u) => {:name :u, :val 1}
-      (direction 1) => {:name :u, :val 1})
 
   ;;;;;;;;;;;;;;;;;;;; Alteration ;;;;;;;;;;;;;;;;;;;;;;;;;;;
     
@@ -253,15 +275,6 @@
               (= t :t2) (select-first #(= v (:val %)) degree-alterations-2)
               (= t :pitch) (select-first #(= v (:val %)) pitch-alterations)))
     
-    ;;; Tests ;;;
-    
-    (fact "alteration construct"
-      (alteration :#) => {:val 1, :name :#}
-      (alteration 1) => {:val 1, :name :#}
-      (alteration 1 :t2) => {:val 1, :name :+}
-      (alteration -2 :t1) => {:val -2, :name :o}
-      (alteration 2 :pitch) => {:val 2, :name :x})        
-    
   ;;;;;;;;;;;;;;;;;; DIntervalClass ;;;;;;;;;;;;;;;;;;;;;;;;;
     
     (def d-interval-classes 
@@ -279,6 +292,7 @@
         [(direction (keyword dir))
          (if oct (parse-int oct) 0)]))
     
+    ;; Construct ;;;
     
     (b-construct d-interval-class
                  
@@ -294,7 +308,17 @@
         (let [dist (mod (- (:val npc2)(:val npc1)) 7)]
           (d-interval-class dist)))
     
+    ;;; arithmetics ;;;
+    
+    (b-meth b:+ ['DIntervalClass 'DIntervalClass] [dic1 dic2]
+      (d-interval-class (mod (+ (:val dic1) (:val dic2)) 7)))
+    
+    (b-meth b:- ['DIntervalClass 'DIntervalClass] [dic1 dic2]
+      (d-interval-class (mod (- (:val dic1) (:val dic2)) 7)))
+    
   ;;;;;;;;;;;;;;;;;;;; DInterval ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    
+    ;;; Construct ;;;
     
     (b-construct d-interval 
                  
@@ -318,26 +342,22 @@
         (d-interval (kwcat (:name n) "-u"))
       
       ['DIntervalClass gic 'Direction d]
-        (d-interval (kwcat (:name gic) "-" (:name d))))
+        (d-interval (kwcat (:name gic) "-" (:name d)))
+        
+      ['CInterval ci]
+        (d-interval (if (-> ci :direction :val (= 1))
+                      (-> ci :class :d-class :val 
+                          (+ (* 7 (:octave-offset ci))))
+                      (-> ci :class :d-class :val -
+                          (- (* 7 (:octave-offset ci)))))))
     
-    ;;; Tests ;;;
+    ;;; arithmetics ;;;
     
-    (fact "d-interval-class construct"
-      (d-interval-class :7th) => {:name :7th, :val 6, :degree-val 11, :alt-type :t1}
-      (d-interval-class 1) => {:name :2nd, :val 1, :degree-val 2, :alt-type :t1}
-      (d-interval-class (d-interval :7th-u)) => {:name :7th, :val 6, :degree-val 11, :alt-type :t1}) 
+    (b-meth b:+ ['DInterval 'DInterval] [dic1 dic2]
+      (d-interval (+ (:val dic1) (:val dic2))))
     
-    ;;; Tests ;;;
-    
-    (fact "d-interval"
-      (d-interval :7th-u) 
-      => {:name :7th-u, :val 6, :class {:name :7th, :val 6, :degree-val 11, :alt-type :t1}, :direction {:name :u, :val 1}, :octave-offset 0}
-      (d-interval 6) 
-      => {:name :7th-u, :val 6, :class {:name :7th, :val 6, :degree-val 11, :alt-type :t1}, :direction {:name :u, :val 1}, :octave-offset 0}
-      (d-interval (d-interval-class :7th)) 
-      => {:name :7th-u, :val 6, :class {:name :7th, :val 6, :degree-val 11, :alt-type :t1}, :direction {:name :u, :val 1}, :octave-offset 0}
-      (d-interval :7th :d) 
-      => {:name :7th-d, :val -6, :class {:name :7th, :val 6, :degree-val 11, :alt-type :t1}, :direction {:name :d, :val -1}, :octave-offset 0})
+    (b-meth b:- ['DInterval 'DInterval] [dic1 dic2]
+      (d-interval (- (:val dic1) (:val dic2))))
     
   ;;;;;;;;;;;;;;;;;; CIntervalClass ;;;;;;;;;;;;;;;;;;;;;;;;;
     
@@ -368,8 +388,8 @@
       [:c-interval-class n] (name->c-interval-class n)
       [:number v] (val->c-interval-class (mod12 v))
       ['DIntervalClass dc] (d-interval-class->c-interval-class (:name dc))
-      ['Mode m] (-> m :mode-class :c-interval-class)
-      ['ModeClass m] (:c-interval-class m)
+      ['Mode m] (-> m :mode-class :degree)
+      ['ModeClass m] (:degree m)
       ['CInterval m] (:class m)
       
       ['DIntervalClass di :number n]
@@ -380,25 +400,22 @@
       ['PitchClass pc1 'PitchClass pc2]
         (let [dic (d-interval-class (:natural pc1) (:natural pc2))
               diff (mod12 (- (:val pc2)(:val pc1)))]
-          ; (dr)
           (c-interval-class dic diff)))
+    
+    ;;; Arithmetics ;;;
+    
+    (b-meth b:+ ['CIntervalClass 'CIntervalClass] [cic1 cic2]
+      (c-interval-class (b:+ (:d-class cic1) (:d-class cic2))
+                  (mod12 (+ (:val cic1) (:val cic2)))))
+    
+    (b-meth b:- ['CIntervalClass 'CIntervalClass] [cic1 cic2]
+      (c-interval-class (b:- (:d-class cic1) (:d-class cic2))
+                  (mod12 (- (:val cic1) (:val cic2)))))
     
     ;;; functions ;;;
     
     (defmethod relative 'CIntervallass [d] 
       (c-interval-class (- 12 (:val d))))
-    
-    ;;; Tests ;;;
-    
-    (fact "c-interval-class"
-      (c-interval-class :m2) => {:name :m2, :val 1, :d-class {:name :2nd, :val 1, :degree-val 2, :alt-type :t1}}
-      (c-interval-class 1) => {:name :m2, :val 1, :d-class {:name :2nd, :val 1, :degree-val 2, :alt-type :t1}}
-      (c-interval-class :2nd) => {:name :M2, :val 2, :d-class {:name :2nd, :val 1, :degree-val 2, :alt-type :t1}}
-      ;['Mode m] 
-      ;['ModeClass  
-      ; (c-interval-class :7th 9)     
-        
-      )
     
   ;;;;;;;;;;;;;;;;;;;; CInterval ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     
@@ -429,23 +446,29 @@
                val (* (:val dir) (+ (:val class) (* 12 oct)))]
           (build-c-interval n val dir oct class gen))
       
-      ['DInterval gi :number n]
-        (let [dc (-> gi :class :name d-interval-class)
-              [d-val v] [(:c-interval-class-val dc)(:val dc)]
-              alt-n (let [x (- (mod12 (abs n))(mod12 d-val))] 
-                      (cond (< x -2) (+ x 12) (> x 2) (- x 12) :else x))
-              alt (alteration alt-n (:alt-type dc))
-              dir-oct (:octave-offset gi)]
-          (c-interval (kwcat (:name alt) (str (inc v)) "-" dir-oct)))
-      
-      ['DInterval gi]
-        (c-interval (kwcat (-> gi :class c-interval-class :name)
+      ['DInterval di]
+        (c-interval (kwcat (-> di :class c-interval-class :name)
                           "-"
-                          (-> gi :direction :name)
-                          (when-not (zero? (:octave-offset gi)) 
-                            (:octave-offset gi)))) 
+                          (-> di :direction :name)
+                          (when-not (zero? (:octave-offset di)) 
+                            (:octave-offset di)))) 
       
       ['CIntervalClass d] (c-interval (kwcat (:name d) "-u"))
+      
+      ['CIntervalClass d :number n] 
+        (c-interval (kwcat (:name d) (if (>= n 0) "-u" "-d") (when-not (zero? n) (abs n))))
+      
+      ['DIntervalClass di :number n]
+        (let [[d-val v] [(:degree-val di)(:val di)]
+              alt-n (let [x (- (mod12 (abs n)) d-val)] 
+                      (cond (< x -2) (+ x 12) (> x 2) (- x 12) :else x))
+              alt (alteration alt-n (:alt-type di))
+              dir (if (>= n 0) :u :d)
+              oct (when-not (zero? (int-div n 12)) (abs (int-div n 12)))]
+          (c-interval (kwcat (:name alt) (str (inc v)) "-" dir oct)))
+      
+      ['DInterval di :number n] (c-interval (:class di) n)
+      
       
       ; ['Pitch p1 'Pitch p2]
       ;   (let [[p1v p2v] (map #(-> % :pitch-class :natural :val) [p1 p2])
@@ -457,36 +480,38 @@
       ;                    :else (:name (d-interval (+ gicv (* 7 oct-diff)))))]
       ;     (dr)
       ;     (c-interval gen diff))
+      
       ['NaturalPitchClass npc1 'NaturalPitchClass npc2]
         (let [dist (- (:val npc2)(:val npc1))
-              gi (d-interval dist)]
-          (c-interval gi))
+              di (d-interval dist)]
+          (c-interval di))
       
       ['PitchClass p1 'PitchClass p2]
         (let [[npc1 npc2] (map :natural [p1 p2])
-               npci (c-interval npc1 npc2)])
+               npc-dist (- (:val npc2)(:val npc1))
+               dic (:class (d-interval npc-dist))
+               dist (- (:val p2)(:val p1))]
+          (c-interval dic dist))
+        
+      ; ['CInterval ci1 'CInterval ci2]
+      ;   ()
       
       ['Pitch p1 'Pitch p2]
-        (let [[npc1 npc2] (map #(-> % :pitch-class :natural) [p1 p2])
-               npci (c-interval npc1 npc2)
-               diff (- (:val p2) (:val p1))
-               oct-diff (int-div diff 12)
-               ]))
+        (let [[pc1 pc2] (map :pitch-class [p1 p2])
+               pci (c-interval pc1 pc2)
+               oct-inter (c-interval (c-interval-class :P1) 
+                                     (- (:octave p2)(:octave p1)))]
+          (b:+ pci oct-inter)))
     
-    ;;; Tests ;;;
+    ;;; Arithmetics ;;;
     
-    (fact "c-interval"
-      (c-interval :m2-u1)
-      => {:name :m2-u1, :val 13, :class (c-interval-class :m2) :generic (d-interval :2nd-u1), :direction {:name :u, :val 1}, :octave-offset 1}
-      (c-interval :2nd-u1)
-      => {:name :M2-u1, :val 14, :class (c-interval-class :M2) :generic (d-interval :2nd-u1), :direction {:name :u, :val 1}, :octave-offset 1}
-      (c-interval :m2)
-      => {:name :m2-u, :val 1, :class (c-interval-class :m2) :generic (d-interval :2nd-u), :direction {:name :u, :val 1}, :octave-offset 0}
-      (c-interval-class (c-interval :m2-u1))
-      => {:name :m2, :val 1, :d-class {:name :2nd, :val 1, :degree-val 2, :alt-type :t1}}
-      ; (c-interval :C :E)
-      ;['Pitch p1 'Pitch p2]
-    )
+    (b-meth b:+ ['CInterval 'CInterval] [ci1 ci2]
+      (c-interval (b:+ (d-interval ci1) (d-interval ci2))
+                  (+ (:val ci1) (:val ci2))))
+    
+    (b-meth b:- ['CInterval 'CInterval] [ci1 ci2]
+      (c-interval (b:- (d-interval ci1) (d-interval ci2))
+                  (- (:val ci1) (:val ci2))))
   
   ;;;;;;;;;;;;;;;;; NaturalPitchClass ;;;;;;;;;;;;;;;;;;;;;;;
     
@@ -510,20 +535,6 @@
     
     (b-meth transpose ['NaturalPitchClass :number] [this n]
       (natural-pitch-class (+ (:val this) n)))
-    
-    ;;; Tests ;;;
-    
-    (fact "natural-pitch-class"
-      (natural-pitch-class 'A) => {:name 'A, :val 5, :pitch-val 9}
-      (natural-pitch-class 5) => {:name 'A, :val 5, :pitch-val 9}
-      (transpose 'A 1) => {:name 'B, :val 6, :pitch-val 11}
-      (transpose 'A :2nd-u2) => {:name 'B, :val 6, :pitch-val 11}
-      (c-interval 'A 'B)
-        => {:name :M2-u, :val 2, 
-            :class (c-interval-class :M2) 
-            :generic (d-interval :2nd-u) 
-            :direction {:name :u, :val 1}, :octave-offset 0}
-      (d-interval-class 'A 'B) => {:name :2nd, :val 1, :degree-val 2, :alt-type :t1})
     
   ;;;;;;;;;;;;;;;;;;;; PitchClass ;;;;;;;;;;;;;;;;;;;;;;;;;;;
     
@@ -572,20 +583,6 @@
         (let [nat (:name (transpose (:natural pc) (-> i :generic :val)))
               v (mod12 (+ (:val pc) (:val i)))]
           (pitch-class nat v)))
-    
-    ;;; Tests ;;;
-    
-    (fact "pitch-class"
-      (pitch-class  2) => {:name :D, :val 2, :natural {:name 'D, :val 1, :pitch-val 2}, :alteration {:val 0, :name nil}} 
-      (pitch-class :D) => {:name :D, :val 2, :natural {:name 'D, :val 1, :pitch-val 2}, :alteration {:val 0, :name nil}} 
-      (pitch-class 'A) => {:name :A, :val 9, :natural {:name 'A, :val 5, :pitch-val 9}, :alteration {:val 0, :name nil}}
-      (pitch-class 'A 10) => {:name :A#, :val 10, :natural {:name 'A, :val 5, :pitch-val 9}, :alteration {:val 1, :name :#}} 
-      (pitch-class 'A :#) => {:name :A#, :val 10, :natural {:name 'A, :val 5, :pitch-val 9}, :alteration {:val 1, :name :#}} 
-      ;['Pitch p] 
-      (transpose :C# :m2-d) => (pitch-class :B#)
-      (c-interval-class  :Bb :C#) => (c-interval-class :#2)   
-      (c-interval-class  :C# :Bb) => (c-interval-class :o7) 
-      )
     
   ;;;;;;;;;;;;;;;;;;;;;; Pitch ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     
@@ -677,22 +674,6 @@
               v (+ (:val this) (:val ci))]
           (pitch npc v)))
     
-    ;;; Tests ;;;
-    
-    (fact "pitch"
-      (pitch 60) => {:name :C0, :val 60, :octave 0, :pitch-class (pitch-class :C)}
-      (pitch :C0) => {:name :C0, :val 60, :octave 0, :pitch-class (pitch-class :C)}
-      (pitch :C) => {:name :C0, :val 60, :octave 0, :pitch-class (pitch-class :C)}
-      (pitch 'C 61) => {:name :C#0, :val 61, :octave 0, :pitch-class (pitch-class :C#)}
-      (pitch 'C :# 0) => {:name :C#0, :val 61, :octave 0, :pitch-class (pitch-class :C#)}
-      ; (mode 'C-Lyd 2)
-      (distance :C#1 :B2) => 22
-      (is-alteration-of :C1 :Cb1) => true
-      (highest :C1 :B2) => (pitch :B2)
-      (transpose :C1 :m2-u1) => (pitch :Db2)
-      (transpose :C1 :m7-d) => (pitch :D0)
-      )
-    
   ;;;;;;;;;;;;;;;;;;;; ModeClass ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     
     (def mother-modes
@@ -762,11 +743,6 @@
       ['ModeClass m :number d] 
         (mode-class (-> mother-modes (get (:name m)) :childs (nth (dec d)))))
     
-    ;;; Tests ;;;
-    
-    (fact "mode-class"
-      (mode-class :Mix) => (mode-class :Lyd 2))
-      
   ;;;;;;;;;;;;;;;;;;;;;; Mode ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     
     ;;; helpers ;;;
@@ -832,20 +808,6 @@
             ps (map #(transpose % ci) (:pitch-classes this))]
         (build-mode n r (:mode-class this) ps)))
     
-    ;;; Tests ;;;
-    
-    (fact "mode"
-      (mode :C-Dor) => (mode :Eb-Lyd 6)
-      (mode :A-Loc2) => (transpose :G-Loc2 :M2-u)
-      (d-interval-class-val (mode :D-Phry6)) => 6
-      (mother-root (mode :B-Loc2)) => (pitch-class :F)
-      (mother-mode (mode :B-Loc2)) => (mode :F-Lyd+)
-      (relative (mode :D-Dor) :Lyd) => (mode :F-Lyd)
-      (intra-abs-move (mode :D-Dor) 3) => (mode :A-Eol)
-      (intra-rel-move (mode :D-Dor) 4) => (mode :A-Eol)
-      (transpose :B-Dor+4 :M2-u1) => (mode :C#-Dor+4)
-      )
-    
   ;;;;;;;;;;;;;;;;;; TimeSignature ;;;;;;;;;;;;;;;;;;;;;;;;;;
     
     (defn- parse-ts [ts]
@@ -867,11 +829,9 @@
       [:time-signature ts] (build-time-signature ts)
       [:number n :number d] (build-time-signature n d))
     
-    ;;; Tests ;;;
     
-    (fact "time-signature"
-      (time-signature :4|4) => {:name :4|4, :val 4, :numerator 4, :denominator 4}
-      (time-signature 4 4) => {:name :4|4, :val 4, :numerator 4, :denominator 4})
+    
+
 
 
 

@@ -1,17 +1,13 @@
 (ns bartok.melody.analysis
   (:use midje.sweet)
-  (:require [bartok.midi.xml-parser :as xp]) ;;;;;for tests
   (:use bartok.types.note)
   (:use bartok.structure.position)
   (:use bartok.rythmn.rval)
-  (:use bartok.composition.utils)
   (:require [clojure.set :refer [subset?]] )
   (:use bartok.primitives)
-  (require [utils.all :refer :all]))
+  (:use utils.all))
 
-(defn ginf [& keys] #(get-in % keys))
-
-(defn- extract-pitch-classes [notes] (reduce conj #{} (map (f> :pitch :pitch-class :name) notes)))
+(defn extract-pitch-classes [notes] (reduce conj #{} (map (f> :pitch :pitch-class :name) notes)))
 
 (defn find-mothers [notes]
   (let [pcns (extract-pitch-classes notes)
@@ -62,31 +58,6 @@
         (swap! *modat* #(update-in % [mn :val] + va))))
      (reverse (sort-by (f> val :val) @*modat*))))
 
-
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;; tests ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(grid)
-(def- notes (note-line-from (g-pos 0 0 0) 1 :C0 :D0 :Ab0))
-(def- notes2 (note-line-from (g-pos 0 0 0) 1/4 :C0 :D0 :Eb0 :G0 :Ab0 :Bb0 :C0 :D0 :C#0 :D0 :C0 :D0 :Eb0 :Ab0 :Bb0 :C0 :D0 :C#0 :D0 :C0 :D0 :Eb0 :Ab0 :Bb0 :C0 :D0 :C#0 :D0))
-
-(fact "ginf"
-  ((ginf :a :aa) {:a {:aa 1}}) => 1)
-
-(fact "extract pitch classes"
-  (extract-pitch-classes notes) => #{:C :D :Ab})
-
-(fact "find-mothers"
-  (find-mothers notes) => [:Ab-Lyd :Ab-Lyd+ :Gb-Lyd+ :Ab-Lyd#2])
-
-
-;;;;;;;;;;;;;;;;;;;;; analysing parsed xml ;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(def score (xp/main "src/music-files/xml/noct21.xml"))
-(def- msr1 (get score 1))
-
 (defn closest-mothers3 [notes]
   (let [nts (map (asf>  (assoc _ :val (/ (-> _ :position :sub denom (* 2)))
                                  :name (-> _ :pitch :pitch-class :name))
@@ -115,15 +86,6 @@
          (sort-by #(:match-points (second %)))
          reverse)))
 
-(defn- measure-notes [m] 
-  (->> m :voices vals (a concat) flatten 
-       (map #(note (:pitch %)(:duration %)(:position %)))))
 
-(defn- harmonic-an [m]
-  (closest-mothers3 (measure-notes m)))
 
-(defn- voice->steps [voice]
-  (let [just-pitches (map #(if (vector? %) (map :pitch %) (:pitch %)) voice)
-        pitch-line (map #(if (sequential? %) (:name (a highest %)) %) just-pitches)]
-    (for [[p1 p2] (partition 2 1 pitch-line)] (do (dr)(c-interval p1 p2)))))
 

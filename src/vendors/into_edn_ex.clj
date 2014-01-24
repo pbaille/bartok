@@ -38,7 +38,7 @@
                            xml/parse-str
                            zip/xml-zip)))
 
-(def scor (slurp "src/music-files/xml/noct21.xml"))
+(def scor (slurp "music-files/xml/noct21.xml"))
 
 (def music-xml-spec
   [#(zf/xml-> % :part)

@@ -63,9 +63,9 @@
     (feed-grid-with-meta tracks)  
     (->> tracks group-types notes-conversion)))
 
-; (bartokize "src/midi-files/jeuxdeau.mid")
+; (bartokize "midi-files/midi/jeuxdeau.mid")
 
 (def vep (midi-out "Gestionnaire IAC Bus IAC 2" ))
-; (def score (bartokize "src/music-files/mid/fur_elise.mid"))
+; (def score (bartokize "music-files/mid/fur_elise.mid"))
 
 

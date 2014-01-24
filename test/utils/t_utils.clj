@@ -283,6 +283,10 @@
 ;   (defn type= [obj type-sym]
 ;     (= (type obj) type-sym))
   
+  (fact "same-type"
+    (same-type? 1 2) => true 
+    (a same-type? (range 12)) => true)
+    
 ;   (defn types 
 ;     ([arg] (type arg))
 ;     ([arg & more] (vec (map type (concat [arg] more)))))

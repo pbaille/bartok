@@ -1,17 +1,18 @@
-(ns bartok.midi.xml-parser
+(ns bartok.xml.parser
   (:use utils.all)
   (:use bartok.primitives)
   (:require [clojure.zip :as zip]
             [clojure.xml :as xml])
   (:use [clojure.data.zip.xml]))
 
-; doesn't work
-; (def music-xml
-;    (with-open [in (java.util.zip.InflaterInputStream.
-;                     "src/music-files/xml/a-min.mxl")]
-;       (slurp in)))
 
-; (def score (zip/xml-zip (xml/parse (java.io.File. "src/music-files/xml/noct21.xml"))))
+; mxl decompression 
+(defn extract-mxl [path]
+  (let [[_ filename] (re-matches #"(.*)\.mxl$" (.getName (java.io.File. path)))
+        zipfile (java.util.zip.ZipFile. path)
+        zipentry (.getEntry zipfile (str filename ".xml"))
+        in (.getInputStream zipfile zipentry)] 
+    (slurp in)))
 
 (def- int->key 
   {0  :C  -1 :F -2 :Bb -3 :Eb -4 :Ab -5 :Db -6 :Gb -7 :Cb 
@@ -122,18 +123,6 @@
            (sort-by first)
            (a concat)
            (a sorted-map)))))
-
-;buggy
-; (defn extract-mxl [path]
-;    (let [[_ filename] (re-matches #"(.*)\.mxl$" (.getName (java.io.File. path)))
-;          _ (pp "filename => " filename)
-;          zipfile (java.util.zip.ZipFile. path)
-;          _ (pp "zipfile => " zipfile)
-;          zipentry (.getEntry zipfile (str filename "uz.xml"))
-;          _ (pp "zipentry => "zipentry)
-;          in (.getInputStream zipfile zipentry)
-;          _ (pp "in => " in)] 
-;      (slurp in)))
 
 
 

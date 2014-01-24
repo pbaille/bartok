@@ -165,16 +165,8 @@
                 merge-meta))
           (remove empty?))))
 
-;(parse-midi-file "src/midi-files/rmmlo.mid")
+;(parse-midi-file "midi-files/midi/rmmlo.mid")
 
 (defn filter-msg-type [type-kw parsed-midi-file]
   (filter #(= (type %) type-kw) parsed-midi-file))
 
-
-
-
-
-; (-> (byte-array [0x41 0xA0 0x00 0x00]) ByteBuffer/wrap (.order (ByteOrder/nativeOrder)) .getFloat)
-
-;ns-name ns-aliases ns-imports ns-interns ns-map ns-publics ns-refers
-;float f = ByteBuffer.wrap( array ).order( ByteOrder.nativeOrder() ).getFloat();  

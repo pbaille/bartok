@@ -2,6 +2,9 @@
 /lib
 /classes
 /checkouts
+/music-files
+/src/z
+vep.viframe64
 pom.xml
 pom.xml.asc
 *.jar

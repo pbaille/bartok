@@ -1,4 +1,5 @@
 (ns utils.utils
+  (:use midje.sweet)
   (:require clojure.pprint)
   (:require vendors.debug-repl)
   (:require [clojure.inspector :refer [inspect-tree]])
@@ -47,6 +48,10 @@
                              `(~expr ~arg)
                              (cons (first expr) (cons arg (next expr))))) 
                 exprs)))
+  
+  (defmacro with-dispatch [disp-val expr]
+    "call a particular dispatch on a multi method"
+    `((get (methods ~(first expr)) ~disp-val) ~@(next expr)))
   
 ;********** strings and keywords ************
 
@@ -337,6 +342,14 @@
   (defn types 
     ([arg] (type arg))
     ([arg & more] (vec (map type (concat [arg] more)))))
+  
+  (defn same-type? 
+    ([x1 x2] (= (type x1) (type x2)))
+    ([x1 x2 & xs] 
+      (and (same-type? x1 x2) 
+        (if (seq (next xs))
+          (a same-type? x2 (first xs) (next xs))
+          (same-type? x2 (first xs))))))
   
   (defn with-type [t obj]
     {:pre [(named? t)]}
