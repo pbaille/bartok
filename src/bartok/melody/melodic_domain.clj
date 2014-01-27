@@ -1,9 +1,10 @@
 (ns bartok.melody.melodic-domain
   (:use midje.sweet)
+  (:use bartok.structure)
   (:use utils.all)
   (:use bartok.primitives))
 
-;******************* Private ************************
+;;;;;;;;;;;;;;;;;;;; Private ;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn- midi-octave [x]
   (- (int (/ x 12)) 5))
@@ -35,7 +36,7 @@
 (defn- valid-domain-index? [md i]
   (between i 0 (-> md :pitches count dec)))
 
-;*************************** Public *************************************
+;;;;;;;;;;;;;;;;;;;;;;;;;;;; Public ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (b-fn melodic-domain
   ;[Mode [Pitch Pitch]] -> MelodicDomain 
@@ -50,6 +51,15 @@
   (let [i (-> dom :current :index)]
     [(d-interval (* -1 i)) 
      (d-interval (- (-> dom :pitches count dec) i))]))
+
+;;; ** grid related ** ;;;
+(defn global-bounds 
+  ([modes bounds start-pitch]
+    (let [domains (->> modes (map #(melodic-domain % bounds start-pitch)))
+          domains-bounds (map #(map :val (interval-bounds %)) domains)]
+      [(best > (map first domains-bounds)) (best < (map second domains-bounds))]))
+  ([start-pos end-pos bounds start-pitch]
+    (global-bounds (modes-between start-pos end-pos) bounds start-pitch)))
 
 (defn md-amplitude [md]
   (count (:pitches md)))

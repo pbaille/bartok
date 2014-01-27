@@ -50,6 +50,24 @@
                                (zf/xml1-> % :pitch :octave zf/text)))
                      :none)}]]])
 
-(def res2 (into-edn music-xml-spec (some-> scor
+(defn pitch-spec [loc] 
+  (or (some-> (zf/xml1-> loc :pitch :step zf/text)
+                                   (kwcat
+                                     (some-> (zf/xml1-> loc :pitch :alter zf/text parse-int) alteration :name)
+                                     (zf/xml1-> loc :pitch :octave zf/text)))
+                           :none))
+
+(defn attr-spec [loc]
+  (dr)
+  (some-> (zf/xml-> loc :attributes)))
+
+(def music-xml-spec-new
+  [#(zf/xml-> % :part)
+   [#(zf/xml-> % :measure)
+    {
+     :notes [#(zf/xml-> % :note) pitch-spec]}
+    ]])
+
+(def res2 (into-edn music-xml-spec-new (some-> scor
                            xml/parse-str
                            zip/xml-zip)))

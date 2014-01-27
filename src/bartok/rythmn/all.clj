@@ -1,7 +1,6 @@
 (ns bartok.rythmn.all)
 
 (utils.utils/immigrate
-  'bartok.rythmn.analysis  
   'bartok.rythmn.humanize
   'bartok.rythmn.random-line
   'bartok.rythmn.rval

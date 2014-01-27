@@ -1,5 +1,5 @@
 (ns bartok.rythmn.humanize
-  (:use bartok.structure.position)
+  (:use bartok.structure)
   (:use [utils utils prob interpolator]))
 
 

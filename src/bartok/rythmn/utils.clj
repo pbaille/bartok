@@ -1,6 +1,6 @@
 (ns bartok.rythmn.utils
   (:use bartok.rythmn.rval)
-  (:use bartok.structure.position)
+  (:use bartok.structure)
   (:use utils.utils))
 
 (defn all-allowed-subs [rvals]

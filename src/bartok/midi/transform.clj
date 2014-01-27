@@ -1,11 +1,9 @@
-(ns bartok.midi.bartokizer
+(ns bartok.midi.transform
   (:use utils.all)
-  (:use vendors.debug-repl)
   (:use [bartok.midi overtone-midi midi parser])
-  (:use bartok.structure.position)
+  (:use bartok.structure)
   (:use bartok.types.note)
-  (:use bartok.primitives)
-  (:use bartok.midi.parser))
+  (:use bartok.primitives))
 
 (defn- total-length [tracks]
   (->> (for [t tracks] (best > (map :position t)))
@@ -56,16 +54,11 @@
           (when ts (grid-assoc :bars (ts-convert ts total-len)))
           (when ks (grid-assoc :harmony (ks-convert ks)))))))))
 
-(grid)
-
 (defn bartokize [path]
   (let [tracks (parse-midi-file path)]
     (feed-grid-with-meta tracks)  
     (->> tracks group-types notes-conversion)))
 
 ; (bartokize "midi-files/midi/jeuxdeau.mid")
-
-(def vep (midi-out "Gestionnaire IAC Bus IAC 2" ))
-; (def score (bartokize "music-files/mid/fur_elise.mid"))
 
 

@@ -2,7 +2,7 @@
   (:use midje.sweet)
   (:use bartok.composition.utils)
   (:use bartok.primitives)
-  (:use bartok.structure.position)
+  (:use bartok.structure)
   (:use utils.all)
   (:use bartok.melody.analysis))
 

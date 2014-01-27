@@ -218,6 +218,11 @@
     (let [hms (map (fn [[k v]] (f k v)) m)]
       (if (second hms) (a conj hms) (first hms))))
   
+  (defn dissoc-nils 
+    "remove keyvals whose val is nil from a h-map"
+    [m]
+    (when m (map-h (fn [k v] (if v {k v} {})) m)))
+  
   (declare first-truthy type=)
   
   (defn key-path
@@ -338,6 +343,9 @@
   ;   (filter #(submap? sub-map %) coll))
   
 ;***************** types ********************
+  
+  (defn of-type? [obj typ]
+    (isa? (type obj) typ))
   
   (defn type= [obj type-sym]
     (= (type obj) type-sym))

@@ -1,7 +1,7 @@
 (ns bartok.midi.midi
   (:use [bartok.midi.overtone-midi])
   (:use [utils utils macros])
-  (:use bartok.structure.position)
+  (:use bartok.structure)
   (:use bartok.types.note)
   (:use [overtone.at-at]))
 
@@ -50,7 +50,7 @@
            channel  0}
       :as note }]
   ; (dr)
-  (m-note (:val pitch) (round 3 (note-to-ms note)) (round 3 (pos-to-ms position)) velocity channel))
+  (m-note (:val pitch) (float (note-to-ms note)) (float (pos-to-ms position)) velocity channel))
 
 (defn play [out notes]
   (let [notes_ (map to-midi (expand-chords notes))]

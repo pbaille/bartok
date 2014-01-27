@@ -3,12 +3,11 @@
   (:use [clojure.math.combinatorics :as c])
   (:use [bartok.melody.melodic-domain])
   (:use bartok.composition.utils)
-  (:use bartok.rythmn.analysis)
   (:use bartok.types.note)
-  (:use bartok.structure.position)
+  (:use bartok.structure)
   (:use vendors.profile))
 
-;************* helpers ********************
+;;;;;;;;;;;;;; helpers ;;;;;;;;;;;;;;;;;;;;
 
 (def ^:private default-params
   {:steps #{-4 -3 -2 2 3 4}
@@ -55,7 +54,7 @@
     (let [mp (dissoc mp :iterations)]
       (conj mp (conj {:iterations (first i)} (second i))))))
 
-;**************** public *********************
+;;;;;;;;;;;;;;;;; public ;;;;;;;;;;;;;;;;;;;;;
 
 (defn step-patterns  
   ([] (step-patterns {}))
@@ -87,7 +86,7 @@
           bounds (map #(- % (:total-step pat)) bounds)]
       (concat (:sequence pat) (steps-line bounds picker)))))
 
-;********************* NEW ********************
+;;;;;;;;;;;;;;;;;;;;;; NEW ;;;;;;;;;;;;;;;;;;;;
 
 (defn- steps-calc-new [params]
   (apply concat 
@@ -108,7 +107,7 @@
   ([params] (steps-calc-new (merge-with-defaults params))))
 
 (defn step-patternify 
-  "[{:duration _ :position _}...] 
+  "[{:duration _ :position _}...] prvals 
     step-pattern-picker picker 
     [Pitch] bounds 
     Pitch start-pitch

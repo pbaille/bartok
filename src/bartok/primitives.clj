@@ -190,7 +190,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;; multi-methods ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;----------------------------------------------------------------
   
+  (b-multi to-num)
+  (b-meth  to-num :default [x] 
+    {:pre [(of-type? x Number)]} x)
+  
   (b-multi transpose)
+  (b-multi invert)
   
   ;modal-moves
   (b-multi intra-abs-move)
@@ -512,6 +517,11 @@
     (b-meth b:- ['CInterval 'CInterval] [ci1 ci2]
       (c-interval (b:- (d-interval ci1) (d-interval ci2))
                   (- (:val ci1) (:val ci2))))
+    
+    ;;;
+    
+    (b-meth invert 'CInterval [ci]
+      (c-interval (-> ci :class :d-class) (- (:val ci))))
   
   ;;;;;;;;;;;;;;;;; NaturalPitchClass ;;;;;;;;;;;;;;;;;;;;;;;
     
@@ -624,7 +634,7 @@
         (let [[oct mod] (div-mod n 12)
                alt (- mod (:pitch-val npc))
                possible-alt? (between alt -2 2)]
-           ; (debug-repl)
+           (dr)
            (when possible-alt? (pitch (pitch-class npc (alteration alt)) (- oct 5))))  
         
       ['PitchClass p :number o]
@@ -672,6 +682,7 @@
     (b-meth transpose ['Pitch 'CInterval] [this ci]
         (let [npc (:natural (transpose (:pitch-class this) ci))
               v (+ (:val this) (:val ci))]
+          ; (dr)
           (pitch npc v)))
     
   ;;;;;;;;;;;;;;;;;;;; ModeClass ;;;;;;;;;;;;;;;;;;;;;;;;;;;;

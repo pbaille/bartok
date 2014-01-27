@@ -1,5 +1,5 @@
 (ns bartok.rythmn.weighted-line
-  (:use bartok.structure.position)
+  (:use bartok.structure)
   (:use bartok.rythmn.utils)
   (:use [utils utils prob]))
 

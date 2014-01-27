@@ -18,9 +18,10 @@
                  [camel-snake-kebab "0.1.2"]
                  [org.clojure/data.xml "0.0.7"]
                  [org.clojure/data.zip "0.1.1"]
-                 [into-edn "1.0.2"]]
+                 [into-edn "1.0.2"]
+                 [org.clojure/math.numeric-tower "0.0.4"]]
   :profiles {:dev {:dependencies [[midje "1.6.0"]]}}
   ;:repl-options {:nrepl-middleware [utils.nrepl-middleware/pprint-middleware]}
-  :main bartok.core
+  ; :main bartok.core
   :java-source-paths ["src/java/"]
   :javac-target "1.7.0_45")

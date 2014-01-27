@@ -5,7 +5,7 @@
   (:use bartok.melody.all)
   (:use bartok.harmony.all)
   (:use bartok.rythmn.all)
-  (:use bartok.structure.position)
+  (:use bartok.structure)
   (:use [bartok.composition.utils]))
 
 (defn rythmic-step-pattern [options-map]

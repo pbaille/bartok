@@ -1,5 +1,5 @@
 (ns bartok.composition.utils
-  (:use bartok.structure.position)
+  (:use bartok.structure)
   (:use bartok.types.note)
   (:use utils.utils)
   (:use vendors.debug-repl)

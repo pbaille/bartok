@@ -1,6 +1,6 @@
 (ns bartok.rythmn.random-line
   (:use bartok.rythmn.utils)
-  (:use bartok.structure.position)
+  (:use bartok.structure)
   (:use utils.utils))
 
 (defn- rand-rval [p rvals]

@@ -10,10 +10,10 @@
  
  (:use [bartok.midi overtone-midi midi parser])
  (:use [bartok.xml parser transform analysis])
- (:use [bartok.structure position])
  
  (:use utils.all)
  (:use bartok.primitives)
+ (:use bartok.structure)
  (:use bartok.melody.all)
  (:use bartok.harmony.all)
  (:use bartok.rythmn.all)
@@ -21,8 +21,5 @@
 
 
 ; (:use [bartok.rythmn.humanize])
-(def *settings* (atom
-  {:tempo-interpolation :step ;# {:step :linear} TODO curve interpolations
-   })) ;
 
 

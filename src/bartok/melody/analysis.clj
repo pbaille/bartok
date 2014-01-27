@@ -1,13 +1,14 @@
 (ns bartok.melody.analysis
   (:use midje.sweet)
   (:use bartok.types.note)
-  (:use bartok.structure.position)
+  (:use bartok.structure)
   (:use bartok.rythmn.rval)
   (:require [clojure.set :refer [subset?]] )
   (:use bartok.primitives)
   (:use utils.all))
 
-(defn extract-pitch-classes [notes] (reduce conj #{} (map (f> :pitch :pitch-class :name) notes)))
+(defn extract-pitch-classes [notes] 
+  (reduce conj #{} (map (f> :pitch :pitch-class :name) notes)))
 
 (defn find-mothers [notes]
   (let [pcns (extract-pitch-classes notes)

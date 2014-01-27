@@ -76,6 +76,10 @@
     (b:+ :m2-u :M7-d) => (c-interval :#6-d)
     (b:- :m2-u :M7-d) => (c-interval :P1-u1)
     (b:- :m2-u :M7-u) => (c-interval :#6-d))
+  
+  (fact "invert"
+    (invert :m2-d) => (c-interval :m2-u)
+    (invert :m2-u) => (c-interval :m2-d))
   ; ;['Pitch p1 'Pitch p2]
 )
 
