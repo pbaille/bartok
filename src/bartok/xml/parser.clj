@@ -104,16 +104,16 @@
              (assoc (first notes) :position 0))] 
           (next notes)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;; PUBLIC ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
-(defn clean-part [part]
-  (let [divs (-> part first :attributes :divisions)]
-    (->> part 
-      (map (f> ;calc duration (unit beat)          
-               (update-in [:notes]
-                 (p map #(assoc % :duration (when (:duration %) (/ (:duration %) divs)))))
+(defn- clean-part [part]
+  (->> part 
+    (map (asf> ;calc duration (unit beat)          
+               (update-in _ [:notes]
+                 (p map #(assoc % :duration 
+                           (when (:duration %) 
+                             (/ (:duration %) 
+                                ;if measure contains divisions attr then use it else defer to last known
+                                (or (some-> _ :attributes :divisions)
+                                    (last (remnil-map (f> :attributes :divisions) part))))))))
                ;remove staff field (useless for now)
                (update-in [:notes]
                  (p map #(dissoc % :staff)))
@@ -131,10 +131,12 @@
                ;add position field
                (update-in [:voices]
                  (p map-vals add-positions))))
-      (map-indexed #(vector %1 %2))
-      (sort-by first)
-      (a concat)
-      (a sorted-map))))
+    (map-indexed #(vector %1 %2))
+    (sort-by first)
+    (a concat)
+    (a sorted-map)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;; PUBLIC ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn parse-mxl [mxl-path]
   (let [score (zip/xml-zip (dxml/parse-str (extract-mxl mxl-path)))

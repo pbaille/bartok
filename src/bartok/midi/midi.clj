@@ -28,7 +28,7 @@
             (cond 
               (type= el 'Note) (vector el)
               (type= el 'Chord) 
-                (let [{:keys [duration position velocity channel pitches]} el
+                (let [{:keys [duration position velocity channel pitches] :or {velocity 60 channel 0}} el
                       w-pitches (dissoc el :pitches)]
                   (map #(note % duration position velocity channel) pitches)))) 
           (sort-by (c pos-val :position) notes&chords)))

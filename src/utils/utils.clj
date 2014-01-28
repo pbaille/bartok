@@ -12,7 +12,9 @@
   (defn pev [x] (do (clojure.pprint/pprint x) x))
   (def not-nil? (complement nil?))
   
-  (defmacro dr [] `(vendors.debug-repl/debug-repl))
+  (defmacro dr 
+    ([] `(vendors.debug-repl/debug-repl))
+    ([& args] `(do (vendors.debug-repl/debug-repl) ~@args )))
   ;print source :)
   (defmacro src [x] `(do (pp (:file (meta (resolve '~x))))(clojure.repl/source ~x)))
   

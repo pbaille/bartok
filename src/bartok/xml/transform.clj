@@ -58,7 +58,12 @@
   "extract voices from a part
    return seq of voices (notes vecs)"
   [part] 
-  (map :voices (vals part)))
+  (reduce (fn [acc measure]
+            (reduce #(into %1 %2) 
+                    acc 
+                    (vals measure))) 
+          [] 
+          (map :voices (vals part))))
 
 (defn voice->steps 
   "convert a voice into seq of c-intervals"
@@ -89,9 +94,14 @@
   "add bar offset to each note position of part"
   [part]
   (map-notes (fn [[nm m][nv v]n]
-               (assoc n :position 
-                 (num->pos (+ (:position n) 
-                              (pos-val (g-pos {:bar nm})))))) 
+               (if (vector? n)
+                 (mapv #(assoc % :position 
+                         (num->pos (+ (:position %) 
+                                      (pos-val (g-pos {:bar nm})))))
+                      n)
+                 (assoc n :position 
+                   (num->pos (+ (:position n) 
+                                (pos-val (g-pos {:bar nm}))))))) 
              part))
 
 (defn concert-pitch 
@@ -111,24 +121,32 @@
     (fn [[mn m][vn v] nte] 
       (if (vector? nte)
          (chord (mapv :pitch nte) (:duration (last nte))(:position (last nte)))
-         (if (not= (:pitch nte) :none)
+         (if-not (= (:pitch nte) :none)
            (note (:pitch nte)(:duration nte)(:position nte))
            (r-note (:duration nte) (:position nte))))) 
     part))
 
-; (convert-notes-and-chords2 (first score))
+(defn add-midi-chans 
+  "add midi channel to every notes (one distinct by part)"
+  [score]
+  (map-indexed 
+    (fn [part-num part] 
+      (map-notes #(assoc %3 :channel part-num) 
+                 part))
+    score))
 
 (def vep (midi-out "Gestionnaire IAC Bus IAC 2" ))
 
 (defn play-score [score]
   (attrs-tm>>*g* score) ;feed grid  
-  (->> (map (c flatten
-               extract-voices
-               convert-notes-and-chords 
+  (->> score
+       (map (c convert-notes-and-chords 
                concert-pitch
-               add-grid-pos) 
-            score)
-       ; (a concat)
-       ; (play vep)
+               add-grid-pos))
+       add-midi-chans
+       (map extract-voices)
+       (a concat)
+       ; (dr)
+       (play vep)
        ))
 
