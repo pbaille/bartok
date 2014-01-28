@@ -7,65 +7,20 @@
   (:use bartok.xml.parser))
 
 
-(defn convert-notes-and-chords [part]
-  (map-vals 
-    (fn [measure]
-      (update-in measure [:voices]
-        (p map-vals
-          (fn [voice] 
-            (map (fn [nte] 
-                   (if (vector? nte)
-                      (chord (mapv :pitch nte) (:duration (last nte))(:position (last nte)))
-                      (if (not= (:pitch nte) :none)
-                        (note (:pitch nte)(:duration nte)(:position nte))
-                        (r-note (:duration nte) (:position nte)))))
-            voice)))))
-    part))
-
-;;;exp;;;
-; (defmacro map-notes [fun score]
-;     `(map-vals 
-;       (fn [measure#]
-;         (update-in measure [:voices]
-;           (p map-vals
-;             (fn [voice#] 
-;               (map (p fun measure# voice#)
-;               voice)))))
-;     ~score))
-
-(def score (parse-mxl "music-files/mxl/Promenade for Brass Quintet.mxl"))
-; (map-notes (fn [measure voice nte] 
-;               "yo")
-;            score)
-
-(defn expand-attributes [part]
-  (map-reduce #(update-in %2 [:attributes] if-nil-merge (:attributes %1)) 
-              (get (vals part) 0)
-              (vals part)))
-
-(defn expand-tempo [part]
-  (map-reduce (fn [acc el]
-                (if-not (:tempo el) 
-                 (assoc el :tempo 
-                   (or (:tempo acc)
-                       {:bpm (get-in acc [:directions :tempo]) 
-                        :beat-unit :quarter})))) 
-              (first (vals part))
-              (vals part)))
-
-(defn to-grid-bars [part]
-  (->> (expand-attributes part)
-       (map (f> :attributes :time :name))
-       (partition-by identity)
-       (mapv #(vector (count %) (first %)))))
-
-; (defn to-grid-tempi [part]
-;   ())
-
-(defn bar-count 
-  "return the number of bars in the score"
-  [score]
-  (best > (map count score)))
+;;;helpers for mapping part notes
+(defn map-notes 
+  "helper to map notes of a part
+  takes a fun that takes 3 args:
+  [measure_number measure] [voice_number voice] note
+  and apply it on each note"
+  [fun part]
+  (map-h
+    (fn [mn measure]
+      {mn (update-in measure [:voices]
+             (p map-h
+               (fn [vn voice]
+                 {vn (map (p fun [mn measure] [vn voice]) voice)})))})
+  part))
 
 (defn attrs-tm 
   "takes a part (from parsed xml score)
@@ -81,8 +36,10 @@
     (time-map [:transpose :divisions :time :key :dynamics :tempo])
     part))
 
-;(->> test-xml to-grid-bars)
-;=> [[22 :4|4]]
+(defn bar-count 
+  "return the number of bars in the score"
+  [score]
+  (best > (map count score)))
 
 (defn measure-notes 
   "return all notes (from all voices) of a measure"
@@ -90,11 +47,18 @@
   (->> m :voices vals (a concat) flatten 
       (map #(note (:pitch %)(:duration %)(:position %)))))
 
-(defn extract-voice [part n]
+(defn extract-voice 
   "extract voice n from a part
-   return seq of vecs of notes (one vec per measure)"
+   return seq of notes vecs (one vec per measure)"
+  [part n]
   (->> (vals part)
        (map (f> :voices (get n)))))
+
+(defn extract-voices 
+  "extract voices from a part
+   return seq of voices (notes vecs)"
+  [part] 
+  (map :voices (vals part)))
 
 (defn voice->steps 
   "convert a voice into seq of c-intervals"
@@ -103,17 +67,14 @@
         pitch-line (map #(if (sequential? %) (:name (a highest %)) %) just-pitches)]
     (for [[p1 p2] (partition 2 1 pitch-line)] (c-interval p1 p2))))
 
-
-
 ;;;;;;;;;;;;;;;;;;;;;; Tests ;;;;;;;;;;;;;;;;;;;;;;;;;
-
-; (def brass-quintet (map convert-notes-and-chords 
-;                         (parse-mxl "music-files/mxl/Promenade for Brass Quintet.mxl")))
 
 ; for grid read/write
 (use 'bartok.state)
 (use 'bartok.midi.overtone-midi)
 (use 'bartok.midi.midi)
+
+(def score (parse-mxl "music-files/mxl/Promenade for Brass Quintet.mxl"))
 
 (defn attrs-tm>>*g* 
   "feed *g* atom with score structure"
@@ -124,40 +85,45 @@
         tempo (map vec (:tempo (atm)))]
     (grid {:bars bars :tempo tempo})))
 
-(defn add-grid-pos [part]
-  (map-h 
-    (fn [num measure]
-      {num 
-      (update-in measure [:voices] 
-        (p map-vals 
-          (fn [voices]
-            (map #(assoc % :position 
-                    (num->pos (+ (:position %) 
-                                 (pos-val (g-pos {:bar num}))))) 
-                 voices))))}) 
+(defn add-grid-pos 
+  "add bar offset to each note position of part"
+  [part]
+  (map-notes (fn [[nm m][nv v]n]
+               (assoc n :position 
+                 (num->pos (+ (:position n) 
+                              (pos-val (g-pos {:bar nm})))))) 
+             part))
+
+(defn concert-pitch 
+  "transpose part to concert pitch if transposed"
+  [part]
+  (let [tr (-> part (get 0) :attributes :transpose)]
+    (map-notes (fn [m v nte] 
+                 (if (and tr (not= (:pitch nte) :none))
+                   (assoc nte :pitch (transpose (:pitch nte) tr))
+                   nte))
+               part)))
+
+(defn convert-notes-and-chords 
+  "convert notes to bartok objects (note, chord, r-note)"
+  [part]
+  (map-notes
+    (fn [[mn m][vn v] nte] 
+      (if (vector? nte)
+         (chord (mapv :pitch nte) (:duration (last nte))(:position (last nte)))
+         (if (not= (:pitch nte) :none)
+           (note (:pitch nte)(:duration nte)(:position nte))
+           (r-note (:duration nte) (:position nte))))) 
     part))
 
-(defn concert-pitch [part]
-  (map-h 
-    (fn [num measure]
-      {num 
-      (update-in measure [:voices] 
-        (p map-vals 
-          (fn [voices]
-            (map (fn [nte] (if-let [tr (-> part (get 0) :attributes :transpose)]
-                    (if-not (= (:pitch nte) :none) 
-                      (assoc nte :pitch (if-let [p (transpose (:pitch nte) tr)]
-                                          p (dr)))
-                      nte)
-                    nte)) 
-                 voices))))}) 
-    part))
+; (convert-notes-and-chords2 (first score))
 
 (def vep (midi-out "Gestionnaire IAC Bus IAC 2" ))
 
 (defn play-score [score]
   (attrs-tm>>*g* score) ;feed grid  
-  (->> (map (c #(flatten (extract-voice % 1)) 
+  (->> (map (c flatten
+               extract-voices
                convert-notes-and-chords 
                concert-pitch
                add-grid-pos) 

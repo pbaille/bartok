@@ -34,7 +34,7 @@
               (time-signature (parse-int beats)(parse-int beat-type)))
      :divisions (when divs (parse-int divs))
      :transpose (when transd 
-                  (c-interval (d-interval (parse-int transd)) 
+                  (c-interval (d-interval(parse-int transd)) 
                               (parse-int transc)))}))
 
 (defn- note [loc]

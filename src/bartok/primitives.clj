@@ -634,8 +634,10 @@
         (let [[oct mod] (div-mod n 12)
                alt (- mod (:pitch-val npc))
                possible-alt? (between alt -2 2)]
-           (dr)
-           (when possible-alt? (pitch (pitch-class npc (alteration alt)) (- oct 5))))  
+           (cond 
+             possible-alt? (pitch (pitch-class npc (alteration alt)) (- oct 5))
+             (> alt 0) (pitch (pitch-class npc (alteration (- alt 12))) (- oct 4))
+             (< alt 0) (pitch (pitch-class npc (alteration (+ alt 12))) (- oct 6))))  
         
       ['PitchClass p :number o]
         (pitch (kwcat (:name p) (str o)))
