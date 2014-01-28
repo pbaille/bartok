@@ -40,7 +40,7 @@
                       (conj default-grid m))]
                (reset! *g* g))))
 
-      (defn grid-assoc [& args] (swap! *g* assoc args))
+      (defn grid-assoc [& args] (swap! *g* #(ap assoc % args)))
   
   ;;; getters ;;;
   ;--------------

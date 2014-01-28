@@ -11,6 +11,7 @@
                  [org.clojure/core.contracts "0.0.5"]
                  [org.codehaus.jsr166-mirror/jsr166y "1.7.0"]
                  [net.mikera/clisk "0.8.0"]
+                 [reiddraper/simple-check "0.5.6"]
                  
                  [org.clojure/tools.reader "0.8.3"]
                  [org.clojure/java.data "0.1.1"]

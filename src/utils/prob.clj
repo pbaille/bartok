@@ -121,7 +121,7 @@
 ;(markov-depth-analysis  3 [0.1 2 3] [60 62 64 66 67 69 71 69 67 66 64 62 60 64 67 71 69 66 62])
 ;(markov-depth-analysis  3 0.5 [60 62 64 66 67 69 71 69 67 66 64 62 60 64 67 71 69 66 62])
 
-(defn- get-probs [s data]
+(defn get-probs [s data]
   (->> data
     (filter #(loop [q s] 
                (cond (= (first %) q) true 
@@ -132,9 +132,9 @@
      vals
     (a merge-with +)))
 
-; (->> [60 62 64 66 67 69 71 69 67 66 64 62 60 64 67 71 69 66 62]
-;      (markov-depth-analysis  3 [0.1 2 3])
-;      (get-probs [60 64 67]))
+(->> [60 62 64 66 67 69 71 69 67 66 64 62 60 64 67 71 69 66 62]
+     (markov-depth-analysis  3 [0.1 2 3])
+     (get-probs [60 64 67]))
 
 
 (defn markov-chain [len start data]
@@ -153,17 +153,57 @@
      (markov-depth-analysis  3 [0.1 2 3])
      (markov-chain 10 60))
 
-;************* data *******************
+(defn constraint-markov-chain 
+  "same as markov-chain but at each step of the construction 
+  filter probs with pred: [chain-so-far possible-val]
+  and disabled those that doesn't satisfie pred before choosing"
+  [pred len start data]
+  (let [depth (or (:depth data) 
+                  (a max (map count (keys data))))]
+    (loop [ws (get data [start])
+           acc []]
+      (let [v (vec (vals ws))
+            n (nth (keys ws) (wrand v))]
+        (if (= (count acc) len)
+          acc
+          (let [next-acc (conj acc n)
+                possible-vals 
+                (tups->h-map 
+                  (filter (p pred next-acc) (get-probs (take-last depth next-acc) data)))]
+            (if (seq possible-vals)
+              (recur possible-vals next-acc)
+              next-acc)))))))
 
-; ;ravel ma mere l'oye
-; (def rmmlo 
-;   {:1 [90 87 85 87 82 90 85 87 87 90 87 85 87 82 87 90 85 87 90 87 85 87 82 85 80 82 78 80 75 80 82 85 87 80 82 75 78 80 82 85 78 80 75 75 78 80 82 75 80 78 78 90 87 85 87 82 90 85 87 87 90 87 85 87 82 87 90 85 87 90 87 85 87 82 85 80 82 78 80 78 73 75 70 75 78 80 82], 
-;    :2 [61 63 68 70 66 68 75 73 61 63 70 68 66 68 73 75 61 68 70 63 66 68 75 73 70 73 75 61 68 70 63 66 73 68 75 70 73 75 61 68 70 63 66 73 75 68 70 75 73 61 63 70 68 66 73 75 68 70 75 73 61 63 70 68 66 68 75 73 70 75 73 61 71 68 66 63 61 71 68 66 63 61 71 68 66 63 61 70 68 63 66 75 73 68 70 73 75 61 70 68 63 66 73 75 68 70 73 75 61 70 68 63 66 75 73 68 70 73 61 63 56 66 63 61]})
+; (->> [60 62 64 66 67 69 71 69 67 66 64 62 60 64 67 71 69 66 62]
+;      (markov-depth-analysis  3 [0.1 2 3])
+;      (constraint-markov-chain #(not= (key %2) 67)
+;                    10 
+;                    60))
 
-; (def mc
-;   (->> (:1 rmmlo)
-;        (markov-depth-analysis  4 [0.5 1 2 3])
-;        (markov-chain 100 80)))
+(defn lazy-markov-chain 
+  "return a markov-chain generator that can be call with any number of arguments
+   with no argument it return a lazy markov-chain that start on random val
+   with 1 arguments or more it return the lazy markov-chain that starts with args"
+  [start data]
+  (let [depth (or (:depth data) 
+                  (a max (map count (keys data))))
+        fun (fn fun [acc ws] 
+              (let [v (vec (vals ws))
+                    n (nth (keys ws) (wrand v))]
+                (lazy-seq
+                  (cons n (fun (conj acc n)
+                               (get-probs (take-last depth (conj acc n)) data))))))]
+    (fn ([] (fun [] (get data (rand-nth (keys data)))))
+        ([x] (cons x (fun [] (get data [x]))))
+        ([x & xs] 
+          (let [els (into [x] xs)]
+            (lazy-cat els (fun els (get data els))))))))
 
+(def laz (->> [60 62 64 66 67 69 71 69 67 66 64 62 60 64 67 71 69 66 62]
+     (markov-depth-analysis  3 [0.1 2 3])
+     (lazy-markov-chain 60)))
 
+(take 10 (laz))
+(take 10 (laz 66))
+(take 10 (laz 66 67))
 

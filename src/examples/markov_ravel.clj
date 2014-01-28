@@ -29,6 +29,6 @@
        (map pitch)
        (m-note-line-from (g-pos 0 0 0) 1/4 40 1)))
 
-(def vep (midi-out "Gestionnaire IAC Bus IAC 2" ))
+; (def vep (midi-out "Gestionnaire IAC Bus IAC 2" ))
 
-(defn mc [] (play vep (concat (mc1 100) (map #(update-in % [:pitch] transpose (c-interval :P5-d1)) (mc1 100)))))
+(defn mc [] (play *midi-out* (concat (mc1 100) (map #(update-in % [:pitch] transpose (c-interval :P5-d1)) (mc1 100)))))

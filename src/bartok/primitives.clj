@@ -192,7 +192,10 @@
   
   (b-multi to-num)
   (b-meth  to-num :default [x] 
-    {:pre [(of-type? x Number)]} x)
+    {:pre [(or (of-type? x Number) (:val (b> x)))]} 
+    (if (of-type? x Number)
+      x
+      (:val (b> x))))
   
   (b-multi transpose)
   (b-multi invert)
@@ -221,6 +224,11 @@
   (defn chrom-down [x] (transpose x :m2-d))
   
   ;comparators
+  
+  (b-fn b:= [x y] 
+    {:pre [(same-type? x y)]}
+    (= x y))
+  
   (b-fn b:> [x y] 
     {:pre [(same-type? x y)]}
     (> (:val x) (:val y)))

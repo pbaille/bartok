@@ -107,6 +107,14 @@
     [coll] 
     (reduce #(conj %1 (apply - (reverse %2))) [] (partition 2 1 coll)))
   
+  (declare map-reduce)
+    
+  (defn steps-bounds
+    "return min and max amplitude of step-sequence"
+    [steps]
+    (let [mr (map-reduce + 0 steps)]
+      [(a min mr)(a max mr)]))
+  
   ;from overtone
   (defn scale-range
     "Scales a given input value within the specified input range to a

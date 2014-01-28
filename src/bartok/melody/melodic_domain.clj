@@ -64,8 +64,16 @@
 (defn md-amplitude [md]
   (count (:pitches md)))
 
-(defn step [md g-interval]
-  (let [i-val (if (number? g-interval) g-interval (:val g-interval))
+(defn steps-in-bounds? 
+  "return true if the step sequence fit in md when starting from md current pitch"
+  [md steps]
+  (let [indexes (map-reduce + (-> md :current :index) (map to-num steps))]
+    (every? #(valid-domain-index? md %) indexes)))
+
+(defn step 
+  "transpose the current pitch by d-int or return nil"
+  [md d-int]
+  (let [i-val (if (number? d-int) d-int (:val d-int))
         new-index (+ i-val (-> md :current :index))]
     (if-let [curr-pitch (get (:pitches md) new-index)]
       (conj md {:current {:index new-index :pitch curr-pitch}})
@@ -74,7 +82,7 @@
 (defn step-sequence 
   ;single domain
   ([md steps]
-  (let [indexes (map-reduce + (-> md :current :index) (map if-val steps))]
+  (let [indexes (map-reduce + (-> md :current :index) (map to-num steps))]
     (when (every? #(valid-domain-index? md %) indexes)
       (map #(-> md :pitches (nth %)) indexes))))
   ;[{:mode mode-name :steps [step ...]}...] / [Pitch Pitch] / Pitch

@@ -11,6 +11,7 @@
  (:use [bartok.midi overtone-midi midi parser])
  (:use [bartok.xml parser transform analysis])
  
+ (:use bartok.state)
  (:use utils.all)
  (:use bartok.primitives)
  (:use bartok.structure)

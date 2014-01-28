@@ -65,12 +65,18 @@
           [] 
           (map :voices (vals part))))
 
-(defn voice->steps 
+(defn voice->c-int 
   "convert a voice into seq of c-intervals"
   [voice]
-  (let [just-pitches (map #(if (vector? %) (map :pitch %) (:pitch %)) voice)
+  (let [rem-rest (filter :pitch voice)
+        just-pitches (map #(if (vector? %) (map :pitch %) (:pitch %)) rem-rest)
         pitch-line (map #(if (sequential? %) (:name (a highest %)) %) just-pitches)]
     (for [[p1 p2] (partition 2 1 pitch-line)] (c-interval p1 p2))))
+
+(defn voice->d-int
+  "convert a voice into seq of d-intervals"
+  [voice]
+  (map d-interval (voice->c-int voice)))
 
 ;;;;;;;;;;;;;;;;;;;;;; Tests ;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -79,7 +85,8 @@
 (use 'bartok.midi.overtone-midi)
 (use 'bartok.midi.midi)
 
-(def score (parse-mxl "music-files/mxl/Promenade for Brass Quintet.mxl"))
+; (def score (parse-mxl "music-files/mxl/Promenade for Brass Quintet.mxl"))
+; (def score (parse-xml "music-files/xml/jedall.xml"))
 
 (defn attrs-tm>>*g* 
   "feed *g* atom with score structure"
@@ -135,18 +142,22 @@
                  part))
     score))
 
-(def vep (midi-out "Gestionnaire IAC Bus IAC 2" ))
-
-(defn play-score [score]
+(defn process-score [score]
   (attrs-tm>>*g* score) ;feed grid  
   (->> score
        (map (c convert-notes-and-chords 
                concert-pitch
                add-grid-pos))
        add-midi-chans
-       (map extract-voices)
-       (a concat)
-       ; (dr)
-       (play vep)
-       ))
+       (map extract-voices)))
+
+(defn play-score [score]
+  (let [ps (process-score score)]
+    (grid-assoc :tempo 120) 
+    (play @*midi-out* (a concat ps))))
+
+;;;;;;;;;;;;;; Test ;;;;;;;;;;;;;;;;;;;;;
+
+
+
 
