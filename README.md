@@ -37,12 +37,7 @@ A clojure library for music composition.
 ```  
   :C#2 :Eb-2 :B#0
 ```
-### DegreeClass
-
-```
-  :root :second :third :fourth :fifth :sixth :seventh
-```
-### Degree
+### CIntervalClass
 
 ```
   :R
@@ -53,12 +48,12 @@ A clojure library for music composition.
   :m6 :M6 :#6
   :o7 :m7 :M7   
 ```
-### GenericIntervalClass 
+### DIntervalClass 
  
 ```
   :1st :2nd :3rd :4th :5th :6th :7th 
 ```
-### GenericInterval 
+### DInterval 
 
 - GenericIntervalClass
 - separator -
@@ -71,7 +66,7 @@ A clojure library for music composition.
 :2nd-u2 :4th-d1 :7th-u :3rd-d
 ```
 
-### Interval
+### CInterval
 - Degree
 - separator -
 - direction
