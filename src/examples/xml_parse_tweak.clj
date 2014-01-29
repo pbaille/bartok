@@ -29,9 +29,13 @@
 
 (defn rav-step-line [len]
 (->> (take len (cmgwa 
-                ;check if stp is a possible step on mel-dom
+                ;constraints
                 (fn [mel-dom chain-so-far stp]
-                  (step mel-dom stp))
+                  (and 
+                    ;check if stp is a possible step on mel-dom
+                    (step mel-dom stp)
+                    ;remove repetitions (step 0)
+                    (not= 0 (to-num stp))))
                 ;init mel-domain
                 clyd
                 ;called to update domain at each step
