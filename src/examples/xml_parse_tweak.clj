@@ -30,7 +30,7 @@
 (defn rav-step-line [len]
 (->> (take len (cmgwa 
                 ;check if stp is a possible step on mel-dom
-                (fn [mel-dom chain-so-far [stp _]]
+                (fn [mel-dom chain-so-far stp]
                   (step mel-dom stp))
                 ;init mel-domain
                 clyd
