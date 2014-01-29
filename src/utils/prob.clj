@@ -180,30 +180,146 @@
 ;                    10 
 ;                    60))
 
-(defn lazy-markov-chain 
-  "return a markov-chain generator that can be call with any number of arguments
-   with no argument it return a lazy markov-chain that start on random val
-   with 1 arguments or more it return the lazy markov-chain that starts with args"
-  [start data]
+(defn markov-gen 
+  "
+  return a markov-chain generator that can be call with any number of arguments
+  with no argument it return a lazy markov-chain that start on random val
+  with 1 arguments or more it return the lazy markov-chain that starts with args
+  
+    (def laz (->> [60 62 64 66 67 69 71 69 67 66 64 62 60 64 67 71 69 66 62]
+       (markov-depth-analysis  3 [0.1 2 3])
+       markov-gen))
+
+    (take 10 (laz))
+    (take 10 (laz 66))
+    (take 10 (laz 66 67))
+  "
+  [data]
   (let [depth (or (:depth data) 
                   (a max (map count (keys data))))
-        fun (fn fun [acc ws] 
-              (let [v (vec (vals ws))
-                    n (nth (keys ws) (wrand v))]
+        fun (fn fun 
+              [chain probs] 
+              (let [v (vec (vals probs))
+                    nxt (nth (keys probs) (wrand v))
+                    nchain (conj chain nxt)]
                 (lazy-seq
-                  (cons n (fun (conj acc n)
-                               (get-probs (take-last depth (conj acc n)) data))))))]
+                  (cons nxt (fun nchain (get-probs (take-last depth nchain) data))))))]
     (fn ([] (fun [] (get data (rand-nth (keys data)))))
         ([x] (cons x (fun [] (get data [x]))))
         ([x & xs] 
           (let [els (into [x] xs)]
             (lazy-cat els (fun els (get data els))))))))
 
-(def laz (->> [60 62 64 66 67 69 71 69 67 66 64 62 60 64 67 71 69 66 62]
-     (markov-depth-analysis  3 [0.1 2 3])
-     (lazy-markov-chain 60)))
+(defn c-markov-gen 
+  "same as markov-gen but returned fn take a first extra argument:
+   'constrfn' that is a predicate called on : [chain-so-far prob-key] 
+   in order to remove elements that doesn't satisfies it
+  
+  examples: 
+  
+    (def cmg (->> (repeatedly 50 (p rand-int-between -3 3))
+                  (markov-depth-analysis  3 [0.1 2 3])
+                  c-markov-gen))
+    ;with chain
+    (take 10 (cmg (fn [chain el] 
+                        (not= (abs el) (abs (last chain)))) 
+                      [-3 2]))
+    ;with start
+    (take 10 (cmg (fn [chain el] 
+                        (not= (abs el) (abs (last chain)))) 
+                      -3))
+    ;with random start
+    (take 10 (cmg (fn [chain el] 
+                    (not= (abs el) (abs (last chain))))))
+  "
+  [data]
+  (let [depth (or (:depth data) 
+                  (a max (map count (keys data))))
+        fun (fn fun 
+              [chain probs constraints-fn] 
+              (let [v (vec (vals probs))
+                    nxt (nth (keys probs) (wrand v))
+                    nchain (conj chain nxt)
+                    possibilities (filter #(constraints-fn nchain (key %1)) 
+                                      (get-probs (take-last depth nchain) data))]
+                (when (seq possibilities)
+                  (lazy-seq
+                    (cons nxt (fun nchain 
+                                   possibilities
+                                   constraints-fn))))))]
+    (fn ([constr] (fun [] (get data (rand-nth (keys data))) constr))
+        ([constr chain-or-start] 
+          (if (vector? chain-or-start) 
+            (lazy-cat chain-or-start (fun chain-or-start (get data chain-or-start) constr))
+            (cons chain-or-start (fun [] (get data [chain-or-start]) constr)))))))
 
-(take 10 (laz))
-(take 10 (laz 66))
-(take 10 (laz 66 67))
+(defn c-markov-gen-with-acc 
+  "
+  same as markov-gen but returned fn takes 3 more args:
+  'constrfn' that is a predicate called on : [accumulator chain-so-far prob-key]
+   in order to remove elements that doesn't satisfies it
+  acc is the initial state of the accumulator
+  acc-upd is the fun called at each step on [acc (last chain-so-far)] to update acc
+  
+  ex: construct a step sequence based on markov analysis of another step sequence
+      at each step domain need to be check in order to avoid out of bounds steps 
+  
+    (def c-laz (->> (repeatedly 50 (p rand-int-between -3 3))
+                    (markov-depth-analysis  3 [0.1 2 3])
+                    c-markov-gen-with-acc))
+
+    (use 'bartok.melody.melodic-domain)
+    (use 'bartok.primitives)
+
+    (->> (take 10 (c-laz 
+                    ;check if stp is a possible step on mel-dom
+                    (fn [mel-dom chain-so-far stp]
+                      (step mel-dom stp))
+                    ;init mel-domain
+                    (melodic-domain :C-Lyd [:C-1 :C2] :C0)
+                    ;called to update domain at each step
+                    (fn [acc nxt] (step acc nxt))))
+         ;construct a step sequence based on returned chain
+         (step-sequence (melodic-domain :C-Lyd [:C-1 :C2] :C0))
+         ;map it to name for readability
+         (map :name))
+  "
+  [data]
+  (let [depth (or (:depth data) 
+                  (a max (map count (keys data))))
+        fun (fn fun 
+              [chain probs constraints-fn acc acc-update] 
+              (let [v (vec (vals probs))
+                    nxt (nth (keys probs) (wrand v))
+                    nchain (conj chain nxt)
+                    nacc (acc-update acc nxt)
+                    possibilities (filter #(constraints-fn nacc nchain (key %1)) 
+                                      (get-probs (take-last depth nchain) data))]
+                (if (seq possibilities)
+                  (lazy-seq
+                    (cons nxt (fun nchain 
+                                   possibilities
+                                   constraints-fn
+                                   (when nacc nacc)
+                                   (when nacc acc-update))))
+                  nil)))]
+    (fn ([constrfn acc acc-upd] 
+          (fun [] 
+               (get data (rand-nth (keys data)))
+                constrfn 
+                acc
+                acc-upd))
+        ([constrfn acc acc-upd start-or-chain] 
+          (let [start-or-chain (vec-if-not start-or-chain)]
+            (when-let [gdat (get data start-or-chain)]
+              (lazy-cat start-or-chain
+                (fun start-or-chain 
+                  gdat
+                  constrfn 
+                  acc
+                  acc-upd))))))))
+
+
+
+
 
