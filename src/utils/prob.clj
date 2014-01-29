@@ -136,50 +136,6 @@
      (markov-depth-analysis  3 [0.1 2 3])
      (get-probs [60 64 67]))
 
-
-(defn markov-chain [len start data]
-  (let [depth (or (:depth data) 
-                  (a max (map count (keys data))))]
-    (loop [ws (get data [start])
-           acc []]
-      (let [v (vec (vals ws))
-            n (nth (keys ws) (wrand v))]
-        (if (= (count acc) len)
-          acc
-          (recur (get-probs (take-last depth (conj acc n)) data) 
-                 (conj acc n)))))))
-
-(->> [60 62 64 66 67 69 71 69 67 66 64 62 60 64 67 71 69 66 62]
-     (markov-depth-analysis  3 [0.1 2 3])
-     (markov-chain 10 60))
-
-(defn constraint-markov-chain 
-  "same as markov-chain but at each step of the construction 
-  filter probs with pred: [chain-so-far possible-val]
-  and disabled those that doesn't satisfie pred before choosing"
-  [pred len start data]
-  (let [depth (or (:depth data) 
-                  (a max (map count (keys data))))]
-    (loop [ws (get data [start])
-           acc []]
-      (let [v (vec (vals ws))
-            n (nth (keys ws) (wrand v))]
-        (if (= (count acc) len)
-          acc
-          (let [next-acc (conj acc n)
-                possible-vals 
-                (tups->h-map 
-                  (filter (p pred next-acc) (get-probs (take-last depth next-acc) data)))]
-            (if (seq possible-vals)
-              (recur possible-vals next-acc)
-              next-acc)))))))
-
-; (->> [60 62 64 66 67 69 71 69 67 66 64 62 60 64 67 71 69 66 62]
-;      (markov-depth-analysis  3 [0.1 2 3])
-;      (constraint-markov-chain #(not= (key %2) 67)
-;                    10 
-;                    60))
-
 (defn markov-gen 
   "
   return a markov-chain generator that can be call with any number of arguments

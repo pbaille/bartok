@@ -16,19 +16,21 @@
        56 66 63 61]})
 
 (defn mc1 [len]
-  (->> (:1 rmmlo)
-       (markov-depth-analysis  3 [1 2 3])
-       (markov-chain len 90)
-       (map pitch)
-       (m-note-line-from (g-pos 0 0 0) 1/4 60 1)))
+  (let [m-gen (->> (:1 rmmlo)
+                   (markov-depth-analysis  3 [1 2 3])
+                   (markov-gen))]
+    (->> (take len (m-gen 90))
+         (map pitch)
+         (m-note-line-from (g-pos 0 0 0) 1/4 60 1))))
 
 (defn mc2 [len]
-  (->> (:2 rmmlo)
-       (markov-depth-analysis  3 [1 2 3])
-       (markov-chain len 61)
-       (map pitch)
-       (m-note-line-from (g-pos 0 0 0) 1/4 40 1)))
+  (let [m-gen (->> (:2 rmmlo)
+                   (markov-depth-analysis  3 [1 2 3])
+                   (markov-gen))]
+    (->> (take len (m-gen 61))
+         (map pitch)
+         (m-note-line-from (g-pos 0 0 0) 1/4 60 1))))
 
-; (def vep (midi-out "Gestionnaire IAC Bus IAC 2" ))
-
-(defn mc [] (play *midi-out* (concat (mc1 100) (map #(update-in % [:pitch] transpose (c-interval :P5-d1)) (mc1 100)))))
+; ; (def vep (midi-out "Gestionnaire IAC Bus IAC 2" ))
+(grid {:tempo 120 :bars [[25 :4|4]]})
+(defn mc [] (play @*midi-out* (concat (mc1 100) (map #(update-in % [:pitch] transpose (c-interval :P5-d1)) (mc1 100)))))
