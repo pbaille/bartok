@@ -16,7 +16,10 @@
     ([] `(vendors.debug-repl/debug-repl))
     ([& args] `(do (vendors.debug-repl/debug-repl) ~@args )))
   
-  (defmacro try-dr [expr] `(try ~expr (catch Exception e# (dr))))
+  (defmacro try-dr 
+    "try an expr and launch debug-repl if Exception"
+    [expr] `(try ~expr (catch Exception e# (dr))))
+  
   ;print source :)
   (defmacro src [x] `(do (pp (:file (meta (resolve '~x))))(clojure.repl/source ~x)))
   
@@ -88,6 +91,7 @@
   (defn div-mod [x div] [(int (/ x div)) (mod x div)])
   (defn int-div [x div] (int (/ x div)))
   (defn median [& args] (/ (apply + args) (count args)))
+  (defn same-sign? [x y] (pos? (* x y)))
   
   (defn round [s n] 
     (.setScale (bigdec n) s java.math.RoundingMode/HALF_EVEN)) 
@@ -342,6 +346,12 @@
     (remove nil? (map f coll)))
   ;(remnil-map #(when (< 0 %) %) [-1 2 3])
   ;=> (2 3)
+  
+  (defn map-nth 
+    "apply f on each nth elems of coll"
+    [n f coll]
+    (mapcat #(ap vector (f (first %)) (next %)) 
+            (partition n n nil coll)))
   
   (defn filt-map [ff mf coll]
     "map coll with mf then filter results with ff"

@@ -50,21 +50,11 @@
 ;;; contour-prob-line work ;;;;
 ;------------------------------
 
-(defn map-nth [n f coll]
-  (mapcat #(ap vector (f (first %)) (next %)) 
-          (partition n n nil coll)))
-
 (defn- neg2nds [coll start]
   (if (= start 0)
     (map-nth 2 - coll)
     (cons (first coll) (map-nth 2 - (next coll)))))
 
-(defn- weird+ [coll start]
-  (a + (neg2nds coll start)))
-
-(defn- same-sign? [x y] (pos? (* x y)))
-
-;turn this into regular function
 (defn contour-transform
   "given bounds at start [dwn-bound-dist up-bound-dist]
   and contour-analysis seq [[n-successive-same-dir-steps sum] ... ]
@@ -87,6 +77,7 @@
         fit-in-bounds? (and (<= (abs cntr-an-bd) bd) 
                             (<= cntr-an-bu bu))]
     (cond 
+     ;if only one segment no transformation possible, returns wrapped cntr-an
      (count= cntr-an 1) [cntr-an] 
      fit-in-bounds?
      (eval
@@ -100,24 +91,15 @@
                   (butlast syms) 
                   cntr-an 
                   (range)) 
-              :let [~(last syms) (- ~sum (weird+ ~(vec (butlast syms)) ~pola))]
+              :let [~(last syms) (- ~sum (a + (neg2nds ~(vec (butlast syms)) ~pola)))]
               :when (and (>= (abs ~(last syms)) ~(last sizes))
                          (same-sign? ~(last syms) ~(second (last cntr-an))))]
           (map vector ~(vec sizes) (conj (vec (neg2nds (butlast ~syms) ~pola)) 
                                          ~(last syms)))))
      
-     :else
+     :else ;if doesn't fit in bounds return nil
      (pp "*contour-transform*" "cntr-an:"cntr-an 
          "doesn't fit in bounds:" [bd bu] ))))
-
-;model for (= 3 (count cntr-an))
-  ; (defn contour-transform-3 [[bd bu][[n1 s1][n2 s2][n3 s3]]]
-  ;   (let [sum (+ s1 s2 s3)]
-  ;     (for [a (range n1 (inc bu))
-  ;           b (range n2 (inc (+ a bd)))
-  ;           :let [c (- sum (weird+ [a b]))]
-  ;           :when (>= c n3)]
-  ;       [a b c])))
 
 (defn- split-prob-map-by-key-sign [pm]
   (map tups->h-map ((juxt filter remove) #(neg? (key %1)) pm)))
@@ -132,19 +114,20 @@
   (->> (partition-by neg? steps)
        (map (juxt count #(a + %)))))
 
-(defn- cntrseg->d-ints [posints negints [siz sum :as cntrseg]]
+(defn- contour-segment->steps 
+  "takes a contour segment 
+  [n-successive-same-dir-steps sum-of-steps]
+  return an equivalent step seq (integer vector)"
+  [posints negints [siz sum :as cntrseg]]
   (let [ints-pm (if (pos? sum) posints negints)
-        ; _ (dr)
         combs (dom-part (keys ints-pm) siz sum)]
-    
     (when (seq combs)
       (-> (sort-by #(a + (map (p get ints-pm) %)) > combs)
           first 
           shuffle))))
 
-(defn apply-steps [negints posints cntr-an]
-  ; (dr)
-  (map (p cntrseg->d-ints posints negints) cntr-an))
+(defn- apply-steps [negints posints cntr-an]
+  (map (p contour-segment->steps posints negints) cntr-an))
 
 (defn- zone-helper 
   [{[bd bu :as bnds] :bounds poz :posints negz :negints :as acc} zone]
@@ -152,10 +135,8 @@
               (fn [x] (not (try-dr (in? x nil)))) 
               (map (p apply-steps negz poz) 
                    (shuffle (contour-transform bnds zone))))
-        ; _ (dr)
         res-sum (a + (flatten f-res))
         n-bnds [(+ bd res-sum)(- bu res-sum)]]
-    ; (pp "***" "zone" zone "f-res" f-res "n-bnds" n-bnds)
     (-> acc 
         (update-in [:results] conj f-res)
         (assoc :bounds n-bnds))))
@@ -181,48 +162,15 @@
 
 ;; test ;;;
 
-; (def ints-vals (map to-num d-ints))
-; (def fpm (zipmap ints-vals (repeat 1)))
-; (def sfpm (split-prob-map-by-key-sign fpm))
-
-; (def transcntr (flatten (:results (contour-prob-line (take 50 ints-vals) fpm clyd 3))))
-; (steps-bounds transcntr)
-; (map :val (interval-bounds (step clyd 8)))
-; (def ss (step-sequence (step clyd 8) transcntr))
-; (def mn-line (m-note-line-from (g-pos 0 0 0) 1/4 60 1 ss))
-
-; (grid {:bars [[24 :4|4]] :tempo 120})
-; (play @*midi-out* mn-line)
-
-
-; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-; (defn- contour-partial-transformation [bnds partial-cntr]
-;   ((functionize contour-transform) bnds partial-cntr))
-
-; (defn contour-variations [contour-an md depth]
-;   (let [md-bounds (interval-bounds md)]
-;      (reduce #(let [[bd bu :as bnds] (:bounds %1)
-;                     part (first (shuffle (contour-partial-transformation bnds %2)))
-;                     sum (a + (map second part))]
-;                 (-> (update-in %1 [:results] into part)
-;                     (assoc :bounds [(+ bd sum)(- bu sum)])))
-;              {:bounds (map (c abs to-num) md-bounds) 
-;               :results []} 
-;              (partition depth contour-an))))
-
-; (contour-variations 
-;   [[3 9] [3 -10] [3 9] [1 -8] [3 9] [3 -10] [3 9] [2 -14] [1 1]]
-;   clyd
-;   3)
-
-; (defn- contour-segment->steps 
-;   [posints negints [siz sum :as cntrseg]]
-;   (let [ints-pm (if (pos? sum) posints negints)
-;         combs (dom-part (keys ints-pm) siz sum)]
-;     (when (seq combs)
-;       (-> (sort-by #(a + (map (p get ints-pm) %)) > combs)
-;           first 
-;           shuffle))))
+(defn contour-transformation-test []
+  (let [ints-vals (map to-num d-ints)
+        fpm (zipmap ints-vals (repeat 1))
+        transcntr (flatten (:results (contour-prob-line (take 50 ints-vals) fpm clyd 3)))
+        bnds (steps-bounds transcntr)
+        diff (- (:val (first (interval-bounds clyd))) (first bnds))
+        ss (step-sequence (step clyd diff) transcntr)
+        mn-line (m-note-line-from (g-pos 0 0 0) 1/2 60 1 ss)]
+  (grid {:bars [[24 :4|4]] :tempo 120})
+  (play @*midi-out* mn-line)))
 
 
