@@ -218,3 +218,15 @@
 ;   [a 1 b 2] 
 ;   (+ a b))
 
+(defmacro juxt-for [& seqs]
+  (let [syms (repeatedly (count seqs) (p gensym "x"))
+        bindings (vec (interleave syms seqs))]
+    `(for ~bindings (list ~@syms))))
+
+; (defmacro juxt-for2 [& body]
+;   (let [[seqs clauses] (split-with sequential? body)
+;         syms (for [i (count seqs)] (p gensym (str "x" i)))
+;         bindings (vec (interleave syms seqs))
+;         with-clauses (into bindings (map (fn [[kw clau]] `(~kw (a ~clau ~syms))) clauses))]
+;     `(for ~with-clauses (list ~@syms))))
+

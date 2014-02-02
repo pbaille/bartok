@@ -57,7 +57,9 @@
             next (+ start (rand-nth available-steps))]
         (lazy-seq (concat [start] (fun next))))))))
 
-;**************** markov *******************
+;-------------------------------------------
+;;;;;;;;;;;;;;;;; markov ;;;;;;;;;;;;;;;;;;;
+;-------------------------------------------
 
 (defn wrand
   "given a vector of slice sizes, returns the index of a slice given a                                                                                                                                      

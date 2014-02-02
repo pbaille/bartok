@@ -15,6 +15,8 @@
   (defmacro dr 
     ([] `(vendors.debug-repl/debug-repl))
     ([& args] `(do (vendors.debug-repl/debug-repl) ~@args )))
+  
+  (defmacro try-dr [expr] `(try ~expr (catch Exception e# (dr))))
   ;print source :)
   (defmacro src [x] `(do (pp (:file (meta (resolve '~x))))(clojure.repl/source ~x)))
   
@@ -107,12 +109,10 @@
     [coll] 
     (reduce #(conj %1 (apply - (reverse %2))) [] (partition 2 1 coll)))
   
-  (declare map-reduce)
-    
   (defn steps-bounds
     "return min and max amplitude of step-sequence"
     [steps]
-    (let [mr (map-reduce + 0 steps)]
+    (let [mr (reductions + 0 steps)]
       [(a min mr)(a max mr)]))
   
   ;from overtone
@@ -248,6 +248,25 @@
 
   ;(map-h (fn [k v] {k (inc v)}) {:a 1 :b 2})
   ;=> {:a 2 :b 3}
+  
+  (defn filt-h 
+    "like filter but takes and return hash-map
+     if pred fail on a keyval it is dissoc from h"
+    [pred h]
+    (reduce (fn [acc el]
+              (if-not (pred el)
+                (dissoc acc (key el))
+                acc)) 
+            h 
+            h))
+  
+  (defn dissoc-if 
+    "same as filt-h but with args in reverse order to match with dissoc args order"
+    [h pred] (filt-h pred h))
+
+  (defn rem-h [pred h]
+    "like remove but takes and return h-map (see filt-h)"
+    (filt-h (complement pred) h))
 
 ;**************** vectors *******************
 

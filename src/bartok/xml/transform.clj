@@ -1,13 +1,11 @@
 (ns bartok.xml.transform
   (:use utils.all)
-  (:use bartok.primitives)
+  (:use [bartok primitives state structure])
   (:use bartok.types.note)
   (:use bartok.melody.all)
-  (:use bartok.structure)
   (:use bartok.xml.parser))
 
 
-;;;helpers for mapping part notes
 (defn map-notes 
   "helper to map notes of a part
   takes a fun that takes 3 args:
@@ -65,38 +63,6 @@
           [] 
           (map :voices (vals part))))
 
-(defn voice->c-int 
-  "convert a voice into seq of c-intervals"
-  [voice]
-  (let [rem-rest (filter :pitch voice)
-        just-pitches (map #(if (vector? %) (map :pitch %) (:pitch %)) rem-rest)
-        pitch-line (map #(if (sequential? %) (:name (a highest %)) %) just-pitches)]
-    (for [[p1 p2] (partition 2 1 pitch-line)] (c-interval p1 p2))))
-
-(defn voice->d-int
-  "convert a voice into seq of d-intervals"
-  [voice]
-  (map d-interval (voice->c-int voice)))
-
-;;;;;;;;;;;;;;;;;;;;;; Tests ;;;;;;;;;;;;;;;;;;;;;;;;;
-
-; for grid read/write
-(use 'bartok.state)
-(use 'bartok.midi.overtone-midi)
-(use 'bartok.midi.midi)
-
-; (def score (parse-mxl "music-files/mxl/Promenade for Brass Quintet.mxl"))
-; (def score (parse-xml "music-files/xml/jedall.xml"))
-
-(defn attrs-tm>>*g* 
-  "feed *g* atom with score structure"
-  [score]
-  (let [atm (attrs-tm (first score))
-        bars (reduce #(conj %1 (atm %2 :time)) 
-                     [] (range 0 (bar-count score)))
-        tempo (map vec (:tempo (atm)))]
-    (grid {:bars bars :tempo tempo})))
-
 (defn add-grid-pos 
   "add bar offset to each note position of part"
   [part]
@@ -141,6 +107,21 @@
       (map-notes #(assoc %3 :channel part-num) 
                  part))
     score))
+ 
+;** grid related **;
+(defn attrs-tm>>*g* 
+  "feed *g* atom with score structure"
+  [score]
+  (let [atm (attrs-tm (first score))
+        bars (reduce #(conj %1 (atm %2 :time)) 
+                     [] (range 0 (bar-count score)))
+        tempo (map vec (:tempo (atm)))]
+    (grid {:bars bars :tempo tempo})))
+;******************;
+
+;--------------------------------------------------------
+;;;;;;;;;;;;;;;;;;; Main Actions ;;;;;;;;;;;;;;;;;;;;;;;;
+;--------------------------------------------------------
 
 (defn process-score [score]
   (attrs-tm>>*g* score) ;feed grid  
@@ -151,13 +132,38 @@
        add-midi-chans
        (map extract-voices)))
 
+(use 'bartok.midi.midi)
 (defn play-score [score]
   (let [ps (process-score score)]
     (grid-assoc :tempo 120) 
     (play @*midi-out* (a concat ps))))
 
-;;;;;;;;;;;;;; Test ;;;;;;;;;;;;;;;;;;;;;
+; (def score (parse-mxl "music-files/mxl/Promenade for Brass Quintet.mxl"))
+; (def score (parse-xml "music-files/xml/jedall.xml"))
 
+;--------------------------------------------------------
+;;;;;;;;;;;;;;;;;;; Convertions ;;;;;;;;;;;;;;;;;;;;;;;;;
+;--------------------------------------------------------
 
+(defn voice->c-int 
+  "convert a voice into seq of c-intervals"
+  [voice]
+  (let [rem-rest (filter :pitch voice)
+        just-pitches (map #(if (vector? %) (map :pitch %) (:pitch %)) rem-rest)
+        pitch-line (map #(if (sequential? %) (:name (a highest %)) %) just-pitches)]
+    (for [[p1 p2] (partition 2 1 pitch-line)] (c-interval p1 p2))))
+
+(defn voice->d-int
+  "convert a voice into seq of d-intervals"
+  [voice]
+  (map d-interval (voice->c-int voice)))
+
+(defn voice->contour 
+  "extract the contour of a voice 
+  sample output: (1 -2 3 -2 ...)
+  (where (abs x) is the number of consecutive steps, up if (pos? x) or down otherwise) "
+  [voice]
+  (let [dir-parts (partition-by :direction (voice->c-int voice))]
+    (map #(if (-> % first :direction :name (= :u)) (count %) (- (count %))) dir-parts)))
 
 
