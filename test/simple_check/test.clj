@@ -1,8 +1,8 @@
-; (ns simple-check.test
-;   (:use utils.all)
-;   (:require [simple-check.core :as sc])
-;   (:require [simple-check.generators :as gen])
-;   (:require [simple-check.properties :as prop]))
+(ns simple-check.test
+  (:use utils.all)
+  (:require [simple-check.core :as sc])
+  (:require [simple-check.generators :as gen])
+  (:require [simple-check.properties :as prop]))
 
 ; (def sort-idempotent-prop
 ;   (prop/for-all [v (gen/vector gen/int)]
@@ -19,5 +19,6 @@
 ; (gen/sample 
 ;   (gen/fmap vec gen/int gen/boolean))
 
-;; GUIDE HERE!!!
-;https://github.com/reiddraper/simple-check/blob/master/doc/intro.md
+; ; GUIDE HERE!!!
+; https://github.com/reiddraper/simple-check/blob/master/doc/intro.md
+
