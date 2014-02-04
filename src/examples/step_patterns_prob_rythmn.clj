@@ -4,7 +4,7 @@
 ;   {:tempo-humanize [1 5 2 1/2]})
 
 (grid {:bars [[2 :4|4]] 
-       :tempo [[0 2 120]] 
+       :tempo 120 
        :harmony {[0 0] :C-Lyd
                  [1 0] :Ab-Lyd}})
 
@@ -20,6 +20,11 @@
                :steps         #{-4 -3 -1 1 3 4}
                :cycle-steps   #{-3 -2 -1 1 2 3}}))
 
+(step-patterns
+  {:cycle-lengths #{4} 
+   :iterations    #{2} 
+   :steps         #{-4 -3 -1 1 3 4}
+   :cycle-steps   #{-3 -2 -1 1 2 3}})
 ; (def notes 
 ;   (prob-rythmn-step-pattern 
 ;     {:picker picker

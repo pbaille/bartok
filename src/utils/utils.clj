@@ -16,9 +16,12 @@
     ([] `(vendors.debug-repl/debug-repl))
     ([& args] `(do (vendors.debug-repl/debug-repl) ~@args )))
   
-  (defmacro try-dr 
+  (defmacro or-dr 
     "try an expr and launch debug-repl if Exception"
-    [expr] `(try ~expr (catch Exception e# (dr))))
+    [expr] 
+    (let [line (:line (meta &form))
+          file *file*]
+      `(try ~expr (catch Exception e# (do (println (str "file:" ~file "::" ~line))(dr))))))
   
   ;print source :)
   (defmacro src [x] `(do (pp (:file (meta (resolve '~x))))(clojure.repl/source ~x)))
@@ -92,6 +95,10 @@
   (defn int-div [x div] (int (/ x div)))
   (defn median [& args] (/ (apply + args) (count args)))
   (defn same-sign? [x y] (pos? (* x y)))
+  
+  (defn opposite-sign? [x y] 
+    (or (and (pos? x) (neg? y)) 
+        (and (neg? x) (pos? y))))
   
   (defn round [s n] 
     (.setScale (bigdec n) s java.math.RoundingMode/HALF_EVEN)) 
@@ -180,6 +187,27 @@
     (let [tail (repeat (- size (count coll)) el)]
       (concat coll tail)))
   
+  (defn seq1 
+    "force 1 by one evaluation  of lazy sequence s"
+    [s]
+    (lazy-seq
+      (when-let [[x] (seq s)]
+        (cons x (seq1 (rest s))))))
+  
+  (defn partition-if
+  "split coll where (pred elem next-elem) is true"
+  [pred coll]
+  (lazy-seq
+   (if (second coll)
+     (let [prv (pred (first coll)(second coll))
+           temp (take-while 
+                  #(not (pred (first %) (second %))) 
+                  (partition 2 1 coll))
+           lst (last (last temp))
+           run (concat (mapv first temp) [lst])]
+       (cons run (partition-if pred (seq (drop (count run) coll))))))))
+
+
 ;***************** maps *********************
   
   (defn map->sorted 

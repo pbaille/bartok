@@ -84,7 +84,7 @@
   ([md steps]
   (let [indexes (map-reduce + (-> md :current :index) (map to-num steps))]
     (when (every? #(valid-domain-index? md %) indexes)
-      (map #(-> md :pitches (nth %)) indexes))))
+      (map #(-> md :pitches (nth %)) indexes)))) ;with start pitch? (cons (-> md :current :pitch) (map #(-> md :pitches (nth %)) indexes))
   ;[{:mode mode-name :steps [step ...]}...] / [Pitch Pitch] / Pitch
   ([coll bounds start-pitch]
    (reduce
@@ -103,6 +103,6 @@
       => [(d-interval :1st-d1) (d-interval :1st-u1)]
     (md-amplitude md) => 15
     (step md 1) => (melodic-domain :C-Lyd [:C0 :C2] :D1)
-    (step-sequence md [1 1 1]) => [(b> :D1)(b> :E1)(b> :F#1)])
+    (step-sequence md [1 1 1]) => [(b> :C1)(b> :D1)(b> :E1)(b> :F#1)])
 
 

@@ -8,5 +8,5 @@
   (midi-out "Gestionnaire IAC Bus IAC 2" )))
 
 (def ^:dynamic *settings* (atom
-  {:tempo-interpolation :step ;# {:step :linear} TODO curve interpolations
+  {:tempo-interpolation :linear ;# {:step :linear} TODO curve interpolations
 }))
