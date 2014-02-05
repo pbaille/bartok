@@ -12,11 +12,11 @@
 
 (defn rav-steps 
   "map 'jeux d'eau' steps on alternate C-Lyd and Ab-Lyd modes"
-  [md len]
+  [len]
   (as-> (take len d-ints) x
         (map (fn [steps mod] 
               {:mode mod :steps steps}) 
-             (partition 16 16 x) (cycle [:C-Lyd :Ab-Lyd]))
+             (partition 16 16 nil x) (cycle [:C-Lyd :Ab-Lyd]))
         (step-sequence x [:C-4 :C4] :C0)
         ; (dr)
         (m-note-line-from (g-pos 0 0 0) 1/4 60 1 x)))
@@ -49,12 +49,12 @@
 (defn ctt []
   (let [ints-vals (map to-num d-ints)
         fpm (zipmap ints-vals (repeat 1))
-        transcntr (flatten (:results (contour-prob-line (take 50 ints-vals) fpm clyd 4)))
+        transcntr (flatten (:results (contour-prob-line (take 50 ints-vals) fpm clyd 3)))
         bnds (steps-bounds transcntr)
         diff (- (:val (first (interval-bounds clyd))) (first bnds))
         ss (step-sequence (step clyd diff) transcntr)
         mn-line (m-note-line-from (g-pos 0 0 0) 1/2 60 1 ss)]
-  ; (dr)
+  (dr)
   (grid {:bars [[24 :4|4]] :tempo 120})
   (play @*midi-out* mn-line)
   ))

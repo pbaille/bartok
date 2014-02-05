@@ -1,6 +1,8 @@
 (ns bartok.melody.contour
   (:use utils.all)
   (:use bartok.primitives)
+  (:use utils.clocop)
+  (:use [clocop core constraints])
   (:use bartok.melody.melodic-domain))
 
 (defn contour-transform
@@ -31,7 +33,7 @@
                   (fn [sym [n s] idx] 
                     [sym 
                      (cond 
-                       (pos? s) `(range ~n (inc (- ~bu ~@(take idx syms))))
+                       (pos? s) `(range ~n (inc (- ~bu (+ ~@(take idx syms)))))
                        (neg? s) `(range (+ ~@(take idx syms) (- ~bd)) (inc (- ~n)))
                        (zero? s) [0])]) 
                   (butlast syms) 
@@ -43,8 +45,36 @@
           (map vector ~(vec sizes) ~(vec syms))))
      
      :else ;if doesn't fit in bounds return nil
-     (pp "*contour-transform*" "cntr-an:"cntr-an 
+     (pp "*contour-transform*" "cntr-an:" cntr-an 
          "doesn't fit in bounds:" [bd bu] ))))
+
+;constraint solving version 
+(defn contour-transform*
+  [[bd bu :as strat-bounds] cntr-segs]
+  (let [syms (gensyms (count cntr-segs))
+        size (+ bd bu)
+        total-step (apply + (map second cntr-segs))]
+    (eval 
+    `(with-store (store)
+       (let ~(reduce 
+               (fn [acc s] 
+                 (into acc (list s `(int-var ~(str (symbol s)) (- ~size) ~size)))) 
+               [] syms)
+       (constrain! ($sum-to ~total-step ~@syms))
+       ~@(map-indexed (fn [i s] 
+                        (if (zero? i)
+                          `(constrain! ($between ~(first syms) [~(- bd) ~bu]))
+                          `(constrain! ($between ($+ ~@(take (inc i) syms)) [~(- bd) ~bu]))))
+                      (butlast syms))
+       ~@(map-indexed (fn [i s]
+                        (if (not= 0 (second (nth cntr-segs i))) 
+                         `(constrain! ($and ($>= ($abs ~s) ~(first (nth cntr-segs i))) 
+                                            ($same-sign ~s ~(second (nth cntr-segs i))))) 
+                         `(constrain! ($= ~s 0))))
+                      syms))
+       (map (fn [result#] 
+              (map vector (map first ~cntr-segs) (vals result#))) 
+            (solve! :solutions :all))))))
 
 ; little function to test bounds of output
 ;((juxt (p a min) (p a max)) (flatten (map #(steps-bounds (map second %)) *1)))
@@ -56,8 +86,8 @@
   "given a step sequence returns a seq of 
   [n-successive-same-dir-steps sum-of-steps]
   ex:
-  (contour-analysis [1 2 3 -1 -2 3])
-  =>([3 6] [2 -3] [1 3])"
+  (contour-analysis [1 2 3 0 -1 -2 3])
+  =>([3 6] [1 0] [2 -3] [1 3])"
   [steps]
   (->> (partition-by (p compare 0) steps)
        (map (juxt count #(a + %)))))
@@ -98,8 +128,7 @@
   compute a possible sequence of steps in respect of all args"
   [steps pm md depth]
   (if (step-sequence md steps) ;if steps fit in domain
-    (let [md-bounds (interval-bounds md)
-         [negints posints] (split-prob-map-by-key-sign pm)]
+    (let [[negints posints] (split-prob-map-by-key-sign pm)]
       (->> (partition depth depth nil (contour-analysis steps))
         (reduce (p part-transform negints posints)
                {:bounds (map (c abs to-num) (interval-bounds md)) 
@@ -107,9 +136,17 @@
         :results flatten))
     (prn "this contour doesn't fit in this domain (src/examples/xml_parse_tweak.clj line: 56)")))
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
-
+(defn contour-prob-line2
+  "args 
+  - contour-analysis [[size total-step] ... ]
+  - int prob map {1 0.3 -1 0.5 ...}
+  - melodic-domain
+  - transformation depth 
+  compute a possible sequence of steps in respect of all args"
+  [cntr-an pm md depth]
+  (let [[negints posints] (split-prob-map-by-key-sign pm)]
+    (->> (partition depth depth nil cntr-an)
+      (reduce (p part-transform negints posints)
+             {:bounds (map (c abs to-num) (interval-bounds md)) 
+              :results []})
+      :results flatten)))

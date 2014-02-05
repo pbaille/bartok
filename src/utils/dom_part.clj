@@ -1,5 +1,7 @@
 (ns utils.dom-part 
-  (:use utils.utils))
+  (:use utils.utils)
+  (:use [clocop core constraints])
+  (:use utils.clocop))
 
 (defn dom-part 
   "args:
@@ -28,3 +30,21 @@
                         #(for [b (allowed-elems %)] (conj % b)) 
                         results ))))))
     (when (and (in? elements sum) (= size 1)) #{[sum]})))
+
+; constraints solving implementation much slower...
+(defn dom-part* [els siz sum]
+  (let [[mi ma] ((juxt #(apply min %) #(apply max %)) els)
+        var-syms (map #(-> % char str symbol) (range 97 (+ 97 siz)))
+        var-str (map str var-syms)]
+  (if (> siz 1)  
+  (eval 
+   `(with-store (store)
+      (let ~(reduce (fn [acc [vsym vstr]]
+                      (vec (concat acc [vsym `(int-var ~vstr ~mi ~ma)]))) 
+                    [] (map list var-syms var-str))
+        ~@(map (fn [i] `(constrain! ($mor $= ~i ~els))) var-syms)
+        ~@(map (fn [[x1 x2]] `(constrain! ($<= ~x1 ~x2))) (partition 2 1 var-syms))
+        (constrain! ($= ~sum ($+ ~@var-syms)))
+        (map vals (solve! :solutions :all)))))
+  (when (and (in? els sum) (= siz 1)) #{[sum]}))))
+

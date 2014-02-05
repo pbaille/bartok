@@ -117,7 +117,10 @@
         start-pos (:position (first sorted-prvals))
         end-pos ((fn [{p :position d :duration}](pos+ p d)) (last sorted-prvals))
         global-bounds (global-bounds start-pos end-pos bounds start-pitch)
-        rl-steps (map #(assoc %1 :step %2) sorted-prvals (steps-line global-bounds picker))
+        rl-steps (map #(assoc %1 :step %2) 
+                      sorted-prvals 
+                      ;cons null step for including start-pitch
+                      (cons 0 (steps-line global-bounds picker)))
         hcs (map #(-> % (dissoc :elements) 
                         (assoc :steps (reduce (fn [steps {s :step}](conj steps s)) 
                                               [] (:elements %)))) 

@@ -15,37 +15,32 @@
                  ; [6 0] :F-Melm
                  
 (def picker (lazy-step-pattern-picker 
-              {:cycle-lengths #{4 3 5 6 7 8} 
-               :iterations    #{1 2 3 4} 
+              {:cycle-lengths #{3} 
+               :iterations    #{3} 
                :steps         #{-4 -3 -1 1 3 4}
-               :cycle-steps   #{-3 -2 -1 1 2 3}}))
-
-(step-patterns
-  {:cycle-lengths #{4} 
-   :iterations    #{2} 
-   :steps         #{-4 -3 -1 1 3 4}
-   :cycle-steps   #{-3 -2 -1 1 2 3}})
-; (def notes 
-;   (prob-rythmn-step-pattern 
-;     {:picker picker
-;      ; :rvals [1/4 1/2] 
-;      :prob-rvals {1/4 1} 
-;      :start-pos (g-pos 0 0 0) 
-;      :end-pos (g-pos 8 0 0 )
-;      :bounds [:C0 :C2] 
-;      :start-pitch :C1 }))
+               :cycle-steps   #{-7 7}}))
 
 (def notes 
-  (rythmic-prob-step
-    {:prob-map {:4th-u 0.4
-                :4th-d 0.4
-                :5th-u 0.4
-                :5th-d 0.4}
-     :rvals [1/4] 
+  (prob-rythmn-step-pattern 
+    {:picker picker
+     ; :rvals [1/4 1/2] 
+     :prob-rvals {1/4 1} 
      :start-pos (g-pos 0 0 0) 
      :end-pos (g-pos 8 0 0 )
-     :bounds [:C0 :A2] 
+     :bounds [:C-1 :C3] 
      :start-pitch :C1 }))
+
+; (def notes 
+;   (rythmic-prob-step
+;     {:prob-map {:4th-u 0.4
+;                 :4th-d 0.4
+;                 :5th-u 0.4
+;                 :5th-d 0.4}
+;      :rvals [1/4] 
+;      :start-pos (g-pos 0 0 0) 
+;      :end-pos (g-pos 8 0 0 )
+;      :bounds [:C0 :A2] 
+;      :start-pitch :C1 }))
 
 ; (pp (map #(map (c :name :pitch) %) (partition 8 8 notes)))
 (def notes (map #(assoc % :velocity (rand-int-between 50 80)) notes))

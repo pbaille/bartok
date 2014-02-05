@@ -23,14 +23,23 @@
           file *file*]
       `(try ~expr (catch Exception e# (do (println (str "file:" ~file "::" ~line))(dr))))))
   
-  ;print source :)
-  (defmacro src [x] `(do (pp (:file (meta (resolve '~x))))(clojure.repl/source ~x)))
+  (defmacro wai? 
+    "where am I ? => print file and line"
+    []
+    `(println (str "file:" ~*file* "::" ~(:line (meta &form)))))
+  
+  (defmacro src 
+    "print source :)"
+    [x] 
+    `(do (pp (:file (meta (resolve '~x))))(clojure.repl/source ~x)))
   
   ;inspect-tree shortcut
   (defn tree [x] (inspect-tree x))
   
-  ;prettyprint macro expansion
-  (defn pex [expr] (pp (macroexpand-1 expr)))
+  (defn pex 
+    "prettyprint macro expansion"
+    [expr] 
+    (pp (macroexpand-1 expr)))
   
   
   (defmacro or= 
@@ -153,6 +162,11 @@
             amp (math/abs (- end start))]
         (map #(-> (* % step) incf (+ start)) 
            (range 0 ((c inc int) (/ amp step)))))))
+  
+  (defn min-max 
+    "takes a seq of numbers and return a vector [min max]"
+    [coll] 
+    ((juxt #(a min %) #(a max %)) coll))
   
   ;(range-by 10 0.25)
 
