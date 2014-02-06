@@ -764,6 +764,36 @@
       ['ModeClass m :number d] 
         (mode-class (-> mother-modes (get (:name m)) :childs (nth (dec d)))))
     
+    ;;; degree moves ;;;
+    
+    (b-fn nth-diat
+      "args: m ModeClass / degree CIntervalClass / n Integer 
+      return a CIntervalClass 
+      => the nth diatonic pitch of `degree` in the given direction (up if (pos? n) or down otherwise)"
+      [mc degree n]
+      (let [degs (:degrees mc)]
+        (if (in? degs degree)
+          (let [d-pos (.indexOf degs degree)]
+            (nth degs (mod (+ d-pos n) (count degs))))
+          "degree doesn't belongs to mode")))
+    
+    (b-fn diat-up 
+      "args: m ModeClass degree CIntervalClass
+      return a CIntervalClass => the diatonic up pitch of `degree`"
+      [mc degree]
+      (nth-diat mc degree 1))
+    
+    (b-fn diat-down
+      "args: m ModeClass degree CIntervalClass
+      return a CIntervalClass => the diatonic down pitch of `degree`"
+      [mc degree]
+      (nth-diat mc degree -1))
+    
+    (b-fn degree-step 
+      "almost like nth-diat but takes a DInterval as third arg"
+      [mc degree di]
+      (nth-diat mc degree (:val di)))
+    
   ;;;;;;;;;;;;;;;;;;;;;; Mode ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     
     ;;; helpers ;;;
@@ -828,6 +858,8 @@
             n (kwcat (:name r) "-" (:name (:mode-class this)))
             ps (map #(transpose % ci) (:pitch-classes this))]
         (build-mode n r (:mode-class this) ps)))
+    
+    
     
   ;;;;;;;;;;;;;;;;;; TimeSignature ;;;;;;;;;;;;;;;;;;;;;;;;;;
     

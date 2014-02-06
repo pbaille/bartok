@@ -15,7 +15,7 @@
              3 ))
 
 
-(time (->> (contour-prob-line
+(time (->> (contour-prob-line2
             cntr-an 
             {-5 0.5 -4 1 -3 1 -1 0.5 
              1 0.5 3 1 4 1 5 0.5}
@@ -33,3 +33,5 @@
            (step-sequence c-lyd)
            (note-line-from (g-pos 0 0 0) 1/4)
            (play @*midi-out*)))
+
+; (defn target-notes-mel [])

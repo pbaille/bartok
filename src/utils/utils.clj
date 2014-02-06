@@ -42,25 +42,25 @@
     (pp (macroexpand-1 expr)))
   
   
-  (defmacro or= 
-    ([expr coll] `(or= ~expr ~@coll))
+  (defn or= 
+    ([expr coll] (ap or= expr coll))
     ([expr o & ors]
-    `(or ~@(map (fn [o] `(= ~expr ~o)) (cons o ors)))))
+    (eval `(or ~@(map (fn [o] `(= ~expr ~o)) (cons o ors))))))
   
-  (defmacro and= 
-    ([expr coll] `(and= ~expr ~@coll))
+  (defn and= 
+    ([expr coll] (ap and= expr coll))
     ([expr o & ors]
-    `(and ~@(map (fn [o] `(= ~expr ~o)) (cons o ors)))))
+    (eval `(and ~@(map (fn [o] `(= ~expr ~o)) (cons o ors))))))
   
-  (defmacro and-not= 
-    ([expr coll] `(and-not= ~expr ~@coll))
+  (defn and-not= 
+    ([expr coll] (ap and-not= expr coll))
     ([expr o & ors]
-    `(and ~@(map (fn [o] `(not= ~expr ~o)) (cons o ors)))))
+    (eval `(and ~@(map (fn [o] `(not= ~expr ~o)) (cons o ors))))))
   
-  (defmacro or-not= 
-    ([expr coll] `(or-not= ~expr ~@coll))
+  (defn or-not= 
+    ([expr coll] (ap or-not= expr coll))
     ([expr o & ors]
-    `(or ~@(map (fn [o] `(not= ~expr ~o)) (cons o ors)))))
+    (eval `(or ~@(map (fn [o] `(not= ~expr ~o)) (cons o ors))))))
   
   (defmacro or-> [arg & exprs]
     `(or ~@(map (fn [expr] (if (symbol? expr) 
@@ -68,7 +68,7 @@
                              (cons (first expr) (cons arg (next expr))))) 
                 exprs)))
   
-  (defmacro with-dispatch [disp-val expr]
+  (defn with-dispatch [disp-val expr]
     "call a particular dispatch on a multi method"
     `((get (methods ~(first expr)) ~disp-val) ~@(next expr)))
   
