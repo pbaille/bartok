@@ -74,18 +74,31 @@
                dble))]
     {:simple sple :double dble :triple trple}))
 
-;just append target note to each series
 (defn available-passings 
   "return a filtered subset of passings hash given a degree-passing-tones hash"
   [deg-pass-tones]
   (let [by-val (vals (group-by (f> val :val) deg-pass-tones))
         removed-uniqs (remove #(= 1 (count %)) by-val)
-        overlaps (map (p map first) removed-uniqs)]
-    (dr)
-    ; (reduce 
-    ;   (fn [acc el]
-    ;     (-> (update-in acc (p remove))))
-    ;   passings 
-    ;   overlaps)
-    ))
+        overlaps (map (p map first) removed-uniqs)
+        ;remove diatonics passings types because they occurs in every overlaps
+        overlaps (map (p remove #(or= % :du :dd)) overlaps)]
+    (reduce 
+      (fn [acc el]
+        (-> (update-in acc [:simple] 
+              (p remove 
+                #(or (= % (first el)) 
+                     (= % (second el)))))
+            (update-in [:double]
+              (p remove 
+                (p some 
+                  #(or (= % (first el)) 
+                       (= % (second el))))))
+            (update-in [:triple]
+              (p remove 
+                (p some 
+                  #(or (= % (first el)) 
+                       (= % (second el))))))))
+      passings 
+      overlaps)))
+
 

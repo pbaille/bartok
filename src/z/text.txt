@@ -3,3 +3,4 @@ TODO
 - melodic functions priority
 - chord generator
 - rythmic patterns
+- modal subsets

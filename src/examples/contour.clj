@@ -9,10 +9,10 @@
 (grid {:bars [[24 :4|4]] :tempo 120})
 
 (time (contour-prob-line 
-             mel-steps 
-            (zipmap (range -4 5) (repeat 1)) 
-             c-lyd 
-             3 ))
+         mel-steps 
+        (zipmap (range -4 5) (repeat 1)) 
+         c-lyd 
+         3 ))
 
 
 (time (->> (contour-prob-line2
@@ -34,4 +34,4 @@
            (note-line-from (g-pos 0 0 0) 1/4)
            (play @*midi-out*)))
 
-; (defn target-notes-mel [])
+(defn target-notes-mel [])
