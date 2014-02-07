@@ -595,6 +595,9 @@
               v (mod12 (+ (:val pc) (:val i)))]
           (pitch-class nat v)))
     
+    (b-fn in-mode? [p m]
+      (in? (:pitch-classes m) p))
+    
   ;;;;;;;;;;;;;;;;;;;;;; Pitch ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     
     (def pitches 
@@ -851,8 +854,6 @@
             n (kwcat (:name r) "-" (:name (:mode-class this)))
             ps (map #(transpose % ci) (:pitch-classes this))]
         (build-mode n r (:mode-class this) ps)))
-    
-    
     
   ;;;;;;;;;;;;;;;;;; TimeSignature ;;;;;;;;;;;;;;;;;;;;;;;;;;
     

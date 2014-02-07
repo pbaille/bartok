@@ -114,7 +114,9 @@
   (is-alteration-of :C1 :Cb1) => true
   (highest :C1 :B2) => (pitch :B2)
   (transpose :C1 :m2-u1) => (pitch :Db2)
-  (transpose :C1 :m7-d) => (pitch :D0))
+  (transpose :C1 :m7-d) => (pitch :D0)
+  (in-mode? :C# :C-Lyd) => nil
+  (in-mode? :C :C-Lyd) => true)
 
 (fact "mode-class"
   (mode-class :Mix) => (mode-class :Lyd 2))
