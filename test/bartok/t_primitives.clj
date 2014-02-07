@@ -60,11 +60,11 @@
 (facts "c-interval"
   (fact "construct"
     (c-interval :m2-u1)
-    => {:name :m2-u1, :val 13, :class (c-interval-class :m2) :generic (d-interval :2nd-u1), :direction {:name :u, :val 1}, :octave-offset 1}
+    => {:name :m2-u1, :val 13, :class (c-interval-class :m2) :diatonic (d-interval :2nd-u1), :direction {:name :u, :val 1}, :octave-offset 1}
     (c-interval :2nd-u1)
-    => {:name :M2-u1, :val 14, :class (c-interval-class :M2) :generic (d-interval :2nd-u1), :direction {:name :u, :val 1}, :octave-offset 1}
+    => {:name :M2-u1, :val 14, :class (c-interval-class :M2) :diatonic (d-interval :2nd-u1), :direction {:name :u, :val 1}, :octave-offset 1}
     (c-interval :m2)
-    => {:name :m2-u, :val 1, :class (c-interval-class :m2) :generic (d-interval :2nd-u), :direction {:name :u, :val 1}, :octave-offset 0}
+    => {:name :m2-u, :val 1, :class (c-interval-class :m2) :diatonic (d-interval :2nd-u), :direction {:name :u, :val 1}, :octave-offset 0}
     (c-interval :2nd (- 13)) => (c-interval :m2-d1)
     (c-interval :2nd 3) => (c-interval :#2-u)
     (c-interval :B :A#) => (c-interval :m2-d) 

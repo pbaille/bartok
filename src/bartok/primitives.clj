@@ -107,19 +107,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;; Eval ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;-------------------------------------------------------
   
-  ; ; types delaration
-  ; (declare alteration 
-  ;          direction 
-  ;          natural_pitch_class 
-  ;          pitch_class pitch 
-  ;          degree_class 
-  ;          degree 
-  ;          generic_interval 
-  ;          interval 
-  ;          mode_class 
-  ;          mode 
-  ;          time_signature)
-  
   (declare comp-b>)
   
   (defn b> 
@@ -357,12 +344,7 @@
       ['DIntervalClass gic 'Direction d]
         (d-interval (kwcat (:name gic) "-" (:name d)))
         
-      ['CInterval ci]
-        (d-interval (if (-> ci :direction :val (= 1))
-                      (-> ci :class :d-class :val 
-                          (+ (* 7 (:octave-offset ci))))
-                      (-> ci :class :d-class :val -
-                          (- (* 7 (:octave-offset ci)))))))
+      ['CInterval ci] (:diatonic ci))
     
     ;;; arithmetics ;;;
     
@@ -436,15 +418,15 @@
     
     (defn build-c-interval 
       ([m]
-         (let [{:keys [name val direction octave-offset class generic]} m]
-           (build-c-interval name val direction octave-offset class generic)))
-      ([name val direction octave-offset class gen]
+         (let [{:keys [name val direction octave-offset class diatonic]} m]
+           (build-c-interval name val direction octave-offset class diatonic)))
+      ([name val direction octave-offset class diat]
          (with-type 
            'CInterval 
            {:name name 
             :val val 
             :class class 
-            :generic gen
+            :diatonic diat
             :direction direction 
             :octave-offset octave-offset})))
     
@@ -455,7 +437,7 @@
         (let [[dn diroct] (dash-split n)
                class (c-interval-class (keyword dn))
                [dir oct] (dir-oct-expand diroct)
-               gen (-> class :d-class :val (* (:val dir)) (+ (* 7 oct)) d-interval)
+               gen (-> class :d-class :val (+ (* 7 oct)) (* (:val dir)) d-interval)
                val (* (:val dir) (+ (:val class) (* 12 oct)))]
           (build-c-interval n val dir oct class gen))
       
@@ -478,7 +460,7 @@
               alt (alteration alt-n (:alt-type di))
               dir (if (>= n 0) :u :d)
               oct (when-not (zero? (int-div n 12)) (abs (int-div n 12)))]
-          (c-interval (kwcat (:name alt) (str (inc v)) "-" dir oct)))
+          (or-dr (c-interval (kwcat (:name alt) (str (inc v)) "-" dir oct))))
       
       ['DInterval di :number n] (c-interval (:class di) n)
       
@@ -609,7 +591,7 @@
     ;;; functions ;;;
     
     (b-meth transpose ['PitchClass 'CInterval] [pc i]
-        (let [nat (:name (transpose (:natural pc) (-> i :generic :val)))
+        (let [nat (:name (transpose (:natural pc) (-> i :diatonic :val)))
               v (mod12 (+ (:val pc) (:val i)))]
           (pitch-class nat v)))
     

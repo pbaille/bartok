@@ -41,17 +41,17 @@
 (b-fn degree-passing-tones 
   "return the passing environment of a degree"    
   [mc structur deg]
-  (let [cu (c-interval deg (b:+ deg :m2) :u)
-        cd (c-interval deg (b:- deg :m2) :d)
+  (let [cu (b> :m2-u)
+        cd (b> :m2-d)
         du (c-interval deg (diat-up mc deg) :u)
         dd (c-interval deg (diat-down mc deg) :d)
-        su (or (select-first #(> (:val %) (:val deg)) structur)
-               (first structur))
-        su (c-interval deg su :u)
-        sd (or (last (filter #(< (:val %) (:val deg)) structur))
-               (last structur))
-        sd (c-interval deg sd :d)]
-    (array-map :me deg :cu cu :cd cd :du du :dd dd :su su :sd sd )))
+        su-cic (or (select-first #(> (:val %) (:val deg)) structur)
+                   (first structur))
+        su (c-interval deg su-cic :u)
+        sd-cic (or (last (filter #(< (:val %) (:val deg)) structur))
+                   (last structur))
+        sd (c-interval deg sd-cic :d)]
+    (array-map :degree deg :cu cu :cd cd :du du :dd dd :su su :sd sd )))
 
 (b-fn passing-context 
   "assign to each degree of the mode-class its potential passings role"
