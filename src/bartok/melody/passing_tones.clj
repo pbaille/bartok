@@ -41,18 +41,17 @@
 (b-fn degree-passing-tones 
   "return the passing environment of a degree"    
   [mc structur deg]
-  (let [sup  (or (select-first #(> (:val %) (:val deg)) structur)
-                 (first structur))
-        sdwn (or (last (filter #(< (:val %) (:val deg)) structur))
-                 (last structur))]
-    (array-map
-     :me deg
-     :cu (b:+ deg :m2)
-     :cd (b:- deg :m2)
-     :du (diat-up mc deg)
-     :dd (diat-down mc deg)
-     :su sup
-     :sd sdwn)))
+  (let [cu (c-interval deg (b:+ deg :m2) :u)
+        cd (c-interval deg (b:- deg :m2) :d)
+        du (c-interval deg (diat-up mc deg) :u)
+        dd (c-interval deg (diat-down mc deg) :d)
+        su (or (select-first #(> (:val %) (:val deg)) structur)
+               (first structur))
+        su (c-interval deg su :u)
+        sd (or (last (filter #(< (:val %) (:val deg)) structur))
+               (last structur))
+        sd (c-interval deg sd :d)]
+    (array-map :me deg :cu cu :cd cd :du du :dd dd :su su :sd sd )))
 
 (b-fn passing-context 
   "assign to each degree of the mode-class its potential passings role"
@@ -61,7 +60,7 @@
 
 (def passings
   "all possibles simples, doubles and triples passings series"
-  (let [sple [:cd :du :dd :su :sd]
+  (let [sple [[:cd] [:du] [:dd] [:su] [:sd]]
         dble (into [[:du :cu][:dd :cd][:du :cd][:cd :du]] ;chromatic passings ... maybe incomplete
                     (map vec (mapcat c/permutations 
                                     (c/combinations [:dd :du :sd :su] 2))))
@@ -86,8 +85,9 @@
       (fn [acc el]
         (-> (update-in acc [:simple] 
               (p remove 
-                #(or (= % (first el)) 
-                     (= % (second el)))))
+                (p some 
+                  #(or (= % (first el)) 
+                       (= % (second el))))))
             (update-in [:double]
               (p remove 
                 (p some 
@@ -100,5 +100,22 @@
                        (= % (second el))))))))
       passings 
       overlaps)))
+
+(def- int->passing-size {1 :simple 2 :double 3 :triple})
+
+(defn make-passing-serie 
+  "returns a passing-serie
+  sizes can be chain for composed passing-series
+  ex: (make-passing-serie 
+        (last (passing-context :Lyd [:M3 :+4 :+5 :M7])) 
+        true ;it is a broderie
+        2 2)"
+  [deg-pass-tones broderie? & sizes]
+  (let [av-pass (available-passings deg-pass-tones)]
+    (reduce 
+      (fn [acc siz]
+        (into acc (conj (rand-nth (siz av-pass)) :me))) 
+      (if broderie? [:me] []) ;start on target note if broderie 
+      (map int->passing-size sizes))))
 
 

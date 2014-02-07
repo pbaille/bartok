@@ -70,7 +70,10 @@
     (c-interval :B :A#) => (c-interval :m2-d) 
     (c-interval 'E 'C) => (c-interval :M3-d)
     (c-interval :C2 :B1) => (c-interval :m2-d)
-    )
+    (c-interval :M3 :P4 :u) => (c-interval :m2-u)
+    (c-interval :M3 :P4 :d) => (c-interval :M7-d)
+    (c-interval :P4 :M3 :u) => (c-interval :M7-u)
+    (c-interval :P4 :M3 :d) => (c-interval :m2-d))
   (fact "arithmetics"
     (b:+ :m2-u :M7-u) => (c-interval :P1-u1)
     (b:+ :m2-u :M7-d) => (c-interval :#6-d)

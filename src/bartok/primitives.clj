@@ -514,7 +514,18 @@
                pci (c-interval pc1 pc2)
                oct-inter (c-interval (c-interval-class :P1) 
                                      (- (:octave p2)(:octave p1)))]
-          (b:+ pci oct-inter)))
+          (b:+ pci oct-inter))
+        
+      ['CIntervalClass ci1 'CIntervalClass ci2 'Direction d]
+        (let [up? (= d (direction :u))
+              chrom-dist (if up? 
+                           (mod12 (- (-> ci2 :val)(-> ci1 :val)))
+                           (- (mod12 (- (-> ci1 :val)(-> ci2 :val)))))
+              diat-dist (if up? 
+                          (mod (- (-> ci2 :d-class :val)(-> ci1 :d-class :val)) 7)
+                          (mod (- (-> ci1 :d-class :val)(-> ci2 :d-class :val)) 7))]
+          ; (dr)
+          (c-interval (d-interval-class diat-dist) chrom-dist)))
     
     ;;; Arithmetics ;;;
     
