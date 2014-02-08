@@ -51,12 +51,12 @@
         sd-cic (or (last (filter #(< (:val %) (:val deg)) structur))
                    (last structur))
         sd (c-interval deg sd-cic :d)]
-    (array-map :degree deg :cu cu :cd cd :du du :dd dd :su su :sd sd )))
+    [(:name deg) {:cu cu :cd cd :du du :dd dd :su su :sd sd} ]))
 
 (b-fn passing-context 
   "assign to each degree of the mode-class its potential passings role"
   [mc structur]
-  (map (p degree-passing-tones mc structur) (:degrees mc)))
+  (tups->h-map (map (p degree-passing-tones mc structur) (:degrees mc))))
 
 (def passings
   "all possibles simples, doubles and triples passings series"
@@ -118,4 +118,4 @@
       (if broderie? [:me] []) ;start on target note if broderie 
       (map int->passing-size sizes))))
 
-
+; (defn test-passing)
