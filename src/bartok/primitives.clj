@@ -596,6 +596,9 @@
               v (mod12 (+ (:val pc) (:val i)))]
           (pitch-class nat v)))
     
+    (b-meth transpose ['PitchClass 'CIntervalClass] [pc ic]
+      (transpose pc (c-interval ic)))
+    
     (b-fn in-mode? [p m]
       (in? (:pitch-classes m) p))
     
