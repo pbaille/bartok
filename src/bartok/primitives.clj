@@ -141,6 +141,7 @@
          (defmulti ~sym ~disp)
          (b-fn ~n [& args#] (a ~sym args#)))))
   
+  ;useless...
   (defmacro b-method [n disp-val args & body]
     (let [sym (symbol (str "b-multi-" n))]
       `(defmethod ~sym ~disp-val ~args ~@body)))

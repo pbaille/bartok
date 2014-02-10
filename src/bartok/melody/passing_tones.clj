@@ -32,11 +32,11 @@
 ; :su => structure-up
 ; :me => target-note
 
-(defn modal-struct 
-  "takes an array of :c-interval-class(es) or CIntervalClass(es)
-  return an array of CIntervalClass(es) with type 'ModalStruct"
-  [cics]
-  (with-type 'ModalStruct (b> cics)))
+; (defn modal-struct 
+;   "takes an array of :c-interval-class(es) or CIntervalClass(es)
+;   return an array of CIntervalClass(es) with type 'ModalStruct"
+;   [cics]
+;   (with-type 'ModalStruct (b> cics)))
 
 (b-fn degree-passing-tones 
   "return the passing environment of a degree"    
@@ -83,21 +83,15 @@
         overlaps (map (p remove #(or= % :du :dd)) overlaps)]
     (reduce 
       (fn [acc el]
-        (-> (update-in acc [:simple] 
+        (reduce 
+          (fn [acc siz]
+            (update-in acc [siz] 
               (p remove 
                 (p some 
                   #(or (= % (first el)) 
-                       (= % (second el))))))
-            (update-in [:double]
-              (p remove 
-                (p some 
-                  #(or (= % (first el)) 
-                       (= % (second el))))))
-            (update-in [:triple]
-              (p remove 
-                (p some 
-                  #(or (= % (first el)) 
-                       (= % (second el))))))))
+                       (= % (second el)))))))
+          acc  
+          [:simple :double :triple]))
       passings 
       overlaps)))
 
