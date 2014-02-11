@@ -244,8 +244,8 @@
   
   (def h-map hash-map)
   
-  (defn tups->h-map 
-    "(tups->h-map [[:a 1][:b 2]]) => {:a 1 :b 2}"
+  (defn entries->h-map 
+    "(entries->h-map [[:a 1][:b 2]]) => {:a 1 :b 2}"
     [tups-coll]
     (a hash-map (a concat tups-coll)))
   

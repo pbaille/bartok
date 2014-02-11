@@ -203,6 +203,11 @@
   (b-multi b:>=)
   (b-multi b:<=)
   
+  ;intra-mode degree-move
+  ;return the nth diatonic pitchclass or degree of 2nd argument 
+  ;in the given direction (up if (pos? n) or down otherwise)"
+  (b-multi nth-diat)
+  
 ;----------------------------------------------------------------
 ;;;;;;;;;;;;;;;;;;;;;;;; generic methods ;;;;;;;;;;;;;;;;;;;;;;;;
 ;----------------------------------------------------------------
@@ -507,7 +512,6 @@
               diat-dist (if up? 
                           (mod (- (-> ci2 :d-class :val)(-> ci1 :d-class :val)) 7)
                           (mod (- (-> ci1 :d-class :val)(-> ci2 :d-class :val)) 7))]
-          ; (dr)
           (c-interval (d-interval-class diat-dist) chrom-dist)))
     
     ;;; Arithmetics ;;;
@@ -766,11 +770,8 @@
     
     ;;; degree moves ;;;
     
-    (b-fn nth-diat
-      "args: m ModeClass / degree CIntervalClass / n Integer 
-      return a CIntervalClass 
-      => the nth diatonic pitch of `degree` in the given direction (up if (pos? n) or down otherwise)"
-      [mc degree n]
+    
+    (b-meth nth-diat ['ModeClass 'CIntervalClass :number] [mc degree n]
       (let [degs (:degrees mc)]
         (if (in? degs degree)
           (let [d-pos (.indexOf degs degree)]
@@ -858,6 +859,17 @@
             n (kwcat (:name r) "-" (:name (:mode-class this)))
             ps (map #(transpose % ci) (:pitch-classes this))]
         (build-mode n r (:mode-class this) ps)))
+    
+    ;TODO
+    (b-meth nth-diat ['Mode 'PitchClass :number] [m pc n]
+      (let [pcs (:pitch-classes m)]
+        (if (in? pcs pc)
+          (let [p-pos (.indexOf pcs pc)]
+            (nth pcs (mod (+ p-pos n) (count pcs))))
+          "pitch class doesn't belongs to mode")))
+    
+    (b-meth nth-diat ['Mode 'CIntervalClass :number] [m cic n] 
+      (nth-diat (:mode-class m) cic n))
     
   ;;;;;;;;;;;;;;;;;; TimeSignature ;;;;;;;;;;;;;;;;;;;;;;;;;;
     

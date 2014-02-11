@@ -80,7 +80,7 @@
 ;((juxt (p a min) (p a max)) (flatten (map #(steps-bounds (map second %)) *1)))
 
 (defn- split-prob-map-by-key-sign [pm]
-  (map tups->h-map ((juxt filter remove) #(neg? (key %1)) pm)))
+  (map entries->h-map ((juxt filter remove) #(neg? (key %1)) pm)))
 
 (defn contour-analysis 
   "given a step sequence returns a seq of 

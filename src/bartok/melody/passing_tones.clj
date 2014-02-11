@@ -56,7 +56,7 @@
 (b-fn passing-context 
   "assign to each degree of the mode-class its potential passings role"
   [mc structur]
-  (tups->h-map (map (p degree-passing-tones mc structur) (:degrees mc))))
+  (entries->h-map (map (p degree-passing-tones mc structur) (:degrees mc))))
 
 (def passings
   "all possibles simples, doubles and triples passings series"
