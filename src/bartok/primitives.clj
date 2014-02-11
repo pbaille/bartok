@@ -146,8 +146,8 @@
     (let [sym (symbol (str "b-multi-" n))]
       `(defmethod ~sym ~disp-val ~args ~@body)))
   
-  (defmacro b-multi [n]
-    `(do (defmulti ~n b-types)
+  (defmacro b-multi [n & doc-string]
+    `(do (defmulti ~n ~@doc-string b-types)
        (defmethod ~n :default [& args#] 
          (let [b-args# (if (count= args# 1) (b> (first args#)) (b> args#))
                disp-vals# (if (count= args# 1) (b-types b-args#) (a b-types b-args#))]

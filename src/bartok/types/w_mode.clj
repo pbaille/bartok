@@ -1,4 +1,4 @@
-(ns bartok.types.modal-struct
+(ns bartok.types.w-mode
   (:use utils.all)
   (:use bartok.primitives))
 
@@ -96,7 +96,8 @@
     (nth-diat (with-type 'Mode wm) pc n))
   
   ;;;
-  (b-multi main-degree?)
+  (b-multi main-degree?
+    "return true if deg is a main-degree of w-mode-class wmc")
   
   (b-meth main-degree? ['WModeClass 'CIntervalClass] [wmc deg] 
     (in? (:main-degrees wmc) deg))
@@ -104,11 +105,14 @@
   (b-meth main-degree? ['WMode 'CIntervalClass] [wm deg] 
     (in? (:main-degrees (:w-mode-class wm)) deg))
   
-  (b-fn main-pitch-class? [wm pc] 
+  (b-fn main-pitch-class? 
+    "return true if pc is a main-pitch-class of w-mode wm"    
+    [wm pc] 
     (in? (:main-pitch-classes wm) pc))
   
   ;;;
-  (b-multi aux-degree?)
+  (b-multi aux-degree?
+    "return true if deg is a aux-degree of w-mode-class wmc")
   
   (b-meth aux-degree? ['WModeClass 'CIntervalClass] [wmc deg] 
     (in? (:aux-degrees wmc) deg))
@@ -116,11 +120,14 @@
   (b-meth aux-degree? ['WMode 'CIntervalClass] [wm deg] 
     (in? (:aux-degrees (:w-mode-class wm)) deg))
   
-  (b-fn aux-pitch-class? [wm pc] 
+  (b-fn aux-pitch-class? 
+    "return true if pc is a aux-pitch-class of w-mode wm"    
+    [wm pc] 
     (in? (:aux-pitch-classes wm) pc))
   
   ;;;
-  (b-multi missing-degree?)
+  (b-multi missing-degree?
+    "return true if deg is a missing-degree of w-mode-class wmc")
   
   (b-meth missing-degree? ['WModeClass 'CIntervalClass] [wmc deg] 
     (in? (:missing-degrees wmc) deg))
@@ -128,11 +135,14 @@
   (b-meth missing-degree? ['WMode 'CIntervalClass] [wm deg] 
     (in? (:missing-degrees (:w-mode-class wm)) deg))
   
-  (b-fn missing-pitch-class? [wm pc] 
+  (b-fn missing-pitch-class? 
+    "return true if pc is a missing-pitch-class of w-mode wm"
+    [wm pc] 
     (in? (:missing-pitch-classes wm) pc))
 
   ;;;
-  (b-multi chromatic-up)
+  (b-multi chromatic-up
+    "return the first adjacent up chromatic-degree/pitch-class or nil")
   
   (b-meth chromatic-up ['WModeClass 'CIntervalClass] [wmc deg] 
     (when-not (in? (:degrees wmc) (b:+ deg :m2)) (b:+ deg :+1)))
@@ -144,7 +154,8 @@
     (when-not (in? (:pitch-classes wm) (transpose pc :m2)) (transpose pc :+1)))
   
   ;;;
-  (b-multi chromatic-down)
+  (b-multi chromatic-down
+    "return the first adjacent down chromatic-degree/pitch-class or nil")
   
   (b-meth chromatic-down ['WModeClass 'CIntervalClass] [wmc deg] 
     (when-not (in? (:degrees wmc) (b:- deg :m2)) (b:- deg :+1)))
@@ -156,37 +167,43 @@
     (when-not (in? (:pitch-classes wm) (transpose pc :m2-d)) (transpose pc :b1)))
   
   ;;;
-  (b-multi main-up)
+  (b-multi main-up
+    "return the first adjacent up main-degree/pitch-class")
   
   (b-meth main-up ['WModeClass 'CIntervalClass] [wmc deg] 
-    (or (select-first #(> (:val %) (:val deg)) (:main-degrees wmc))
-        (first (:main-degrees wmc))))
+    (or (select-first #(> (:val %) (:val deg)) (->> wmc :main-degrees (sort-by :val)))
+        (->> wmc :main-degrees (sort-by :val) first)))
   
   (b-meth main-up ['WMode 'CIntervalClass] [wm deg] 
-    (or (select-first #(> (:val %) (:val deg)) (-> wm :w-mode-class :main-degrees))
-        (-> wm :w-mode-class :main-degrees first)))
+    (or (select-first #(> (:val %) (:val deg)) (->> wm :w-mode-class :main-degrees (sort-by :val)))
+        (->> wm :w-mode-class :main-degrees (sort-by :val) first)))
   
   (b-meth main-up ['WMode 'PitchClass] [wm pc] 
-    (or (select-first #(> (:val %) (:val pc)) (-> wm :w-mode-class :main-pitch-classes))
-        (-> wm :w-mode-class :main-pitch-classes first)))
+    (or (select-first #(> (:val %) (:val pc)) (->> wm :main-pitch-classes (sort-by :val)))
+        (->> wm :main-pitch-classes (sort-by :val) first)))
   
   ;;;
-  (b-multi main-down)
+  (b-multi main-down
+    "return the first adjacent down main-degree/pitch-class")
   
   (b-meth main-down ['WModeClass 'CIntervalClass] [wmc deg] 
-    (or (last (filter #(> (:val %) (:val deg)) (:main-degrees wmc)))
-        (last (:main-degrees wmc))))
+    (or (last (filter #(< (:val %) (:val deg)) 
+                      (->> wmc :main-degrees (sort-by :val))))
+        (->> wmc :main-degrees (sort-by :val) last)))
   
   (b-meth main-down ['WMode 'CIntervalClass] [wm deg] 
-    (or (last (filter #(> (:val %) (:val deg)) (-> wm :w-mode-class :main-degrees)))
-        (-> wm :w-mode-class :main-degrees last)))
+    (or (last (filter #(< (:val %) (:val deg)) 
+                      (->> wm :w-mode-class :main-degrees (sort-by :val))))
+        (->> wm :w-mode-class :main-degrees (sort-by :val) last)))
   
   (b-meth main-down ['WMode 'PitchClass] [wm pc] 
-    (or (last (filter #(> (:val %) (:val pc)) (-> wm :w-mode-class :main-pitch-classes)))
-        (-> wm :w-mode-class :main-pitch-classes last)))
+    (or (last (filter #(< (:val %) (:val pc)) 
+                      (->> wm :main-pitch-classes (sort-by :val))))
+        (->> wm :main-pitch-classes (sort-by :val) last)))
   
-    ;;;
-  (b-multi aux-up)
+  ;;;
+  (b-multi aux-up
+    "return the first adjacent up aux-degree/pitch-class or nil")
   
   (b-meth aux-up ['WModeClass 'CIntervalClass] [wmc deg] 
     (let [du (diat-up wmc deg)]
@@ -201,7 +218,8 @@
       (when-not (in? (:main-pitch-classes wm) du) du)))
   
   ;;;
-  (b-multi aux-down)
+  (b-multi aux-down
+    "return the first adjacent down aux-degree/pitch-class or nil")
   
   (b-meth aux-down ['WModeClass 'CIntervalClass] [wmc deg] 
     (let [du (diat-down wmc deg)]
@@ -215,5 +233,24 @@
     (let [du (diat-down wm pc)]
       (when-not (in? (:main-pitch-classes wm) du) du)))
 
-(b-multi aux-degrees-up)
-(b-multi aux-degrees-down)
+  ;;;
+  (b-fn auxs-up 
+    "return a coll of aux-degrees or aux-pitch-classes 
+    that are between target degree/pitchclass and first up main-degree/pitchclass"
+    [wm-or-wmc deg-or-pc]
+    (loop [deg-or-pc deg-or-pc
+           ret []]
+      (if-let [nxt (aux-up wm-or-wmc deg-or-pc)]
+        (recur nxt (conj ret nxt))
+        (when (seq ret) ret))))
+  
+  (b-fn auxs-down 
+    "return a coll of aux-degrees or aux-pitch-classes 
+    that are between target degree/pitchclass and first down main-degree/pitchclass"
+    [wm-or-wmc deg-or-pc]
+    (loop [deg-or-pc deg-or-pc
+           ret []]
+      (if-let [nxt (aux-down wm-or-wmc deg-or-pc)]
+        (recur nxt (conj ret nxt))
+        (when (seq ret) ret))))
+
