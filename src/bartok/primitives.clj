@@ -415,7 +415,7 @@
     
     ;;; functions ;;;
     
-    (defmethod relative 'CIntervallass [d] 
+    (defmethod relative 'CIntervalClass [d] 
       (c-interval-class (- 12 (:val d))))
     
   ;;;;;;;;;;;;;;;;;;;; CInterval ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -456,8 +456,13 @@
       
       ['CIntervalClass d] (c-interval (kwcat (:name d) "-u"))
       
-      ['CIntervalClass d :number n] 
-        (c-interval (kwcat (:name d) (if (>= n 0) "-u" "-d") (when-not (zero? n) (abs n))))
+      ['CIntervalClass ci 'Direction d] 
+        (c-interval (kwcat (:name ci) "-" (:name d)))
+      
+      ['CIntervalClass d :number oct-offset]
+        (c-interval (kwcat (:name d) 
+                           (if (>= oct-offset 0) "-u" "-d") 
+                           (when-not (zero? oct-offset) (abs oct-offset))))
       
       ['DIntervalClass di :number n]
         (let [[d-val v] [(:degree-val di)(:val di)]
@@ -470,18 +475,6 @@
       
       ['DInterval di :number n] (c-interval (:class di) n)
       
-      
-      ; ['Pitch p1 'Pitch p2]
-      ;   (let [[p1v p2v] (map #(-> % :pitch-class :natural :val) [p1 p2])
-      ;          diff (- (:val p2) (:val p1))
-      ;          oct-diff (int-div diff 12)
-      ;          gicv (if (>= diff 0) (- p2v p1v) (-> (- p2v p1v) (+ 7) (mod 7) - ))
-      ;          gen (cond (zero? gicv) 
-      ;                      (if (>= diff 0) :1st-u :1st-d)
-      ;                    :else (:name (d-interval (+ gicv (* 7 oct-diff)))))]
-      ;     (dr)
-      ;     (c-interval gen diff))
-      
       ['NaturalPitchClass npc1 'NaturalPitchClass npc2]
         (let [dist (- (:val npc2)(:val npc1))
               di (d-interval dist)]
@@ -493,9 +486,6 @@
                dic (:class (d-interval npc-dist))
                dist (- (:val p2)(:val p1))]
           (c-interval dic dist))
-        
-      ; ['CInterval ci1 'CInterval ci2]
-      ;   ()
       
       ['Pitch p1 'Pitch p2]
         (let [[pc1 pc2] (map :pitch-class [p1 p2])
@@ -503,6 +493,10 @@
                oct-inter (c-interval (c-interval-class :P1) 
                                      (- (:octave p2)(:octave p1)))]
           (b:+ pci oct-inter))
+      
+      ['PitchClass pc1 'PitchClass pc2 'Direction d]
+        (let [ci (c-interval pc1 pc2)]
+          (if (= (:direction ci) d) ci (relative ci)))  
         
       ['CIntervalClass ci1 'CIntervalClass ci2 'Direction d]
         (let [up? (= d (direction :u))
@@ -528,6 +522,12 @@
     
     (b-meth invert 'CInterval [ci]
       (c-interval (-> ci :class :d-class) (- (:val ci))))
+    
+    (b-meth relative 'CInterval [ci]
+      (invert (c-interval (relative (:class ci)) 
+                          (if (zero? (:octave-offset ci)) 
+                            (:direction ci) 
+                            (:octave-offset ci)))))
   
   ;;;;;;;;;;;;;;;;; NaturalPitchClass ;;;;;;;;;;;;;;;;;;;;;;;
     

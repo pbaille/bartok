@@ -3,7 +3,7 @@
   (:use bartok.primitives))
 
 (immigrate
-  'bartok.melody.passing-tones
+  'bartok.melody.diatonic-passing
   'bartok.melody.contour
   'bartok.melody.melodic-domain
   'bartok.melody.step-pattern

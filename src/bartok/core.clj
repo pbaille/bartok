@@ -6,7 +6,7 @@
  (:use camel-snake-kebab)
  (:use midje.sweet)
  
- (:use bartok.types.note)
+ (:use [bartok.types note w-mode])
  
  (:use [bartok.midi overtone-midi midi parser])
  (:use [bartok.xml parser transform analysis])
