@@ -54,16 +54,19 @@
 
 
 (defmacro defmult [name disp & body]
-  `(do (defmulti ~name ~disp)
+  (let [docstring (when (string? (first body)) (first body))
+        body (if docstring (next body) body)]
+   `(do (defmulti ~name ~disp)
      ~@(map (fn [[v & fun-body]]
                (let [params (vec (take-nth 2 v))
                      types  (vec (take-nth 2 (next v)))
                      types (if (count= types 1) (first types) types)]
                  `(defmethod ~name ~types ~params ~@fun-body))) 
-            body)))
+            body))))
 
 (comment 
   (defmult multest b-types
+    "yop comment"
     ([x :pitch
       y :pitch]
       ((b> distance) x y))
@@ -140,7 +143,7 @@
       ~@(when docstring [docstring])
       ~@(let [cnt (/ (count argv) 2)]
           (map (fn [x] (let [args (vec (take x args))]
-                 `(~args (do ()(~name ~@(fill-with args cnt :default)))))) 
+                 `(~args (do ()(~name ~@(fill-with args cnt :*)))))) 
                (range cnt)))
       (~args
       (let [~args (map (fn [[a# b#]] (if (= a# :*) b# a#)) 

@@ -14,13 +14,13 @@
 
 (defn- if-val [x] (or (:val x) x))
 
-(defn- init-and-compute-pitches [mode bounds]
-  (let [rng (range (-> bounds first :val) 
+(defn- init-and-compute-pitches [mode-or-pcs bounds]
+  (let [pcs (if (type= mode-or-pcs 'Mode) (:pitch-classes mode-or-pcs) mode-or-pcs)
+        rng (range (-> bounds first :val) 
                    (-> bounds second :val inc))
-        mpvs (apply hash-map (mapcat (juxt :val :name) (:pitch-classes mode)))]
-    ; (dr)
+        mpvs (apply hash-map (mapcat (juxt :val :name) pcs))]
     (with-type 'MelodicDomain 
-      {:mode mode
+      {:pitch-classes pcs
        :bounds bounds
        :pitches (vec (for [x rng :when (contains? mpvs (mod12 x))]
                   (pitch (keyword-cat (mpvs (mod12 x)) (str (midi-octave x))))))})))
@@ -31,7 +31,7 @@
                   (:pitches md))
             (-> md :pitches first))
         i (index-of p (:pitches md))]
-    (conj md {:current {:pitch p :index i}})))
+    (assoc md :current {:pitch p :index i})))
 
 (defn- valid-domain-index? [md i]
   (between i 0 (-> md :pitches count dec)))

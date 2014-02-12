@@ -33,6 +33,24 @@
 (b-meth d-passing-context 'WModeClass [wmc] 
   (entries->h-map (map (p x-d-passing-context wmc) (:degrees wmc))))
 
+(b-fn pitch-passings
+  "return a collection of valid passings for a given target-pitch"
+  [pass-cont target-pitch size]
+  (let [context (dissoc-nils ((-> target-pitch :pitch-class :name) pass-cont))
+        context (dissoc context :chromatic-down :chromatic-up)
+        types (keys context)
+        all (shuffle (c/selections types size))
+        rep-rem (filter #(every? (fn [[x y]](not= x y)) (partition 2 1 %)) all)]
+    (map (fn [pseq] 
+           (reduce #(cons (transpose target-pitch (-> context %2 :c-interval)) %1) 
+                   [target-pitch]
+                   pseq)) 
+         rep-rem)))
+
+(comment 
+  (map (fn [pp] (map :name pp)) 
+       (pitch-passings (d-passing-context (w-mode :C-Lyd)) :B0 3)))
+
 (b-fn make-passing 
   "temp fn to ear generated diatonic passings"
   [pass-cont target-pitch size brod?]

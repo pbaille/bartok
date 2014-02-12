@@ -12,7 +12,7 @@
 (defn- bartokize-prob-map [m]
   (zipmap (map b> (keys m)) (vals m)))
 
-;prob-map keys (GenericInterval) vals (prob(number))
+;prob-map keys (DInterval) vals (prob(number))
 (defn- prob-line 
   ([length] (prob-line default-prob-map length))
   ([prob-map length] ((weight-picker prob-map) length)))
