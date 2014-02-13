@@ -49,7 +49,7 @@
 ;example
 (comment 
   (drunk-passing-line 
-    (w-mode :C-Melm)
+    (w-mode :C-Phry6)
     [:D-1 :D2]
     {:2nd-u 1 :2nd-d 1 
      :3rd-u 0.5 :3rd-d 0.5 
