@@ -113,7 +113,7 @@
                              (/ (:duration %) 
                                 ;if measure contains divisions attr then use it else defer to last known
                                 (or (some-> _ :attributes :divisions)
-                                    (last (remnil-map (f> :attributes :divisions) part))))))))
+                                    (last (keep (f> :attributes :divisions) part))))))))
                ;remove staff field (useless for now)
                (update-in [:notes]
                  (p map #(dissoc % :staff)))

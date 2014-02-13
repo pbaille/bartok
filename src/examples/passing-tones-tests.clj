@@ -56,27 +56,6 @@
      :4th-u 0.2 :4th-d 0.2}
     100))
 
-(defn drop-last-while 
-  "drop last items until pred is true
-  vector only!
-  (drop-last-while (p < 10) [57 8 1 6 80 9 90 99 78])
-  => (57 8 1 6 80 9) "
-  [pred coll]
-  (let [cnt (count (drop-while pred (reverse coll)))]
-    (take cnt coll)))
-
-(defmacro prob-exprs 
-  "randomly choose an expression accordingly to all weights and eval it
-  (prob-exprs 1 (+ 2 3) 3 (name :yo))
-  1/4 chances to => 5 
-  3/4 chances to => 'yo' "
-  [& body]
-  (let [exprs (take-nth 2 (next body))
-        weights (take-nth 2 body)
-        siz (/ (count body) 2)]
-   `(case (weight-pick-one ~(zipmap (range siz) weights)) 
-      ~@(interleave (range siz) exprs))))
-
 (b-fn lazy-drunk-passing-line
   "return a lazy melodic line with some random passings on main degrees"
   ([w-mode bounds d-int-prob-map brod-rat]
@@ -90,7 +69,6 @@
            (select-first #(if (seq acc) 
                             (not= (first %) (last acc))
                             true) 
-                         
                          (prob-exprs 
                            ;(rand-int-between 0 4) shouldn't be hardcoded! it is the length of the passing-serie
                            (- 1 brod-rat) (pitch-passings pass-cont pi (rand-int-between 0 4))

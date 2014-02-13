@@ -19,6 +19,18 @@
 ;take a map of object/prob pairs
 (defn weight-pick-one [m] ((weight-picker m)))
 
+(defmacro prob-exprs 
+  "randomly choose an expression accordingly to all weights and eval it
+  (prob-exprs 1 (+ 2 3) 3 (name :yo))
+  1/4 chances to => 5 
+  3/4 chances to => 'yo' "
+  [& body]
+  (let [exprs (take-nth 2 (next body))
+        weights (take-nth 2 body)
+        siz (/ (count body) 2)]
+   `(case (weight-pick-one ~(zipmap (range siz) weights)) 
+      ~@(interleave (range siz) exprs))))
+
 ;return a drunk function
 (defn drunk-sequencer 
   ([range-bounds max-step] 

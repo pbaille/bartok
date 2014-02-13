@@ -359,13 +359,6 @@
   
 ;************ higher order funs *************
   
-  ; (defn map-reduce-old [f init coll] 
-  ;   ((c vec next) 
-  ;      (reduce (fn [acc el] 
-  ;                (conj acc (f (last acc) el))) 
-  ;               [init] 
-  ;               coll)))
-  
   (defn map-reduce [f init coll] 
     (next (reductions f init coll)))
   
@@ -383,11 +376,12 @@
   (defn select-first [pred coll]
     (first (filter pred coll)))
   
-  (defn remnil-map [f coll]
-    "map coll with f and filter nils"
-    (remove nil? (map f coll)))
-  ;(remnil-map #(when (< 0 %) %) [-1 2 3])
-  ;=> (2 3)
+  ;obsolete use clojure.core/keep instead of that
+  ; (defn remnil-map [f coll]
+  ;   "map coll with f and filter nils
+  ;   (remnil-map #(when (< 0 %) %) [-1 2 3])
+  ;   => (2 3)"
+  ;   (remove nil? (map f coll)))
   
   (defn map-nth 
     "apply f on each nth elems of coll"
@@ -403,25 +397,24 @@
     "filter coll with ff then map results with mf"
     (map mf (filter ff coll)))
   
-  
   (defn first-truthy [f coll]
-    "take the first truthy element of (map f coll)"
+    "take the first truthy element of (map f coll)
+    (first-truthy #(when (< 0 %) %) [-1 2 3])
+    => 2"
     (select-first (complement nil?) (map f coll)))
-  
-  ;(first-truthy #(when (< 0 %) %) [-1 2 3])
-  ;=> 2
   
   (defn set-map [f coll]
     "call set on the result of map"
     (set (map f coll)))
   
-  
-  
-  ; (defn first-where [sub-map coll]
-  ;   (select-first #(submap? sub-map %) coll))
-  
-  ; (defn select-where [sub-map coll]
-  ;   (filter #(submap? sub-map %) coll))
+  (defn drop-last-while 
+  "drop last items until pred is true
+  vector only!
+  (drop-last-while (p < 10) [57 8 1 6 80 9 90 99 78])
+  => (57 8 1 6 80 9) "
+  [pred coll]
+  (let [cnt (count (drop-while pred (reverse coll)))]
+    (take cnt coll)))
   
 ;***************** types ********************
   
@@ -449,15 +442,16 @@
 
 ;*************** experiments ****************
 
-  (defn repeater [coll]
+  (defn repeater 
+    "(repeater [[2 [3 [2 :foo] :bar] :woz] :bim [2 :yo]])
+    => (:foo :foo :bar :foo :foo :bar :foo :foo :bar :woz :foo 
+        :foo :bar :foo :foo :bar :foo :foo :bar :woz :bim :yo :yo)"
+    [coll]
     (mapcat (fn [[n & els]] 
               (if (count= els 1)
                 (repeat n (first els)) 
                 (a concat (repeat n (mapcat #(repeater [%]) els))))) 
             (map #(if (vector? %) % (vector 1 %)) coll)))
-  
-  ;(repeater [[2 [3 [2 :foo] :bar] :woz] :bim [2 :yo]])
-  ;=> (:foo :foo :bar :foo :foo :bar :foo :foo :bar :woz :foo :foo :bar :foo :foo :bar :foo :foo :bar :woz :bim :yo :yo)
   
 ;************** namespaces ******************
 
