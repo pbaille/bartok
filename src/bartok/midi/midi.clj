@@ -49,64 +49,27 @@
            velocity 60 
            channel  0}
       :as note }]
-  ; (dr)
   (m-note (:val pitch) (float (note-to-ms note)) (float (pos-to-ms position)) velocity channel))
 
 (defn play [out notes]
   (let [notes_ (map to-midi (expand-chords notes))]
-    ; (dr)
     (doseq [{p :pitch v :velocity d :duration pos :position c :channel} notes_]
       (play-note out p v d pos c))))
 
-;************* old ***************
+(use 'bartok.composition.utils)
+(use 'bartok.state)
 
-;(defn play [out notes]
-;   (let [notes (sort-by #(-> % :position pos-val) notes)
-;         quads (map #(vector (-> % :pitch :val) 
-;                             (or (:velocity %)(rand-int-between 60 80)) 
-;                             (note-to-ms %) 
-;                             (pos-to-ms (:position %))) 
-;                    notes)]
-;     (for [q quads] (apply (partial play-note out) q))))
-
-
-
-; (defn play-line
-;   [out & pith-vel-dur-triples]
-;   (loop [notes (seq pith-vel-dur-triples)
-;          at 0] 
-;     (apply (partial play-note out) (conj (first notes) at))
-;     (if-let
-;       [nexts (next notes)]
-;       (recur nexts (+ at (last (first notes)))))))
-
-; (defn lazy-drunk
-;   [range-bounds max-step start]
-;   (let [r (- (second range-bounds) (first range-bounds))
-;         steps (range (- max-step) (inc max-step))]
-;     (iterate
-;       (fn [l]
-;         (let [last-note (first l)
-;               available-steps (filter #(between (+ last-note %) range-bounds) steps)
-;               last-note (+ last-note (rand-nth available-steps))]
-;           (conj l last-note)))
-;       (seq [start]))))
-
-; (defn make-drunk-line [range-bounds max-step start length]
-;   (nth (lazy-drunk range-bounds max-step start) length))
-
-; (make-drunk-line [30 70] 10 35 60)
-
-; (defn make-note
-;   [pitch]
-;    [pitch 100 250])
-
-;(def line (map make-note (lazy-drunk [50 80] 7 50 60)))
-;line
-
-
-
-
-
-
+(defnaults play-pitch-line 
+  "little helper to save keystrokes: 
+  play all pitches in a row with equal duration vel and chan
+  ex: (play-pitch-line [:C0 :D0 :E0])"
+  [pitches []
+   dur 1/4
+   vel 60
+   chan 1
+   tempo 120]
+  (grid {:bars [[32 :4|4]] :tempo tempo})
+  (->> pitches 
+      (m-note-line-from (g-pos) dur vel chan)
+      (play @*midi-out*)))
 
