@@ -36,7 +36,7 @@
         {:domain dom :pitches (step-sequence domain res)}))))
 
 (defn d-int-prob-line  
-  "return a lazy d-interval seq accordingly to a melodic-domain and a {d-int prob ...} map
+  "return a lazy pitch seq accordingly to a melodic-domain and a {d-int prob ...} map
   
    (take 20 (d-int-prob-line 
               (melodic-domain :C-Lyd [:C0 :C2]) 
@@ -47,5 +47,5 @@
   (letfn [(fun [domain prob-map]
             (let [interv (choose-next-interval domain prob-map)
                   dom (step domain interv)] 
-              (lazy-seq (cons interv (fun dom prob-map)))))]
+              (lazy-seq (cons (-> dom :current :pitch) (fun dom prob-map)))))]
     (fun dom (bartokize-prob-map prob-map))))
