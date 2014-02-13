@@ -35,7 +35,7 @@
           (recur dom res (- l 1)))
         {:domain dom :pitches (step-sequence domain res)}))))
 
-(defn d-int-prob-line 
+(defn d-int-prob-line  
   "return a lazy d-interval seq accordingly to a melodic-domain and a {d-int prob ...} map
   
    (take 20 (d-int-prob-line 
