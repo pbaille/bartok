@@ -1,6 +1,7 @@
 (ns bartok.melody.diatonic-passing
   (:use [clojure.math.combinatorics :as c])
   (:use bartok.primitives)
+  (:use bartok.melody.melodic-domain)
   (:use bartok.types.w-mode)
   (:use utils.all))
 
@@ -61,3 +62,5 @@
         sel (select-first #(every? (fn [[x y]](not= x y)) (partition 2 1 %)) sels)
         final (reduce #(cons (transpose target-pitch (-> context %2 :c-interval)) %1) [target-pitch] sel)]
     final))
+
+
