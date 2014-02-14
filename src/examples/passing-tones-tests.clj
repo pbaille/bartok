@@ -14,7 +14,7 @@
 
 (b-fn lazy-drunk-passing-line
   "return a lazy melodic line with some random passings on main degrees"
-  ([w-mode bounds d-int-prob-map brod-rat]
+  ([w-mode bounds d-int-prob-map size-prob-map brod-rat]
   (let [pass-cont (d-passing-context w-mode)
         main-dom (melodic-domain (:main-pitch-classes w-mode) bounds)
         pitches (d-int-prob-line main-dom d-int-prob-map)]
@@ -26,15 +26,19 @@
                             (not= (first %) (last acc))
                             true) 
                          (prob-exprs 
-                           ;(rand-int-between 0 4) shouldn't be hardcoded! it is the length of the passing-serie
-                           (- 1 brod-rat) (pitch-passings pass-cont pi (rand-int-between 0 4))
+                           (- 1 brod-rat) (pitch-passings pass-cont pi (weight-pick-one size-prob-map))
                            brod-rat       (map #(cons (last %) %) 
-                                               (pitch-passings pass-cont pi (rand-int-between 1 4)))))) 
+                                               (pitch-passings pass-cont pi (weight-pick-one (dissoc size-prob-map 0))))))) 
          [] pitches))))
-  ([w-mode bounds d-int-prob-map brod-rat max-len]
+  ([w-mode bounds d-int-prob-map size-prob-map brod-rat max-len]
    "same as above with a max-len arg 
    (max-len because last pitches can be removed if the last passing is truncated)"
-  (->> (lazy-drunk-passing-line w-mode bounds d-int-prob-map brod-rat)
+  (->> (lazy-drunk-passing-line 
+         w-mode 
+         bounds 
+         d-int-prob-map 
+         size-prob-map 
+         brod-rat)
        (take max-len)
        ;remove last passing if truncated
        (drop-last-while #(not (main-pitch-class? w-mode (:pitch-class %)))))))
@@ -48,6 +52,7 @@
        :3rd-u 0.5 :3rd-d 0.5 
        :4th-u 0.2 :4th-d 0.2
        :5th-u 0.2 :5th-d 0.2}
+      {0 1, 1 1, 2 1/2, 3 1/2}
       1/2
       100)))
 
