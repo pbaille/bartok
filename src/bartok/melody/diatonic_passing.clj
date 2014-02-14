@@ -61,6 +61,6 @@
         sels (shuffle (c/selections types size))
         sel (select-first #(every? (fn [[x y]](not= x y)) (partition 2 1 %)) sels)
         final (reduce #(cons (transpose target-pitch (-> context %2 :c-interval)) %1) [target-pitch] sel)]
-    final))
+    (if brod? (cons target-pitch final) final)))
 
 

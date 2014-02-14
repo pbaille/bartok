@@ -27,8 +27,7 @@
   [:interval i] 
     (build-h-function ((-> i c-interval-class :name) h-functions) (c-interval-class i))
   ['Interval i] 
-    (build-h-function ((-> i c-interval-class :name) h-functions) (c-interval-class i))
-)
+    (build-h-function ((-> i c-interval-class :name) h-functions) (c-interval-class i)))
 
 
 

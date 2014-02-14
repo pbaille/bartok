@@ -59,17 +59,21 @@
 (use 'bartok.composition.utils)
 (use 'bartok.state)
 
-(defnaults play-pitch-line 
+(defn play-pitch-line 
   "little helper to save keystrokes: 
   play all pitches in a row with equal duration vel and chan
   ex: (play-pitch-line [:C0 :D0 :E0])"
-  [pitches []
-   dur 1/4
-   vel 60
-   chan 1
-   tempo 120]
+  ([pitches] (play-pitch-line pitches {}))
+  ([pitches
+   {:keys [velocity duration channel tempo]
+    :or
+    {duration 1/4
+     velocity 60
+     channel  1
+     tempo    120}}]
   (grid {:bars [[32 :4|4]] :tempo tempo})
   (->> pitches 
-      (m-note-line-from (g-pos) dur vel chan)
-      (play @*midi-out*)))
+      (m-note-line-from (g-pos) duration velocity channel)
+      (play @*midi-out*))))
+
 

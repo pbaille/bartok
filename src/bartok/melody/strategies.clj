@@ -1,9 +1,8 @@
 (ns bartok.melody.strategies
-  (:use bartok.melody.melodic-domain)
-  (:use bartok.melody.diatonic-passing)
-  (:use bartok.types.w-mode)
   (:use bartok.primitives)
-  (:use [utils utils prob]))
+  (:use [utils utils prob])
+  (:use [bartok.melody melodic-domain diatonic-passing])
+  (:use bartok.types.w-mode))
 
 (def ^:private default-prob-map 
   (apply hash-map 

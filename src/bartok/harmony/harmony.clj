@@ -17,39 +17,39 @@
 
 (defn abs-move 
   ([h-context h-function]
-    (conj h-context {:current (transpose (:center h-context) (c-interval (:degree h-function)))
-                     :h-function h-function}))
+    (assoc h-context :current (transpose (:center h-context) (c-interval (:degree h-function)))
+                     :h-function h-function))
   ([hc hf d-class]
     (intra-abs-move (abs-move hc hf) (if (number? d-class) d-class (-> (b> d-class) :val inc)))))
 
 (defn rel-move 
   ([h-context h-function]
-    (conj h-context {:current (transpose (:current h-context) (c-interval (:degree h-function)))
-                     :h-function h-function}))
+    (assoc h-context :current (transpose (:current h-context) (c-interval (:degree h-function)))
+                     :h-function h-function))
   ([hc hf d-class]
     (intra-abs-move (rel-move hc hf) (if (number? d-class) d-class (-> (b> d-class) :val inc)))))
 
 (defmethod intra-abs-move ['HarmonicContext :number][hc n]
-  (conj hc {:current (-> (:current hc) (intra-abs-move n))}))
+  (assoc hc :current (-> (:current hc) (intra-abs-move n))))
 
 (defmethod intra-rel-move ['HarmonicContext :number][hc n]
-  (conj hc {:current (-> (:current hc) (intra-rel-move n))}))
+  (assoc hc :current (-> (:current hc) (intra-rel-move n))))
 
 (defmethod relative ['HarmonicContext :mode-class] [hc mc]
-  (conj hc {:current (-> (:current hc) (relative mc))}))
+  (assoc hc :current (-> (:current hc) (relative mc))))
 
 (defn centerize [h-context]
   {:pre [(type= h-context 'HarmonicContext)]}
-  (conj h-context 
-    {:center (-> h-context :current mother-mode) 
-     :h-function (h-function :T)}))
+  (assoc h-context 
+    :center (-> h-context :current mother-mode) 
+    :h-function (h-function :T)))
 
 (defn set-center [h-context new-center]
   {:pre [(type= h-context 'HarmonicContext)]}
   (let [i  (c-interval (mother-root (b> new-center)) 
                      (mother-root (:current h-context)))
         d (if (< (:val i) 0) (relative (c-interval-class i)) (c-interval-class i))]
-    (conj h-context 
-      {:center (-> h-context :current mother-mode) 
-       :h-function (h-function d)})))
+    (assoc h-context 
+       :center (-> h-context :current mother-mode) 
+       :h-function (h-function d))))
   

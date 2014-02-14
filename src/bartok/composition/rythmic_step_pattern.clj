@@ -76,17 +76,5 @@
 ;      :bounds [:C0 :C2] 
 ;      :start-pitch :C1 }))
 
-; (defn rythmn-first [options-map]
-;   (let [options-map (zipmap (keys options-map) (map b> (vals options-map)))
-;         {:keys [picker prob-rvals bounds start-pitch start-pos end-pos]} options-map]
-;     ))
 
-
-; (rythmn-first
-;   {:r [r-prob-line {1/2 1 1/4 1}]
-;    :m [step-pattern ]
-;    :start [0 0 0]
-;    :end   [1 0 0]
-;    :m-bounds [:C-1 :C1]
-;    :start-pitch :C0})
 

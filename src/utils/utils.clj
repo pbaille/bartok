@@ -209,17 +209,22 @@
         (cons x (seq1 (rest s))))))
   
   (defn partition-if
-  "split coll where (pred elem next-elem) is true"
+  "split coll where (pred elem next-elem) is true
+  TODO good implementation :) "
   [pred coll]
   (lazy-seq
-   (if (second coll)
-     (let [prv (pred (first coll)(second coll))
-           temp (take-while 
+   (when (second coll)
+     (let [temp (take-while 
                   #(not (pred (first %) (second %))) 
                   (partition 2 1 coll))
-           lst (last (last temp))
-           run (concat (mapv first temp) [lst])]
-       (cons run (partition-if pred (seq (drop (count run) coll))))))))
+           lst (if (seq temp) (last (last temp)) (first coll))
+           run (concat (mapv first temp) [lst])
+           nxt (seq (drop (count run) coll))
+           cnxt (count nxt)]
+       (cond
+         (>= cnxt 2) (cons run (partition-if pred nxt))
+         (= cnxt 1)  (list run (list (last coll)))
+         :else       (list run))))))
 
 
 ;***************** maps *********************
