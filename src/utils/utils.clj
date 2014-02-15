@@ -6,6 +6,7 @@
   (:require [clojure.contrib.math :as math]))
 
 (declare p a ap c)
+
 ;***************** utils ********************
 
   (defn pp [& xs] (dorun (map clojure.pprint/pprint xs)))
@@ -41,45 +42,7 @@
     [expr] 
     (pp (macroexpand-1 expr)))
   
-  
-  (defn or= 
-    ([expr coll] (ap or= expr coll))
-    ([expr o & ors]
-    (eval `(or ~@(map (fn [o] `(= ~expr ~o)) (cons o ors))))))
-  
-  (defn and= 
-    ([expr coll] (ap and= expr coll))
-    ([expr o & ors]
-    (eval `(and ~@(map (fn [o] `(= ~expr ~o)) (cons o ors))))))
-  
-  (defn and-not= 
-    ([expr coll] (ap and-not= expr coll))
-    ([expr o & ors]
-    (eval `(and ~@(map (fn [o] `(not= ~expr ~o)) (cons o ors))))))
-  
-  (defn or-not= 
-    ([expr coll] (ap or-not= expr coll))
-    ([expr o & ors]
-    (eval `(or ~@(map (fn [o] `(not= ~expr ~o)) (cons o ors))))))
-  
-  (defmacro or-> 
-    "ex: (or-> 10 neg? (= 10))
-    => true"
-    [arg & exprs]
-    `(or ~@(map (fn [expr] (if (symbol? expr) 
-                             `(~expr ~arg)
-                             (cons (first expr) (cons arg (next expr))))) 
-                exprs)))
-  
-  (defmacro and-> 
-    "ex: (and-> 10 pos? (= 10))
-    => true"
-    [arg & exprs]
-    `(and ~@(map (fn [expr] (if (symbol? expr) 
-                             `(~expr ~arg)
-                             (cons (first expr) (cons arg (next expr))))) 
-                exprs)))
-  
+  ;this should be a macro no? expr is eval before entering this...
   (defn with-dispatch [disp-val expr]
     "call a particular dispatch on a multi method"
     `((get (methods ~(first expr)) ~disp-val) ~@(next expr)))
@@ -238,26 +201,26 @@
          (= cnxt 1)  (list run (list (last coll)))
          :else       (list run))))))
 
-(defn tails 
-  "like haskell's Data.List tails
-  ex: 
-  (tails [1 2 3 4])
-  => ([1 2 3 4] [2 3 4] [3 4] [4] [])"
-  [xs]
-  (let [f (cond
-           (vector? xs) vec
-           (set? xs) set
-           :else sequence)]
-    (map f (take (inc (count xs)) (iterate rest xs)))))
+  (defn tails 
+    "like haskell's Data.List tails
+    ex: 
+    (tails [1 2 3 4])
+    => ([1 2 3 4] [2 3 4] [3 4] [4] [])"
+    [xs]
+    (let [f (cond
+             (vector? xs) vec
+             (set? xs) set
+             :else sequence)]
+      (map f (take (inc (count xs)) (iterate rest xs)))))
 
-(defn inits 
-  "like haskell's Data.List tails
-  ex:
-  (inits [1 2 3 4])
-  => (() (1) (1 2) (1 2 3))"
-  [xs]
-  (for [n (range (count xs))]
-    (take n xs)))
+  (defn inits 
+    "like haskell's Data.List tails
+    ex:
+    (inits [1 2 3 4])
+    => (() (1) (1 2) (1 2 3))"
+    [xs]
+    (for [n (range (count xs))]
+      (take n xs)))
 
 ;***************** maps *********************
   
@@ -491,6 +454,48 @@
     {:pre [(named? t)]}
     (when obj (with-meta obj {:type t})))
 
+;***************** logic ********************
+
+  (defn or= 
+    ([expr coll] (ap or= expr coll))
+    ([expr o & ors]
+    (eval `(or ~@(map (fn [o] `(= ~expr ~o)) (cons o ors))))))
+  
+  (defn and= 
+    ([expr coll] (ap and= expr coll))
+    ([expr o & ors]
+    (eval `(and ~@(map (fn [o] `(= ~expr ~o)) (cons o ors))))))
+  
+  (defn and-not= 
+    ([expr coll] (ap and-not= expr coll))
+    ([expr o & ors]
+    (eval `(and ~@(map (fn [o] `(not= ~expr ~o)) (cons o ors))))))
+  
+  (defn or-not= 
+    ([expr coll] (ap or-not= expr coll))
+    ([expr o & ors]
+    (eval `(or ~@(map (fn [o] `(not= ~expr ~o)) (cons o ors))))))
+  
+  (defmacro or-> 
+    "ex: (or-> 10 neg? (= 10))
+    => true"
+    [arg & exprs]
+    `(or ~@(map (fn [expr] 
+                  (if (symbol? expr) 
+                    `(~expr ~arg)
+                    (cons (first expr) (cons arg (next expr))))) 
+                exprs)))
+  
+  (defmacro and-> 
+    "ex: (and-> 10 pos? (= 10))
+    => true"
+    [arg & exprs]
+    `(and ~@(map (fn [expr] 
+                   (if (symbol? expr) 
+                     `(~expr ~arg)
+                     (cons (first expr) (cons arg (next expr))))) 
+                 exprs)))
+
 ;*************** experiments ****************
 
   (defn repeater 
@@ -528,18 +533,18 @@
             (intern *ns* sym (var-get v)) 
             (intern *ns* sym)))))) 
 
-;stuart sierra version
+  ;stuart sierra version
 
-; (defn immigrate
-;   "Create a public var in this namespace for each public var in the
-;   namespaces named by ns-names. The created vars have the same name, root
-;   binding, and metadata as the original except that their :ns metadata
-;   value is this namespace."
-;   [& ns-names]
-;   (doseq [ns ns-names]
-;     (require ns)
-;     (doseq [[sym var] (ns-publics ns)]
-;       (let [sym (with-meta sym (assoc (meta var) :ns *ns*))]
-;         (if (.hasRoot var)
-;           (intern *ns* sym (.getRoot var))
-;           (intern *ns* sym))))))
+  ; (defn immigrate
+  ;   "Create a public var in this namespace for each public var in the
+  ;   namespaces named by ns-names. The created vars have the same name, root
+  ;   binding, and metadata as the original except that their :ns metadata
+  ;   value is this namespace."
+  ;   [& ns-names]
+  ;   (doseq [ns ns-names]
+  ;     (require ns)
+  ;     (doseq [[sym var] (ns-publics ns)]
+  ;       (let [sym (with-meta sym (assoc (meta var) :ns *ns*))]
+  ;         (if (.hasRoot var)
+  ;           (intern *ns* sym (.getRoot var))
+  ;           (intern *ns* sym))))))
