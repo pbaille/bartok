@@ -62,8 +62,20 @@
     ([expr o & ors]
     (eval `(or ~@(map (fn [o] `(not= ~expr ~o)) (cons o ors))))))
   
-  (defmacro or-> [arg & exprs]
+  (defmacro or-> 
+    "ex: (or-> 10 neg? (= 10))
+    => true"
+    [arg & exprs]
     `(or ~@(map (fn [expr] (if (symbol? expr) 
+                             `(~expr ~arg)
+                             (cons (first expr) (cons arg (next expr))))) 
+                exprs)))
+  
+  (defmacro and-> 
+    "ex: (and-> 10 pos? (= 10))
+    => true"
+    [arg & exprs]
+    `(and ~@(map (fn [expr] (if (symbol? expr) 
                              `(~expr ~arg)
                              (cons (first expr) (cons arg (next expr))))) 
                 exprs)))

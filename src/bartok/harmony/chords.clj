@@ -68,7 +68,7 @@
   ex:
   (all-drops {:P1 2 :M6 2 :+4 2 :M3 2 :M7 2} 9 36)"
   [occ-map max-step max-size]
-  (filter #(and (all-distinct? %) (b9-free? %)) 
+  (filter #(and-> % all-distinct? b9-free?) 
     (drops (occ-map->seq occ-map) max-step max-size)))
 
 ;;;;;;;;;;;;;; examples ;;;;;;;;;;;;;;;
