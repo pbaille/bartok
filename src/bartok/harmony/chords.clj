@@ -18,7 +18,7 @@
       (list))))
 
 (defn- drops 
-  "use drop2s on the whole chord first then on butfirst chord etc..."
+  "use drop2s on the whole chord first then on (next chord) etc..."
   [coll max-step max-size] 
   (reduce 
     (fn [acc i]
@@ -41,6 +41,22 @@
   [coll]
   (if (seq coll) (a distinct? coll) true))
 
+(def ^:private b9s 
+  (range 13 127 12)); => (13 25 37 49 61 73 85 97 109 121)
+
+(defn b9-free? 
+  "return true if chord has no b9(+ n oct) in its inner voices
+  means that b9 like intervals are allowed from Bass"
+  [[bass frst & nxt :as chord]]
+  (if-not (seq nxt)
+    true
+    (let [[x :as dists] (map #(- % frst) nxt)
+          res (if (= 1 x) 
+                true ; if first dist = 1 b9 is allowed (bill evans trick) 
+                ;if-not check if dists contains no b9 
+                (not (some (set dists) b9s)))] 
+      (and res (b9-free? (next chord))))))
+
 ;;;;;;;;;;;;;;; public ;;;;;;;;;;;;;;;;
 
 (defn all-drops 
@@ -52,7 +68,7 @@
   ex:
   (all-drops {:P1 2 :M6 2 :+4 2 :M3 2 :M7 2} 9 36)"
   [occ-map max-step max-size]
-  (filter all-distinct? 
+  (filter #(and (all-distinct? %) (b9-free? %)) 
     (drops (occ-map->seq occ-map) max-step max-size)))
 
 ;;;;;;;;;;;;;; examples ;;;;;;;;;;;;;;;
@@ -79,3 +95,7 @@
          (map (p map #(pitch (+ 44 %))))
          shuffle
          first)))
+
+
+
+

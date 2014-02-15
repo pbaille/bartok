@@ -226,6 +226,26 @@
          (= cnxt 1)  (list run (list (last coll)))
          :else       (list run))))))
 
+(defn tails 
+  "like haskell's Data.List tails
+  ex: 
+  (tails [1 2 3 4])
+  => ([1 2 3 4] [2 3 4] [3 4] [4] [])"
+  [xs]
+  (let [f (cond
+           (vector? xs) vec
+           (set? xs) set
+           :else sequence)]
+    (map f (take (inc (count xs)) (iterate rest xs)))))
+
+(defn inits 
+  "like haskell's Data.List tails
+  ex:
+  (inits [1 2 3 4])
+  => (() (1) (1 2) (1 2 3))"
+  [xs]
+  (for [n (range (count xs))]
+    (take n xs)))
 
 ;***************** maps *********************
   
@@ -420,6 +440,20 @@
   [pred coll]
   (let [cnt (count (drop-while pred (reverse coll)))]
     (take cnt coll)))
+  
+  (defn reduce-while 
+    "reduce coll while (pred acc) 
+    returns the last valid intermediate value of acc"
+    [f pred init coll]
+    (if (empty? coll)
+      init
+      (let [result (f init (first coll))]
+        (if (pred result)
+          (recur f pred result (rest coll))
+          init))))
+
+  (defn reduce-while-not-nil [f init coll]
+    (reduce-while f not-nil? init coll))
   
 ;***************** types ********************
   
