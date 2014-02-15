@@ -3,25 +3,31 @@
   (:use bartok.primitives)
   (:use utils.utils))
 
-(defn- chord-drops [[x y z & others :as coll] max-step max-size] 
+(defn- drop2s 
+  "return a seq of all possible drop2 of a chord, recursive!
+   while respecting max-step and max size
+   ex: (drop2s [1 3 7 9] 10 24) => ((1 7 9 15) (1 9 15 19))"
+  [[x y z & others :as coll] max-step max-size] 
   (let [octaved-up (+ y 12)]
     (if (and (<= (- z x) max-step) 
              (<= octaved-up max-size)
              (not (in? others octaved-up))
              (<= (- octaved-up (last coll)) max-step))
       (let [ret (sort (flatten (remove nil? (vector x z others octaved-up))))]
-        (cons ret (chord-drops ret max-step max-size)))
+        (cons ret (drop2s ret max-step max-size)))
       (list))))
 
-(defn- expand-chord [coll max-step max-size] 
+(defn- drops 
+  "use drop2s on the whole chord first then on butfirst chord etc..."
+  [coll max-step max-size] 
   (reduce 
     (fn [acc i]
       (into acc 
       (mapcat #(let [[seq1 seq2] (split-at i %)] 
                  (map (p concat seq1) 
-                      (chord-drops seq2 max-step max-size))) 
+                      (drop2s seq2 max-step max-size))) 
               acc)))
-    (cons (seq coll) (chord-drops coll max-step max-size))
+    (cons (seq coll) (drop2s coll max-step max-size))
     (range 1 (- (count coll) 3))))
 
 (defn- occ-map->seq 
@@ -30,16 +36,24 @@
   [om] 
   (sort (repeater (map vector (vals om) (map :val (b> (keys om)))))))
 
-(defn- all-distinct? [coll]
+(defn- all-distinct? 
+  "true if coll contains only distinct values"
+  [coll]
   (if (seq coll) (a distinct? coll) true))
 
 ;;;;;;;;;;;;;;; public ;;;;;;;;;;;;;;;;
 
-(defn all-drops [occ-map max-step max-size]
+(defn all-drops 
+  "compute all possible drops of a chord
+  args:
+  occ-map {c-int-class occurence ...}
+  max-step (the max interval in semitone between to adjacent notes of a chord)
+  max-size (maximum total size of the drops)
+  ex:
+  (all-drops {:P1 2 :M6 2 :+4 2 :M3 2 :M7 2} 9 36)"
+  [occ-map max-step max-size]
   (filter all-distinct? 
-    (expand-chord (occ-map->seq occ-map) 
-                  max-step 
-                  max-size)))
+    (drops (occ-map->seq occ-map) max-step max-size)))
 
 ;;;;;;;;;;;;;; examples ;;;;;;;;;;;;;;;
 
