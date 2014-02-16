@@ -431,6 +431,14 @@
         (if (pred result)
           (recur f pred result (rest coll))
           init))))
+  
+  (defn iterate-while
+    "like (last (take-while pred (iterate f init))) "
+    [pred f init]
+    (let [result (f init)]
+      (if (pred result)
+        (recur pred f result)
+        init)))
 
   (defn reduce-while-not-nil [f init coll]
     (reduce-while f not-nil? init coll))

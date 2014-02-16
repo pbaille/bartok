@@ -76,4 +76,10 @@
       (m-note-line-from (g-pos) duration velocity channel)
       (play @*midi-out*))))
 
+(defn play-chord 
+  ([pitches] (play-chord pitches 4))
+  ([pitches dur]
+   (grid {:bars [[32 :4|4]] :tempo 120})
+   (play @*midi-out* [(chord pitches dur (g-pos))])))
+
 
