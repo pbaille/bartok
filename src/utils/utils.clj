@@ -221,6 +221,11 @@
     [xs]
     (for [n (range (count xs))]
       (take n xs)))
+  
+  (defn all-distinct? 
+    "true if coll contains only distinct values"
+    [coll]
+    (if (seq coll) (a distinct? coll) true))
 
 ;***************** maps *********************
   
@@ -495,6 +500,15 @@
                      `(~expr ~arg)
                      (cons (first expr) (cons arg (next expr))))) 
                  exprs)))
+
+  (defmacro all-true? [d & preds]
+    `(and ~@(map #(list % d) preds)))
+
+  ;similar to all-true?
+  (defn satisfies-all? 
+    "return true if for each pred (pred v) is true"
+    [v & preds]
+    (every? identity ((a juxt preds) v)))
 
 ;*************** experiments ****************
 
