@@ -40,7 +40,10 @@
     #(<= (last %) max-size)))
 
 (defn- drops 
-  "awesome docstring"
+  "return a seq of all possible drops of a chord
+   while respecting max-step and max size
+   ex: (drops [1 3 7 9] 10 24) 
+   => ((1 7 15 21) (1 3 9 19) (1 3 7 9) (1 7 9 15) (1 9 15 19))"
   ([coll max-step max-size] 
     (if (valid-drop? coll max-step max-size)
       ;coll is valid drop so append it to the results
@@ -111,13 +114,8 @@
      :or {max-step 9 max-size 36 inversions false}}]
     (if inversions 
       (let [invs (chord-inversions (occ-map->seq occ-map))]
-        (map (fn [inv] 
-               ; if only drop2s works well there will be no need to refilter results...
-               (filter #(valid-drop? % max-step (+ max-size (first inv))) 
-                       (drops inv max-step (+ max-size (first inv))))) 
-             invs))
-      (filter #(valid-drop? % max-step max-size) 
-              (drops (occ-map->seq occ-map) max-step max-size)))))
+        (map #(drops % max-step (+ max-size (first %))) invs))
+      (drops (occ-map->seq occ-map) max-step max-size))))
 
 (defn drops-from 
   "docstring"
@@ -159,7 +157,9 @@
   (play-pitch-line 
     (->> (all-drops {:P1 2 :M6 2 :+4 2 :M3 2 :M7 2} 
                     {:max-step 7 
-                     :max-size 48})
+                     :max-size 48
+                     :inversions true})
+         rand-nth
          shuffle 
          first
          (map #(pitch (+ 36 %))))))
