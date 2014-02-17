@@ -118,7 +118,7 @@
       (drops (occ-map->seq occ-map) max-step max-size))))
 
 (defn drops-from 
-  "docstring"
+  "return all occ-map chords ['Pitch] with root-pitch as origin (see all-drops for occ-map doc)"
   ([root-pitch occ-map] 
     (drops-from root-pitch occ-map {}))
   ([root-pitch occ-map {invs :inversions :as options}]
@@ -151,6 +151,8 @@
   (time (count (drops [0 2 3 9 11 14 15 21 23] 11 48)))
   (all-distinct? (drops [0 2 3 9 11 14 15 21 23] 11 48)))
 
+(valid-drop? [0 6 9 14 16 22] 11 24)
+
 (use 'bartok.midi.midi)
 
 (comment 
@@ -179,13 +181,13 @@
 
 (comment 
   (play-chord
-    (->> (drops-from :Bb-2 :G0 {:P1 1 :+4 1 :M6 1 :m7 1 :M2 1} {})
+    (->> (drops-from :Bb-2 {:P1 1 :+4 1 :M6 1 :m7 1 :M2 1} {})
          shuffle 
-         first)))
+         first
+         pev)))
 
 (comment 
   (map (p map :name) 
        (drops-from :Bb-2 :Eb1 {:P1 1 :P5 1 :P4 1 :M6 1 :m7 1 :M2 1} {})))
-
 
 

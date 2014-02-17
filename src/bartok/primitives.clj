@@ -75,8 +75,7 @@
   (defn b? [x]
     ; (pp 'b> x)
     (when (named? x)
-      (let [n (name x)
-            c (count n)]
+      (let [n (name x)]
         (cond
           (fit? alt-pat n) :alteration
           (fit? dir-pat n) :direction
@@ -93,15 +92,30 @@
           (fit? time-signature-pat n) :time-signature
           :else nil))))
   
-  (defn b-type [x & more]
+  ;;old;;  
+  ; (defn b-type [x & more]
+  ;   (cond
+  ;     (named? x) (or (b? x) (type x))
+  ;     (number? x) (if (ratio? x) :ratio :number)
+  ;     :else (type x)))
+  
+  ; (defn b-types 
+  ;   ([arg] (b-type arg))
+  ;   ([arg & more] (vec (map b-type (concat [arg] more)))))
+  ;;;
+  
+  (declare b-types)
+  
+  (defn b-type [x]
     (cond
       (named? x) (or (b? x) (type x))
       (number? x) (if (ratio? x) :ratio :number)
+      (or (type= x clojure.lang.PersistentVector))
+        (a b-types x)
       :else (type x)))
   
-  (defn b-types 
-    ([arg] (b-type arg))
-    ([arg & more] (vec (map b-type (concat [arg] more)))))
+  (defn b-types [& xs] (mapv b-type xs))
+
   
 ;-------------------------------------------------------
 ;;;;;;;;;;;;;;;;;;;;;;; Eval ;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -135,42 +149,58 @@
   (defmacro b-def [n x] 
     `(def ~n (b> ~x)))
   
-  (defmacro b-multi [n disp]
-    (let [sym (symbol (str "b-multi-" n))]
-      `(do 
-         (defmulti ~sym ~disp)
-         (b-fn ~n [& args#] (a ~sym args#)))))
+  ; (defmacro b-multi [n & body]
+  ;   (let [doc-string (when (string? (first body)) (first body))
+  ;         body (if doc-string (next body) body)]
+  ;    `(do (defmulti ~n b-types)
+  ;       (defmethod ~n :default [& args#] 
+  ;         (let [b-args# (if (count= args# 1) (b> (first args#)) (b> args#))
+  ;               disp-vals# (if (count= args# 1) (b-types b-args#) (a b-types b-args#))]
+  ;           (if (contains? (methods ~n) disp-vals#)
+  ;             (if (vector? disp-vals#) 
+  ;               (a ~n b-args#) 
+  ;               (~n b-args#))
+  ;             (throw (Exception. 
+  ;               (str "*** No dispatch value " 
+  ;                    disp-vals# 
+  ;                    " for bartok-multimethod " 
+  ;                    (name '~n) " ***"))))))
+  ;       ~@(map (fn [met] `(defmethod ~n ~@met)) body))))
   
-  ;useless...
-  (defmacro b-method [n disp-val args & body]
-    (let [sym (symbol (str "b-multi-" n))]
-      `(defmethod ~sym ~disp-val ~args ~@body)))
+  ; (defmacro b-construct [n & body]
+  ;   `(do (b-multi ~n)
+  ;      (defmethod ~n '~(csk/->CamelCase (symbol (name n))) [x#] x#)
+  ;      ~@(map (fn [[v & fun-body]]
+  ;                (let [types (vec (take-nth 2 v))
+  ;                      args  (vec (take-nth 2 (next v)))
+  ;                      types (if (count= types 1) (first types) types)]
+  ;                  `(defmethod ~n ~types ~args ~@fun-body))) 
+  ;             (partition 2 2 body))))
   
-  (defmacro b-multi [n & doc-string]
-    `(do (defmulti ~n ~@doc-string b-types)
-       (defmethod ~n :default [& args#] 
-         (let [b-args# (if (count= args# 1) (b> (first args#)) (b> args#))
-               disp-vals# (if (count= args# 1) (b-types b-args#) (a b-types b-args#))]
-           (if (contains? (methods ~n) disp-vals#)
-             (if (vector? disp-vals#) 
-               (a ~n b-args#) 
-               (~n b-args#))
-             (throw (Exception. 
-               (str "*** No dispatch value " 
-                    disp-vals# 
-                    " for bartok-multimethod " 
-                    (name '~n) " ***"))))))))
+  (defmacro b-multi [n & body]
+    (let [doc-string (when (string? (first body)) (first body))
+          body (if doc-string (next body) body)]
+     `(do (defmulti ~n b-types)
+        (defmethod ~n :default [& args#] 
+          (let [b-args# (b> args#)
+                disp-vals# (a b-types b-args#)] 
+            (if (contains? (methods ~n) disp-vals#) 
+              (a ~n b-args#)
+              (throw (Exception. 
+                (str "*** No dispatch value " 
+                     disp-vals# 
+                     " for bartok-multimethod " 
+                     (name '~n) " ***"))))))
+        ~@(map (fn [met] `(defmethod ~n ~@met)) body))))
   
   (defmacro b-construct [n & body]
     `(do (b-multi ~n)
-       (defmethod ~n '~(csk/->CamelCase (symbol (name n))) [x#] x#)
+       (defmethod ~n ['~(csk/->CamelCase (symbol (name n)))] [x#] x#)
        ~@(map (fn [[v & fun-body]]
                  (let [types (vec (take-nth 2 v))
-                       args  (vec (take-nth 2 (next v)))
-                       types (if (count= types 1) (first types) types)]
+                       args  (vec (take-nth 2 (next v)))]
                    `(defmethod ~n ~types ~args ~@fun-body))) 
               (partition 2 2 body))))
-  
   ;for readibility of b-multi methods
   (defmacro b-meth [& args] `(defmethod ~@args))
   
@@ -520,10 +550,10 @@
     
     ;;;
     
-    (b-meth invert 'CInterval [ci]
+    (b-meth invert ['CInterval] [ci]
       (c-interval (-> ci :class :d-class) (- (:val ci))))
     
-    (b-meth relative 'CInterval [ci]
+    (b-meth relative ['CInterval] [ci]
       (invert (c-interval (relative (:class ci)) 
                           (if (zero? (:octave-offset ci)) 
                             (:direction ci) 
@@ -598,7 +628,7 @@
     (b-meth transpose ['PitchClass 'CInterval] [pc i]
         (let [nat (:name (transpose (:natural pc) (-> i :diatonic :val)))
               v (mod12 (+ (:val pc) (:val i)))]
-          (pitch-class nat v)))
+          (or-dr (pitch-class nat v))))
     
     (b-meth transpose ['PitchClass 'CIntervalClass] [pc ic]
       (transpose pc (c-interval ic)))
