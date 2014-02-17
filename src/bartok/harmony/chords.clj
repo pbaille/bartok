@@ -1,8 +1,21 @@
 (ns bartok.harmony.chords
   (:use [clojure.math.combinatorics :as c])
   (:use bartok.primitives)
-  (:use utils.utils))
+  (:use utils.all))
 
+(def ^:private 
+  lower-interval-limits
+  {:m2 :E-1
+   :M2 :Eb-1
+   :m3 :C-1
+   :M3 :Bb-2
+   :P4 :Bb-2
+   :+4 :Bb-2
+   :P5 :Bb-3
+   :+5 :G-2
+   :M6 :F-2
+   :m7 :F-2
+   :M7 :F-2})
 
 (def ^:private b9s 
   (range 13 127 12)); => (13 25 37 49 61 73 85 97 109 121)
@@ -26,37 +39,35 @@
     #(every? (p >= max-step) (steps %))
     #(<= (last %) max-size)))
 
-(defn- drop2s 
-  "return a seq of all possible drop2 of a chord, recursive!
-   while respecting max-step and max size
-   ex: (drop2s [1 3 7 9] 10 24) => ((1 7 9 15) (1 9 15 19))"
-  [[x y z & others :as coll] max-step max-size] 
-  (let [octaved-up 
+(defn- drops 
+  "awesome docstring"
+  ([coll max-step max-size] 
+    (if (valid-drop? coll max-step max-size)
+      ;coll is valid drop so append it to the results
+      (cons (seq coll) (drops coll 0 max-step max-size))
+      ;coll is not valid so continue without keeping it
+      (drops coll 0 max-step max-size)))
+  ([coll idx max-step max-size] 
+  (let [[head [x y z & others]] (split-at idx coll)
+        octaved-up 
+        ;find first possible 'octavation'
         (loop [oc (+ y 12)] 
           (if (in? others oc) (recur (+ 12 oc)) oc))]
-    (if (and (<= (- z x) max-step) (<= octaved-up  max-size))
-      ; create next drop... lame
-      (let [ret (sort (flatten (remove nil? (vector x z others octaved-up))))]
-        ; if drop is valid then keep it else compute next step with it
-        (if (valid-drop? ret max-step max-size) 
-          (cons ret (drop2s ret max-step max-size))
-          (drop2s ret max-step max-size)))
-      (list))))
-
-(defn- drops 
-  "use drop2s on the whole chord first then on (next chord) etc..."
-  [coll max-step max-size] 
-  (reduce 
-    (fn [acc i]
-      (into acc 
-      (mapcat #(let [[seq1 seq2] (split-at i %)] 
-                 (map (p concat seq1) 
-                      (drop2s seq2 max-step max-size))) 
-              acc)))
-    (if (valid-drop? coll max-step max-size) 
-      (cons (seq coll) (drop2s coll max-step max-size))
-      (drop2s coll max-step max-size))
-    (range 1 (- (count coll) 2))))
+    (if-not z 
+      (list) ;no possible continuation
+      ;else continue
+      (if (and (<= (- z x) max-step) (<= octaved-up  max-size))
+        ; drop is allowed so build it
+        (let [ret (concat head (->> (vector x z others octaved-up) (remove nil?) flatten sort))]
+          (if (valid-drop? ret max-step max-size) 
+            ;drop is valid so keep it and continue
+            (cons ret (concat (drops ret idx max-step max-size) 
+                              (drops coll (inc idx) max-step max-size)))
+            ;drop isn't valid so continue without keeping it
+            (concat (drops ret idx max-step max-size) 
+                    (drops coll (inc idx) max-step max-size))))
+        ;drop is not allowed so recur with (inc idx)
+        (drops coll (inc idx) max-step max-size))))))
 
 (defn- occ-map->seq 
   "(occ-map->seq {:M2 2 :m3 1 :M6 2 :M7 1}) 
@@ -108,15 +119,47 @@
       (filter #(valid-drop? % max-step max-size) 
               (drops (occ-map->seq occ-map) max-step max-size)))))
 
+(defn drops-from 
+  "docstring"
+  ([root-pitch occ-map] 
+    (drops-from root-pitch occ-map {}))
+  ([root-pitch occ-map {invs :inversions :as options}]
+    (let [c-int-map (zipmap (map (f> b> :val)(keys occ-map))
+                            (keys occ-map))
+          drops (if invs 
+                  (a concat (all-drops occ-map options))
+                  (all-drops occ-map options))]
+      (map (p map 
+              #(transpose 
+                 root-pitch 
+                 (c-interval (c-int-map (mod12 %)) 
+                             (int-div % 12)))) 
+           drops)))
+  ([bass top occ-map options]
+     (let [bass (b> bass) top (b> top)
+           max-size (- (:val top) (:val bass))]
+       (filter #(and (= bass (first %))(= top (last %))) 
+             (drops-from bass occ-map (assoc options :max-size max-size))))))
+
+(b-multi voicing)
+(b-meth voicing 
+  ['Pitch 'Pitch 'Mode :number] [bass top mod n-voices]
+  ())
+
 ;;;;;;;;;;;;;; examples ;;;;;;;;;;;;;;;
+
+
+(comment 
+  (time (count (drops [0 2 3 9 11 14 15 21 23] 11 48)))
+  (all-distinct? (drops [0 2 3 9 11 14 15 21 23] 11 48)))
 
 (use 'bartok.midi.midi)
 
 (comment 
   (play-pitch-line 
     (->> (all-drops {:P1 2 :M6 2 :+4 2 :M3 2 :M7 2} 
-                    {:max-step 11 
-                     :max-size 36})
+                    {:max-step 7 
+                     :max-size 48})
          shuffle 
          first
          (map #(pitch (+ 36 %))))))
@@ -130,15 +173,19 @@
 
 (comment 
   (play-chord
-    (->> (all-drops {:P1 1 :M6 1 :+4 1 :M3 1 :#2 1 :M7 1} 
-                    {:max-step 9 :max-size 24})
+    (->> (drops-from :C-1 :F#0 {:P1 1 :M6 1 :+4 1 :M3 1 :#2 1 :M7 1} {})
          shuffle 
-         first
-         (map #(pitch (+ 48 %))))))
+         first)))
 
 (comment 
   (play-chord
-    (->> (all-drops {:P1 1 :+5 2 :+4 1 :M3 2 :M6 1 :M7 2})
+    (->> (drops-from :Bb-2 :G0 {:P1 1 :+4 1 :M6 1 :m7 1 :M2 1} {})
          shuffle 
-         first
-         (map #(pitch (+ 44 %))))))
+         first)))
+
+(comment 
+  (map (p map :name) 
+       (drops-from :Bb-2 :Eb1 {:P1 1 :P5 1 :P4 1 :M6 1 :m7 1 :M2 1} {})))
+
+
+
