@@ -118,19 +118,17 @@
              (out-max - out-min) (x - in-min)
      f (x) = --------------------------------  + out-min
                       in-max - in-min
-  
-  "
+    "
     [x in-min in-max out-min out-max]
     (+ (/ (* (- out-max out-min) (- x in-min))
           (- in-max in-min))
        out-min))
   
-  
   (defn range-scaler [min-in max-in min-out max-out]
     #(scale-range % min-in max-in min-out max-out))
   
-    ; max inclusive
   (defn range-by 
+    "max inclusive"
     ([end step] (range-by 0 end step))
     ([start end step] 
       (let [incf (if (> start end) - + )
@@ -174,7 +172,7 @@
   
   (defn fill-with [coll size el]
     (let [tail (repeat (- size (count coll)) el)]
-      (concat coll tail)))
+      (into coll tail)))
   
   (defn seq1 
     "force 1 by one evaluation  of lazy sequence s"
@@ -184,22 +182,22 @@
         (cons x (seq1 (rest s))))))
   
   (defn partition-if
-  "split coll where (pred elem next-elem) is true
-  TODO good implementation :) "
-  [pred coll]
-  (lazy-seq
-   (when (second coll)
-     (let [temp (take-while 
-                  #(not (pred (first %) (second %))) 
-                  (partition 2 1 coll))
-           lst (if (seq temp) (last (last temp)) (first coll))
-           run (concat (mapv first temp) [lst])
-           nxt (seq (drop (count run) coll))
-           cnxt (count nxt)]
-       (cond
-         (>= cnxt 2) (cons run (partition-if pred nxt))
-         (= cnxt 1)  (list run (list (last coll)))
-         :else       (list run))))))
+    "split coll where (pred elem next-elem) is true
+    TODO good implementation :) "
+    [pred coll]
+    (lazy-seq
+     (when (second coll)
+       (let [temp (take-while 
+                    #(not (pred (first %) (second %))) 
+                    (partition 2 1 coll))
+             lst (if (seq temp) (last (last temp)) (first coll))
+             run (concat (mapv first temp) [lst])
+             nxt (seq (drop (count run) coll))
+             cnxt (count nxt)]
+         (cond
+           (>= cnxt 2) (cons run (partition-if pred nxt))
+           (= cnxt 1)  (list run (list (last coll)))
+           :else       (list run))))))
 
   (defn tails 
     "like haskell's Data.List tails
@@ -226,6 +224,11 @@
     "true if coll contains only distinct values"
     [coll]
     (if (seq coll) (a distinct? coll) true))
+  
+  (defn all-eq?
+    "true if all item of coll are eq"
+    [coll]
+    (= 1 (count (set coll))))
 
 ;***************** maps *********************
   
@@ -262,8 +265,9 @@
   (defn submap? [sub m] 
     (clojure.set/subset? (set sub) (set m)))
   
-  ; find the first value for kw key in map or nested maps 
-  (defn in> [m kw ]
+  (defn in> 
+    "find the first value for kw key in map or nested maps"
+    [m kw ]
     (when (map? m)
       (if-let [v (kw m)] 
         v (in> (apply merge (filter map? (vals m))) kw))))
@@ -307,9 +311,6 @@
           #(when (type= % clojure.lang.MapEntry) 
               (when (map? (val %)) (key-path k (conj pathv (key %)) coll))) 
           (get-in coll pathv)))))
-
-  ;(map-h (fn [k v] {k (inc v)}) {:a 1 :b 2})
-  ;=> {:a 2 :b 3}
   
   (defn filt-h 
     "like filter but takes and return hash-map
@@ -424,13 +425,13 @@
     (set (map f coll)))
   
   (defn drop-last-while 
-  "drop last items until pred is true
-  vector only!
-  (drop-last-while (p < 10) [57 8 1 6 80 9 90 99 78])
-  => (57 8 1 6 80 9) "
-  [pred coll]
-  (let [cnt (count (drop-while pred (reverse coll)))]
-    (take cnt coll)))
+    "drop last items until pred is true
+    vector only!
+    (drop-last-while (p < 10) [57 8 1 6 80 9 90 99 78])
+    => (57 8 1 6 80 9) "
+    [pred coll]
+    (let [cnt (count (drop-while pred (reverse coll)))]
+      (take cnt coll)))
   
   (defn reduce-while 
     "reduce coll while (pred acc) 
@@ -556,7 +557,7 @@
   
   (defn immigrate 
     "Add all the public vars in a list of namespaces to the current 
-  namespace." 
+    namespace." 
     [& namespaces] 
     (doseq [ns namespaces] 
       (require ns) 

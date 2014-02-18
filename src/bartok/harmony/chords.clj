@@ -1,10 +1,10 @@
 (ns bartok.harmony.chords
   (:use [clojure.math.combinatorics :as c])
   (:use bartok.primitives)
+  (:use bartok.types.w-mode)
   (:use utils.all))
 
-(def ^:private 
-  lower-interval-limits
+(def ^:private lower-interval-limits
   {:m2 :E-1
    :M2 :Eb-1
    :m3 :C-1
@@ -20,6 +20,8 @@
 (def ^:private b9s 
   (range 13 127 12)); => (13 25 37 49 61 73 85 97 109 121)
 
+;;; drop preds ;;;
+
 (defn- b9-free? 
   "return true if chord has no b9(+ n oct) in its inner voices
   means that b9 like intervals are allowed from Bass"
@@ -33,24 +35,39 @@
                 (not (some (set dists) b9s)))] 
       (and res (b9-free? (next chord))))))
 
-(defn- valid-drop? [d max-step max-size]
-  (all-true? d
-    b9-free?
-    #(every? (p >= max-step) (steps %))
-    #(<= (last %) max-size)))
+(defn- no-m2-on-top? 
+  "check if a drop havn't a m2 between two top notes"
+  [d] 
+  (not= 1 (last (steps d))))
+
+;;;;;;;;;;;;;;;;;;
+
+(defn- drop-validator 
+  "return a validator function for drops"
+  [& preds]
+  (fn [drop]
+    (a satisfies-all? drop preds)))
+
+(def default-validator (drop-validator b9-free? no-m2-on-top?))
 
 (defn- drops 
   "return a seq of all possible drops of a chord
    while respecting max-step and max size
    ex: (drops [1 3 7 9] 10 24) 
    => ((1 7 15 21) (1 3 9 19) (1 3 7 9) (1 7 9 15) (1 9 15 19))"
-  ([coll max-step max-size] 
-    (if (valid-drop? coll max-step max-size)
-      ;coll is valid drop so append it to the results
-      (cons (seq coll) (drops coll 0 max-step max-size))
-      ;coll is not valid so continue without keeping it
-      (drops coll 0 max-step max-size)))
-  ([coll idx max-step max-size] 
+  ([coll max-step max-size] (drops coll max-step max-size default-validator))
+  ([coll max-step max-size validator] 
+    ;validator composed with max-step and max-size constraints                                 
+    (letfn [(composed-validator [adrop] 
+              (and (every? (p >= max-step) (steps adrop))
+                   (<= (last adrop) max-size)
+                   (validator adrop)))]
+      (if (composed-validator coll)
+        ;coll is valid drop so append it to the results
+        (cons (seq coll) (drops coll 0 max-step max-size composed-validator))
+        ;coll is not valid so continue without keeping it
+        (drops coll 0 max-step max-size composed-validator))))
+  ([coll idx max-step max-size validator] 
   (let [[head [x y z & others]] (split-at idx coll)
         octaved-up 
         ;find first possible 'octavation'
@@ -62,15 +79,15 @@
       (if (and (<= (- z x) max-step) (<= octaved-up  max-size))
         ; drop is allowed so build it
         (let [ret (concat head (->> (vector x z others octaved-up) (remove nil?) flatten sort))]
-          (if (valid-drop? ret max-step max-size) 
+          (if (validator ret) 
             ;drop is valid so keep it and continue
-            (cons ret (concat (drops ret idx max-step max-size) 
-                              (drops coll (inc idx) max-step max-size)))
+            (cons ret (concat (drops ret idx max-step max-size validator) 
+                              (drops coll (inc idx) max-step max-size validator)))
             ;drop isn't valid so continue without keeping it
-            (concat (drops ret idx max-step max-size) 
-                    (drops coll (inc idx) max-step max-size))))
+            (concat (drops ret idx max-step max-size validator) 
+                    (drops coll (inc idx) max-step max-size validator))))
         ;drop is not allowed so recur with (inc idx)
-        (drops coll (inc idx) max-step max-size))))))
+        (drops coll (inc idx) max-step max-size validator))))))
 
 (defn- occ-map->seq 
   "(occ-map->seq {:M2 2 :m3 1 :M6 2 :M7 1}) 
@@ -100,22 +117,26 @@
 
 ;;;;;;;;;;;;;;; public ;;;;;;;;;;;;;;;;
 
+
 (defn all-drops 
   "compute all possible drops of a chord
   args:
   occ-map {c-int-class occurence ...}
-  max-step (the max interval in semitone between to adjacent notes of a chord)
-  max-size (maximum total size of the drops)
+  options (optional) {:max-step _ :max-size _ :inversions _ :validator _}
   ex:
-  (all-drops {:P1 2 :M6 2 :+4 2 :M3 2 :M7 2} 9 36)"
+  (all-drops {:P1 2 :M6 2 :+4 2 :M3 2 :M7 2} 
+             {:max-step 7 
+              :max-size 48
+              :inversions true
+              :validator (drop-validator b9-free? no-m2-on-top?)})"
   ([occ-map] (all-drops occ-map {}))
   ([occ-map 
-    {:keys [max-step max-size inversions] 
-     :or {max-step 9 max-size 36 inversions false}}]
+    {:keys [max-step max-size inversions validator] 
+     :or {max-step 9 max-size 36 inversions false validator default-validator}}]
     (if inversions 
       (let [invs (chord-inversions (occ-map->seq occ-map))]
-        (map #(drops % max-step (+ max-size (first %))) invs))
-      (drops (occ-map->seq occ-map) max-step max-size))))
+        (map #(drops % max-step (+ max-size (first %)) validator) invs))
+      (drops (occ-map->seq occ-map) max-step max-size validator))))
 
 (defn drops-from 
   "return all occ-map chords ['Pitch] with root-pitch as origin (see all-drops for occ-map doc)"
@@ -139,19 +160,43 @@
        (filter #(and (= bass (first %))(= top (last %))) 
              (drops-from bass occ-map (assoc options :max-size max-size))))))
 
-(b-multi voicing)
-(b-meth voicing 
-  ['Pitch 'Pitch 'Mode :number] [bass top mod n-voices]
-  ())
+(defn- occ-repartition 
+  "return a occ repartition vector
+   ex: (occ-repartition 5 11) => [3 2 2 2 2]"
+  [size n]
+  (loop [acc (fill-with [] size 0) i 0] 
+    (if (< i n) 
+      (recur (update-in acc [(mod i size)] inc) (inc i)) 
+      acc)))
+
+(b-multi build-occ-map 
+  (['ModeClass :number][mode-class n-voices]
+    (let [main-degs (mapv :name (:main-degrees (w-mode-class mode-class)))
+          size (inc (count main-degs)) ;inc it because :P1 is implicit
+          occs (occ-repartition size n-voices)]
+      (zipmap (conj main-degs :P1) occs)))
+  ([['CIntervalClass] :number][degrees n-voices]
+    (let [size (inc (count degrees)) ;inc it because :P1 is implicit
+          occs (occ-repartition size n-voices)]
+      (zipmap (conj (mapv :name degrees) :P1) occs))))
+
+(b-multi voicings
+  "docstring"
+  ([['Pitch] 'ModeClass :number] [[bass top] modc n-voices]
+    (drops-from bass top (build-occ-map modc n-voices) {}))
+  
+  ([['Pitch] ['CIntervalClass] :number] [[bass top] degrees n-voices]
+    (drops-from bass top (build-occ-map degrees n-voices) {})))
+
+(voicings [:Bb-2 :D1] :Mix 8)
+(voicings [:Bb-2 :Eb1] [:P4 :M6 :M2 :m7 :P5] 8)
 
 ;;;;;;;;;;;;;; examples ;;;;;;;;;;;;;;;
 
 
 (comment 
-  (time (count (drops [0 2 3 9 11 14 15 21 23] 11 48)))
+  (time (count (drops [0 2 3 9 11 14 15 21 23] 11 48 (drop-validator b9-free? no-m2-on-top?))))
   (all-distinct? (drops [0 2 3 9 11 14 15 21 23] 11 48)))
-
-(valid-drop? [0 6 9 14 16 22] 11 24)
 
 (use 'bartok.midi.midi)
 
@@ -160,7 +205,8 @@
     (->> (all-drops {:P1 2 :M6 2 :+4 2 :M3 2 :M7 2} 
                     {:max-step 7 
                      :max-size 48
-                     :inversions true})
+                     :inversions true
+                     :validator (drop-validator b9-free? no-m2-on-top?)})
          rand-nth
          shuffle 
          first
@@ -175,19 +221,23 @@
 
 (comment 
   (play-chord
-    (->> (drops-from :C-1 :F#0 {:P1 1 :M6 1 :+4 1 :M3 1 :#2 1 :M7 1} {})
+    (->> (drops-from :C-1 :D#1
+           {:P1 1 :M6 1 :+4 1 :M3 1 :#2 1 :M7 1} 
+           {:validator (drop-validator b9-free? no-m2-on-top?)})
          shuffle 
          first)))
 
 (comment 
   (play-chord
-    (->> (drops-from :Bb-2 {:P1 1 :+4 1 :M6 1 :m7 1 :M2 1} {})
+    (->> (drops-from :Bb-2 {:P1 1 :+4 1 :M6 1 :m7 1 :M2 1} {:max-step 11})
          shuffle 
-         first
-         pev)))
+         first)))
 
 (comment 
   (map (p map :name) 
        (drops-from :Bb-2 :Eb1 {:P1 1 :P5 1 :P4 1 :M6 1 :m7 1 :M2 1} {})))
+
+
+; (sort-by last (drops [0 2 4 6 9 10] 11 36))
 
 

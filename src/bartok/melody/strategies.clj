@@ -10,9 +10,6 @@
                             :3rd-u :3rd-d
                             :4th-u :4th-d))))
 
-(defn- bartokize-prob-map [m]
-  (zipmap (map b> (keys m)) (vals m)))
-
 ;prob-map keys (DInterval) vals (prob(number))
 (defn- prob-line 
   ([length] (prob-line default-prob-map length))
@@ -27,7 +24,7 @@
       (weight-pick-one pm)))
 
 (defn interval-prob-line [domain prob-map length]
-  (let [prob-map (bartokize-prob-map prob-map)] 
+  (let [prob-map (b> prob-map)] 
     (loop [dom domain res [] l length]
       (if (not= 0 l)
         (let [interval (choose-next-interval dom prob-map)
@@ -49,7 +46,7 @@
             (let [interv (choose-next-interval domain prob-map)
                   dom (step domain interv)] 
               (lazy-seq (cons (-> dom :current :pitch) (fun dom prob-map)))))]
-    (fun dom (bartokize-prob-map prob-map))))
+    (fun dom (b> prob-map))))
 
 (b-fn lazy-drunk-passing-line
   "return a lazy melodic line with some passings on main degrees

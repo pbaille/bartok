@@ -110,7 +110,9 @@
     (cond
       (named? x) (or (b? x) (type x))
       (number? x) (if (ratio? x) :ratio :number)
-      (type= x clojure.lang.PersistentVector) (a b-types x)
+      (type= x clojure.lang.PersistentVector) 
+        (let [[ft :as bts] (a b-types x)] 
+          (if (all-eq? bts) [ft] bts))
       (type= x clojure.lang.PersistentHashSet) (set (a b-types x))
       (type= x clojure.lang.PersistentList) (a b-types x)
       (type= x clojure.lang.PersistentArrayMap) (map-h* b-type x)
