@@ -124,7 +124,6 @@
         CIntervalClass 
         #{:pitch-class :pitch}]"
     [& xs] (mapv b-type xs))
-
   
 ;-------------------------------------------------------
 ;;;;;;;;;;;;;;;;;;;;;;; Eval ;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -140,7 +139,10 @@
          (or (= t :number)(= t :ratio)) x
          (keyword? t) (call (name t) x) 
          (fn? x) (comp-b> x)
-         (set? x) (set (map b> x))
+         (type= x clojure.lang.PersistentVector)  (mapv b> x)
+         (type= x clojure.lang.PersistentHashSet) (set (map b> x))
+         (type= x clojure.lang.PersistentArrayMap) (map-h* b> x)
+         (type= x clojure.lang.PersistentHashMap)  (map-h* b> x)
          (and (not (map? x)) (sequential? x)) (mapv b> x)
          :else x)))
     ([x & xs] (map b> (cons x xs))))
