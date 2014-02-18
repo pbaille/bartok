@@ -110,11 +110,20 @@
     (cond
       (named? x) (or (b? x) (type x))
       (number? x) (if (ratio? x) :ratio :number)
-      (or (type= x clojure.lang.PersistentVector))
-        (a b-types x)
+      (type= x clojure.lang.PersistentVector) (a b-types x)
+      (type= x clojure.lang.PersistentHashSet) (set (a b-types x))
+      (type= x clojure.lang.PersistentList) (a b-types x)
+      (type= x clojure.lang.PersistentArrayMap) (map-h* b-type x)
+      (type= x clojure.lang.PersistentHashMap)  (map-h* b-type x)
       :else (type x)))
   
-  (defn b-types [& xs] (mapv b-type xs))
+  (defn b-types 
+    "ex: 
+    (b-types {:m2 'A :Lyd :4|4} (b> :m2) #{:C# :C#2})
+    => [{:mode-class :time-signature, :c-interval-class :natural-pitch-class} 
+        CIntervalClass 
+        #{:pitch-class :pitch}]"
+    [& xs] (mapv b-type xs))
 
   
 ;-------------------------------------------------------
@@ -132,7 +141,7 @@
          (keyword? t) (call (name t) x) 
          (fn? x) (comp-b> x)
          (set? x) (set (map b> x))
-         (and (not (map? x)) (sequential? x)) (vec (map b> x))
+         (and (not (map? x)) (sequential? x)) (mapv b> x)
          :else x)))
     ([x & xs] (map b> (cons x xs))))
   

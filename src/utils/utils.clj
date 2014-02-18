@@ -274,10 +274,21 @@
   (defn map-keys [f m]
     (a merge (map (fn [[k v]] {(f k) v}) m)))
   
-  (defn map-h  [f m]
+  (defn map-h  
+    "map over an hash-map and return a new hash-map
+    f must return either a single keyval map or a duplet (vec of size 2)"
+    [f m]
     {:pre [(map? m)]}
     (let [hms (map (fn [[k v]] (f k v)) m)]
-      (if (second hms) (a conj hms) (first hms))))
+      (if (vector? (first hms)) 
+        (entries->h-map hms) 
+        (reduce conj {} hms))))
+  
+  (defn map-h*
+    "same as map-h but f is single arity and is applied to each key and val
+    (map-h* inc {1 2 3 4}) <=> (map-h #(h-map (inc %) (inc %2)) {1 2 3 4})"
+    [f m]
+    (map-h (fn [k v] (vector (f k) (f v))) m))
   
   (defn dissoc-nils 
     "remove keyvals whose val is nil from a h-map"
