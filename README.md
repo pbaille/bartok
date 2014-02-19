@@ -1,6 +1,7 @@
 # BARTÒK
 
 A clojure library for music composition.
+In development, sometimes/often it has broken/smelly parts... 
 
 ## Litterals
 
