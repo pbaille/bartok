@@ -22,7 +22,7 @@
 
 ;;; drop preds ;;;
 
-(defn- b9-free? 
+(defn b9-free? 
   "return true if chord has no b9(+ n oct) in its inner voices
   means that b9 like intervals are allowed from Bass"
   [[bass frst & nxt :as chord]]
@@ -35,11 +35,17 @@
                 (not (some (set dists) b9s)))] 
       (and res (b9-free? (next chord))))))
 
-(defn- no-m2-on-top? 
+(defn no-m2-on-top? 
   "check if a drop havn't a m2 between two top notes"
   [d] 
   (not= 1 (last (steps d))))
 
+(defn size=? 
+  "return a function that check if drop is of size siz"
+  [siz]
+  (fn [drop] 
+    (= (- (last drop) (first drop)) 
+       siz)))
 ;;;;;;;;;;;;;;;;;;
 
 (defn- drop-validator 
@@ -48,7 +54,17 @@
   (fn [drop]
     (a satisfies-all? drop preds)))
 
-(def default-validator (drop-validator b9-free? no-m2-on-top?))
+(def ^:private default-validator 
+  (drop-validator b9-free? no-m2-on-top?))
+
+(def ^:private default-options
+  {:max-step 9 
+   :max-size 36 
+   :inversions false 
+   :validator default-validator})
+
+(defn- merge-with-default-options [opt]
+  (if-nil-merge opt default-options))
 
 (defn- drops 
   "return a seq of all possible drops of a chord
@@ -118,6 +134,7 @@
 ;;;;;;;;;;;;;;; public ;;;;;;;;;;;;;;;;
 
 
+
 (defn all-drops 
   "compute all possible drops of a chord
   args:
@@ -130,35 +147,13 @@
               :inversions true
               :validator (drop-validator b9-free? no-m2-on-top?)})"
   ([occ-map] (all-drops occ-map {}))
-  ([occ-map 
-    {:keys [max-step max-size inversions validator] 
-     :or {max-step 9 max-size 36 inversions false validator default-validator}}]
-    (if inversions 
-      (let [invs (chord-inversions (occ-map->seq occ-map))]
-        (map #(drops % max-step (+ max-size (first %)) validator) invs))
-      (drops (occ-map->seq occ-map) max-step max-size validator))))
-
-(defn drops-from 
-  "return all occ-map chords ['Pitch] with root-pitch as origin (see all-drops for occ-map doc)"
-  ([root-pitch occ-map] 
-    (drops-from root-pitch occ-map {}))
-  ([root-pitch occ-map {invs :inversions :as options}]
-    (let [c-int-map (zipmap (map (f> b> :val)(keys occ-map))
-                            (keys occ-map))
-          drops (if invs 
-                  (a concat (all-drops occ-map options))
-                  (all-drops occ-map options))]
-      (map (p map 
-              #(transpose 
-                 root-pitch 
-                 (c-interval (c-int-map (mod12 %)) 
-                             (int-div % 12)))) 
-           drops)))
-  ([bass top occ-map options]
-     (let [bass (b> bass) top (b> top)
-           max-size (- (:val top) (:val bass))]
-       (filter #(and (= bass (first %))(= top (last %))) 
-             (drops-from bass occ-map (assoc options :max-size max-size))))))
+  ([occ-map options]
+    (let [{:keys [max-step max-size inversions validator]} 
+          (merge-with-default-options options)]
+      (if inversions 
+        (let [invs (chord-inversions (occ-map->seq occ-map))]
+          (map #(drops % max-step (+ max-size (first %)) validator) invs))
+        (drops (occ-map->seq occ-map) max-step max-size validator)))))
 
 (defn- occ-repartition 
   "return a occ repartition vector
@@ -182,17 +177,63 @@
 
 (b-multi voicings
   "docstring"
-  ([['Pitch] 'ModeClass :number] [[bass top] modc n-voices]
-    (drops-from bass top (build-occ-map modc n-voices) {}))
   
+  ;;; no-options dispatchs ;;;
+  ([['Pitch] 'ModeClass :number] [[bass top] modc n-voices]
+    (voicings [bass top] (build-occ-map modc n-voices) default-options))
+  ([['Pitch] :map] [[bass top] occ-map]
+    (voicings [bass top] occ-map default-options))
+  (['Pitch :map] [root-pitch occ-map] 
+    (voicings root-pitch occ-map default-options))
   ([['Pitch] ['CIntervalClass] :number] [[bass top] degrees n-voices]
-    (drops-from bass top (build-occ-map degrees n-voices) {})))
+    (voicings [bass top] (build-occ-map degrees n-voices default-options)))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  
+  ([['Pitch] 'ModeClass :number :map] [[bass top] modc n-voices options]
+    (voicings [bass top] 
+              (build-occ-map modc n-voices) 
+              (merge-with-default-options options)))
+  
+  ([['Pitch] ['CIntervalClass] :number :map] [[bass top] degrees n-voices options]
+    (voicings [bass top] 
+              (build-occ-map degrees n-voices) 
+              (merge-with-default-options options)))
+  
+  (['Pitch :map :map] [root-pitch occ-map options]
+    (let [{invs :inversions :as options} 
+          (merge-with-default-options options)
+          c-int-map (zipmap (map (f> b> :val)(keys occ-map))
+                            (keys occ-map))
+          drops (if invs 
+                  (a concat (all-drops occ-map options))
+                  (all-drops occ-map options))]
+      (map (p map 
+              #(transpose 
+                 root-pitch 
+                 (c-interval (c-int-map (mod12 %)) 
+                             (int-div % 12)))) 
+           drops)))
+  
+  ([['Pitch] :map :map] [[bass top] occ-map options]
+    (let [{:keys [validator] :as options} 
+          (merge-with-default-options options)
+          size (distance bass top)
+          options (-> options 
+                      (assoc :max-size size 
+                             :validator #(and (validator %) ((size=? size) %))))]
+      (voicings bass occ-map options))))
 
-(voicings [:Bb-2 :D1] :Mix 8)
-(voicings [:Bb-2 :Eb1] [:P4 :M6 :M2 :m7 :P5] 8)
+(comment 
+  (map (p map :name) (voicings [:Bb-2 :D1] :Mix 8))
+  (map (p map :name) (voicings [:Bb-2 :D1] :Mix 8 {:validator (constantly true)}))
+  (map (p map :name) (voicings [:Bb-2 :Eb1] [:P4 :M6 :M2 :m7 :P5] 8))
+  (map (p map :name) (voicings [:Bb-2 :Eb1] [:P4 :M6 :M2 :m7 :P5] 8 {:max-step 9}))
+  (map (p map :name) (voicings [:Bb-2 :D0] {:P1 1 :M3 1 :P4 1 :M6 1 :m7 1}))
+  (map (p map :name) (voicings [:Bb-2 :Eb0] {:P1 1 :M2 1 :M3 1 :P4 1 :M6 1 :m7 1} {:validator (constantly true)}))
+  (map (p map :name) (voicings :Bb-2 {:P1 1 :M3 1 :P4 1 :M6 1 :m7 1}))
+  (map (p map :name) (voicings :Bb-2 {:P1 1 :M2 1 :M3 1 :P4 1 :M6 1 :m7 1} {:validator (constantly true)})))
 
 ;;;;;;;;;;;;;; examples ;;;;;;;;;;;;;;;
-
 
 (comment 
   (time (count (drops [0 2 3 9 11 14 15 21 23] 11 48 (drop-validator b9-free? no-m2-on-top?))))
@@ -205,8 +246,7 @@
     (->> (all-drops {:P1 2 :M6 2 :+4 2 :M3 2 :M7 2} 
                     {:max-step 7 
                      :max-size 48
-                     :inversions true
-                     :validator (drop-validator b9-free? no-m2-on-top?)})
+                     :inversions true})
          rand-nth
          shuffle 
          first
@@ -214,14 +254,18 @@
 
 (comment 
   (play-pitch-line 
-    (->> (all-drops {:P1 2 :+5 2 :+4 2 :M3 2 :M7 2})
+    (->> (all-drops {:P1 2 :+5 2 :+4 2 :M3 2 :M7 2}
+                    {:validator (drop-validator 
+                                  b9-free? 
+                                  no-m2-on-top? 
+                                  (size=? 30))})
          shuffle 
          first
          (map #(pitch (+ 32 %))))))
 
 (comment 
   (play-chord
-    (->> (drops-from :C-1 :D#1
+    (->> (voicings [:C-1 :D#1]
            {:P1 1 :M6 1 :+4 1 :M3 1 :#2 1 :M7 1} 
            {:validator (drop-validator b9-free? no-m2-on-top?)})
          shuffle 
@@ -229,15 +273,9 @@
 
 (comment 
   (play-chord
-    (->> (drops-from :Bb-2 {:P1 1 :+4 1 :M6 1 :m7 1 :M2 1} {:max-step 11})
+    (->> (voicings :Bb-2 {:P1 1 :+4 1 :M6 1 :m7 1 :M2 1} {:max-step 11})
          shuffle 
          first)))
 
-(comment 
-  (map (p map :name) 
-       (drops-from :Bb-2 :Eb1 {:P1 1 :P5 1 :P4 1 :M6 1 :m7 1 :M2 1} {})))
-
-
-; (sort-by last (drops [0 2 4 6 9 10] 11 36))
 
 

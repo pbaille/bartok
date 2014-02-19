@@ -80,7 +80,7 @@
   ([pitches] (play-chord pitches 4))
   ([pitches dur]
    (grid {:bars [[32 :4|4]] :tempo 120})
-   (dr)
+   ; (dr)
    (play @*midi-out* [(chord pitches dur (g-pos))])))
 
 
