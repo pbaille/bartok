@@ -2,7 +2,7 @@
   (:use [clojure.math.combinatorics :as c])
   (:use bartok.primitives)
   (:use bartok.types.w-mode)
-  (:use utils.all))
+  (:use [utils.all :exclude [median]]))
 
 (def ^:private lower-interval-limits
   {:m2 :E-1
@@ -23,7 +23,7 @@
 ;;; drop preds ;;;
 
 (defn b9-free? 
-  "return true if chord has no b9(+ n oct) in its inner voices
+  "return true if chord has no b9s (see b9s def above) in its inner voices
   means that b9 like intervals are allowed from Bass"
   [[bass frst & nxt :as chord]]
   (if-not (seq nxt)
@@ -176,8 +176,7 @@
       (zipmap (conj (mapv :name degrees) :P1) occs))))
 
 (b-multi voicings
-  "docstring"
-  
+  "return a list of [Pitch] voicings accordingly with args..."
   ;;; no-options dispatchs ;;;
   ([['Pitch] 'ModeClass :number] [[bass top] modc n-voices]
     (voicings [bass top] (build-occ-map modc n-voices) default-options))
@@ -277,5 +276,32 @@
          shuffle 
          first)))
 
+(defn median [drop] 
+  (/ (reduce + drop) (count drop)))
 
+(defn grav-center 
+  "ex: (grav-center [0 3 10]) => 0.3"
+  [[fi & nxt :as drop]]
+  (let [cnt (count drop)
+        amplitude (- (last drop) fi)
+        from-zero (map #(- % fi) drop)
+        inner-sum (reduce + (next (butlast from-zero)))]
+    (float 
+      (/ (/ inner-sum (- cnt 2))
+         amplitude))))
+
+(defn mean-interval 
+  "ex: (mean-interval [1 2 3 4]) => 1"
+  [[fi :as drop]]
+  (/ (- (last drop) fi) (dec (count drop))))
+
+(defn uniformity 
+  "repartition uniformity, 0 is perfect uniformity
+   ex : (uniformity [1 2 3 4 5]) => 0 "
+  [drop]
+  (let [mean-inter (mean-interval drop)
+        mean-dists (map #(abs (- mean-inter %)) (steps drop))]
+    (median mean-dists)))
+
+(uniformity [1 2 3 4 50])
 

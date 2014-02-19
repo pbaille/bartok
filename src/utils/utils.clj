@@ -43,7 +43,7 @@
     (pp (macroexpand-1 expr)))
   
   ;this should be a macro no? expr is eval before entering this...
-  (defn with-dispatch [disp-val expr]
+  (defmacro with-dispatch [disp-val expr]
     "call a particular dispatch on a multi method"
     `((get (methods ~(first expr)) ~disp-val) ~@(next expr)))
   
