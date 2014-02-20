@@ -46,15 +46,16 @@
        ;to midi-notes
        (m-note-line-from (g-pos 0 0 0) 1/4 60 1)))
 
+;buggy
 (defn ctt []
   (let [ints-vals (map to-num d-ints)
         fpm (zipmap ints-vals (repeat 1))
-        transcntr (flatten (:results (contour-prob-line (take 50 ints-vals) fpm clyd 3)))
+        transcntr (contour-prob-line (take 50 ints-vals) fpm clyd 3)
+        _ (dr)
         bnds (steps-bounds transcntr)
         diff (- (:val (first (interval-bounds clyd))) (first bnds))
         ss (step-sequence (step clyd diff) transcntr)
         mn-line (m-note-line-from (g-pos 0 0 0) 1/2 60 1 ss)]
-  (dr)
+  ; (dr)
   (grid {:bars [[24 :4|4]] :tempo 120})
-  (play @*midi-out* mn-line)
-  ))
+  (play @*midi-out* mn-line)))

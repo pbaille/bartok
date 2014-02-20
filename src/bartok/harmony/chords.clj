@@ -48,18 +48,25 @@
        siz)))
 
 (defn make-drop-pred 
-  "take a function on a drop 
+  "take a function 'fun' on a drop 
   return a function that check if (comparator (fun drop) value) for all comp-val-duplets
   ex: (let [grav-check (make-drop-pred grav-center > 0.5 < 0.8)] 
         (grav-check [0 15 20]) ;=> true 
         (grav-check [0 5 20])  ;=> false)"
   [fun & [comparator value & comp-val-duplets]]
-  (fn [drop] 
+    (fn [drop] 
       (and 
-       (comparator (fun drop) value)
-       (if (second comp-val-duplets)
-         ((ap make-drop-pred fun comp-val-duplets) drop)
-         true))))
+        (comparator (fun drop) value)
+        (if (second comp-val-duplets)
+          ((ap make-drop-pred fun comp-val-duplets) drop)
+          true))))
+
+;; buggy, try to make a macro for avoiding multiple evaluation of (fun drop) ...
+; (defmacro make-drop-pred 
+;   [fun & comp-val-duplets]
+;   `(fn [x#] 
+;      (let [res# (~fun x#)] 
+;        (and ~@(map (fn [[c v]] (list c res# v)) (partition 2 comp-val-duplets))))))
 
 ;;;;;;;;;;; drop analysis ;;;;;;;;;;;;;;;;;
 
@@ -243,25 +250,25 @@
   ;;; no-options dispatchs ;;;
   ([['Pitch] 'ModeClass :number] [[bass top] modc n-voices]
     (voicings [bass top] (build-occ-map modc n-voices) default-options))
-  ([['Pitch] :map] [[bass top] occ-map]
+  ([['Pitch] 'Map] [[bass top] occ-map]
     (voicings [bass top] occ-map default-options))
-  (['Pitch :map] [root-pitch occ-map] 
+  (['Pitch 'Map] [root-pitch occ-map] 
     (voicings root-pitch occ-map default-options))
   ([['Pitch] ['CIntervalClass] :number] [[bass top] degrees n-voices]
     (voicings [bass top] (build-occ-map degrees n-voices default-options)))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   
-  ([['Pitch] 'ModeClass :number :map] [[bass top] modc n-voices options]
+  ([['Pitch] 'ModeClass :number 'Map] [[bass top] modc n-voices options]
     (voicings [bass top] 
               (build-occ-map modc n-voices) 
               (merge-with-default-options options)))
   
-  ([['Pitch] ['CIntervalClass] :number :map] [[bass top] degrees n-voices options]
+  ([['Pitch] ['CIntervalClass] :number 'Map] [[bass top] degrees n-voices options]
     (voicings [bass top] 
               (build-occ-map degrees n-voices) 
               (merge-with-default-options options)))
   
-  (['Pitch :map :map] [root-pitch occ-map options]
+  (['Pitch 'Map 'Map] [root-pitch occ-map options]
     (let [{invs :inversions :as options} 
           (merge-with-default-options options)
           c-int-map (zipmap (map (f> b> :val)(keys occ-map))
@@ -276,7 +283,7 @@
                              (int-div % 12)))) 
            drops)))
   
-  ([['Pitch] :map :map] [[bass top] occ-map options]
+  ([['Pitch] 'Map 'Map] [[bass top] occ-map options]
     (let [{:keys [validator] :as options} 
           (merge-with-default-options options)
           size (distance bass top)
@@ -320,22 +327,28 @@
                     {:validator (drop-validator 
                                   b9-free? 
                                   no-m2-on-top? 
-                                  (size=? 30))})
+                                  (grav-center > 0.5))})
          shuffle 
          first
-         (map #(pitch (+ 32 %))))))
+         (map #(pitch (+ 44 %))))))
 
 (comment 
   (play-chord
-    (->> (voicings [:C-1 :D#1]
+    (->> (voicings :C-1
            {:P1 1 :M6 1 :+4 1 :M3 1 :#2 1 :M7 1} 
-           {:validator (drop-validator b9-free? no-m2-on-top?)})
+           {:validator (drop-validator b9-free? no-m2-on-top? (grav-center > 0.5))})
          shuffle 
          first)))
 
 (comment 
   (play-chord
-    (->> (voicings :Bb-2 {:P1 1 :+4 1 :M6 1 :m7 1 :M2 1} {:max-step 11})
+    (->> (voicings :Ab-2 
+                   {:P1 1 :P5 1 :P4 1 :M6 1 :m7 1 :M2 1 :M3 1} 
+                   {:max-size 48
+                    :validator (drop-validator 
+                                 b9-free? 
+                                 no-m2-on-top? 
+                                 (grav-center > 0.6))})
          shuffle 
          first)))
 

@@ -115,8 +115,8 @@
           (if (all-eq? bts) [ft] bts))
       (type= x clojure.lang.PersistentHashSet) (set (a b-types x))
       (type= x clojure.lang.PersistentList) (a b-types x)
-      (type= x clojure.lang.PersistentArrayMap) :map ;(map-h* b-type x)
-      (type= x clojure.lang.PersistentHashMap)  :map ;(map-h* b-type x)
+      (type= x clojure.lang.PersistentArrayMap) 'Map ;(map-h* b-type x)
+      (type= x clojure.lang.PersistentHashMap)  'Map ;(map-h* b-type x)
       :else (type x)))
   
   (defn b-types 
@@ -137,7 +137,7 @@
     ([x] 
      (let [t (b-type x)] 
        (cond 
-         (or (= t :number)(= t :ratio)(= t :map)) x
+         (or (= t :number)(= t :ratio)) x
          (keyword? t) (call (name t) x) 
          (fn? x) (comp-b> x)
          (type= x clojure.lang.PersistentVector)  (mapv b> x)
@@ -457,7 +457,7 @@
     
     ;;; functions ;;;
     
-    (defmethod relative 'CIntervalClass [d] 
+    (b-meth relative ['CIntervalClass] [d] 
       (c-interval-class (- 12 (:val d))))
     
   ;;;;;;;;;;;;;;;;;;;; CInterval ;;;;;;;;;;;;;;;;;;;;;;;;;;;;

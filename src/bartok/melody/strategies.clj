@@ -17,6 +17,7 @@
 
 (defn- choose-next-interval 
   [domain prob-map]
+    ; (dr)
     (let [bounds (map :val (interval-bounds domain))
           pm (filter 
                #(-> % first :val (between (vec bounds)))

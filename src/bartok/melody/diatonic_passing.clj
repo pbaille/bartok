@@ -26,18 +26,16 @@
     :main-down      (when md  {typ md  :c-interval (c-interval deg-pc md  :d)})}]))
 
 (b-multi d-passing-context
-  "assign to each degree of a w-mode(-class) its passing environment")
+  "assign to each degree of a w-mode(-class) its passing environment"
+  (['WMode] [wm] 
+    (entries->h-map (map (p x-d-passing-context wm) (:pitch-classes wm))))
+  (['WModeClass] [wmc] 
+    (entries->h-map (map (p x-d-passing-context wmc) (:degrees wmc)))))
 
-(b-meth d-passing-context 'WMode [wm] 
-  (entries->h-map (map (p x-d-passing-context wm) (:pitch-classes wm))))
-
-(b-meth d-passing-context 'WModeClass [wmc] 
-  (entries->h-map (map (p x-d-passing-context wmc) (:degrees wmc))))
-
-(b-fn pitch-passings
+(defn pitch-passings
   "return a collection of valid passings for a given target-pitch"
   [pass-cont target-pitch size]
-  (let [context (dissoc-nils ((-> target-pitch :pitch-class :name) pass-cont))
+  (let [context (dissoc-nils ((-> (b> target-pitch) :pitch-class :name) pass-cont))
         context (dissoc context :chromatic-down :chromatic-up)
         types (keys context)
         all (shuffle (c/selections types size))
@@ -52,10 +50,10 @@
   (map (fn [pp] (map :name pp)) 
        (pitch-passings (d-passing-context (w-mode :C-Lyd)) :B0 3)))
 
-(b-fn make-passing 
+(defn make-passing 
   "temp fn to ear generated diatonic passings"
   [pass-cont target-pitch size brod?]
-  (let [context (dissoc-nils ((-> target-pitch :pitch-class :name) pass-cont))
+  (let [context (dissoc-nils ((-> (b> target-pitch) :pitch-class :name) pass-cont))
         context (dissoc context :chromatic-down :chromatic-up)
         types (keys context)
         sels (shuffle (c/selections types size))

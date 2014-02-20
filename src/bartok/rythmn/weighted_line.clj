@@ -1,7 +1,7 @@
 (ns bartok.rythmn.weighted-line
   (:use bartok.structure)
   (:use bartok.rythmn.utils)
-  (:use [utils utils prob]))
+  (:use [utils utils prob dom-part]))
 
 (def ^:private default-prob-map 
   {1/2 1 
@@ -39,4 +39,5 @@
      (take-while #(< (pos-val (:position %)) 
                      (pos-val end-pos)) 
                  (r-prob-line start-pos prob-map))))
+
 

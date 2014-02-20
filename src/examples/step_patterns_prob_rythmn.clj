@@ -18,7 +18,7 @@
               {:cycle-lengths #{3} 
                :iterations    #{3} 
                :steps         #{-4 -3 -1 1 3 4}
-               :cycle-steps   #{-7 7}}))
+               :cycle-steps   #{-7 -3 -2 -1 1 2 3 7}}))
 
 (def notes 
   (prob-rythmn-step-pattern 

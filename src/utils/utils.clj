@@ -77,8 +77,11 @@
   (defn rand-int-between [a b] (rand-nth (range a b)))
   (defn div-mod [x div] [(int (/ x div)) (mod x div)])
   (defn int-div [x div] (int (/ x div)))
-  (defn median [& args] (/ (apply + args) (count args)))
   (defn same-sign? [x y] (pos? (* x y)))
+  
+  (defn median 
+    ([coll] (/ (reduce + coll) (count coll)))
+    ([x & xs] (median (cons x xs))))
   
   (defn opposite-sign? [x y] 
     (or (and (pos? x) (neg? y)) 
