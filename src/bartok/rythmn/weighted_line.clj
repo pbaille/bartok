@@ -1,7 +1,7 @@
 (ns bartok.rythmn.weighted-line
   (:use bartok.structure)
   (:use bartok.rythmn.utils)
-  (:use [utils utils prob dom-part]))
+  (:use [utils utils prob]))
 
 (def ^:private default-prob-map 
   {1/2 1 
