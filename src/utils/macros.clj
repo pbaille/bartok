@@ -137,21 +137,31 @@
 (defmacro defnaults [name & tail]
   "function constructor with defaults args values
   
-  ex1: with defaults val for all args 
+    ex1: with defaults val for all args 
+    
+      (defnaults adder [a 1 b 1 c 1] (+ a b c))
+      (adder 2 2 2) => 6
+      (adder 2 1) => 4
+      (adder 1) => 3
+      (adder) => 3
+    
+    ex1: with defaults val for the 2 last args only 
+    
+      (defnaults adder [a _ b 1 c 1] (+ a b c))
+      (adder 2 2 2) => 6
+      (adder 2 1) => 4
+      (adder 1) => 3
+      (adder) => ArityException Wrong number of args (0)
   
-    (defnaults adder [a 1 b 1 c 1] (+ a b c))
-    (adder 2 2 2) => 6
-    (adder 2 1) => 4
-    (adder 1) => 3
-    (adder) => 3
+    another notable property is that defaults values expressions 
+    can refer to previous defaults value expressions like in a let binding form
+    
+    ex3:
   
-  ex1: with defaults val for the 2 last args only 
-  
-    (defnaults adder [a _ b 1 c 1] (+ a b c))
-    (adder 2 2 2) => 6
-    (adder 2 1) => 4
-    (adder 1) => 3
-    (adder) => ArityException Wrong number of args (0)
+      (defnaults adder [a _ b a c b] (+ a b c)) is valid
+      b defaults to a value and c to b value 
+      (adder 1) => 3
+      (adder 1 2) => 5
   "
   (let [docstring (when (string? (first tail))(first tail))
         argv (if docstring (second tail) (first tail))
@@ -165,9 +175,9 @@
                `(~args (~name ~@(fill-with args cnt :*))))) 
              (range no-defaults-cnt cnt))
       ;define main arity
-      (~args (let [~(vec (drop no-defaults-cnt args)) 
-                   (map (fn [[a# b#]] (if (= a# :*) b# a#)) 
-                        (partition 2 2 ~(vec (drop (* 2 no-defaults-cnt) argv))))]
+      (~args 
+       (let ~(vec (mapcat (fn [[a# b#]] [a# `(if (= ~a# :*) ~b# ~a#)]) 
+                          (partition 2 (vec (drop (* 2 no-defaults-cnt) argv)))))
        ~@body)))))
 
 (defmacro f> [& funs] `#(-> % ~@funs))
