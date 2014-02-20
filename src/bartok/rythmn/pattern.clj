@@ -4,18 +4,23 @@
   (:use [clojure.math.combinatorics :as c])
   (:use [utils utils prob dom-part macros]))
 
-
-
 (defnaults rythmic-cells
  "returns all [RVal] of a certain size at position start-pos of duration dur"
  [rvals _ 
   size  _ 
   dur   _
   start-pos (g-pos)
-  part-results (allowed-rvals start-pos rvals)] 
-    (let [allowed-rvals (allowed-rvals start-pos rvals)]
-      ))
-
-
+  heads [[]]] 
+    (if (count= (first heads) size)
+      (filter #(= (a + %) dur) heads)
+      (rythmic-cells rvals size dur start-pos 
+        (mapcat 
+          (fn [head]
+            (let [head-dur (a + head)
+                  current-pos (pos+ start-pos head-dur)
+                  rvals (filter #(<= (+ head-dur %) dur) rvals)
+                  allowed-rvals (allowed-rvals current-pos rvals)]
+              (map (p conj head) allowed-rvals)))
+          heads))))
 
 
