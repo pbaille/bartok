@@ -9,7 +9,7 @@
 (defn nested-types->name [x]
   (letfn [(fun [x]
             (if-let [n (:name x)]
-               n 
+               (symbol (name n))
                (cond
                  (map? x) (map-vals fun x) 
                  (sequential? x) (mapv fun x) 
