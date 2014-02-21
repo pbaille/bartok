@@ -20,9 +20,13 @@
   => ({:position {:cycle 0, :bar 0, :sub 0}, :duration 3/2} 
       {:position {:cycle 0, :bar 0, :sub 3/2}, :duration 3/4})"
   ([durations] (timable-queue (g-pos) durations))
-  ([pos [fd & nd :as durations]]
-  (let [next-pos (pos+ pos (:duration fd))]
-    (if-not (seq nd)
-      (list (assoc fd :position pos))
-      (cons (assoc fd :position pos)
-            (timable-queue next-pos nd))))))
+  ([pos durations]
+    (let [durations (if (number? (first durations)) 
+                      (map #(hash-map :duration %) durations) 
+                      durations)]
+      (letfn [(fun [pos [fd & nd]]
+                (if-not (seq nd)
+                  (list (assoc fd :position pos))
+                  (cons (assoc fd :position pos)
+                        (fun (pos+ pos (:duration fd)) nd))))]
+        (fun pos durations)))))

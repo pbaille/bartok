@@ -29,8 +29,6 @@
     [:C0 :C2]
     :C1)))
 
-
-
 (let [patta
       (as>> (bartok.rythmn.pattern/rand-rythmic-cell [1/2 3/4 1/4 1/3] 8 3)
         (repeat 4)
