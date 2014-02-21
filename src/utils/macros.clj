@@ -183,7 +183,7 @@
 (defmacro f> [& funs] `#(-> % ~@funs))
 (defmacro f>> [& funs] `#(->> % ~@funs))
 
-;;;;;;;;;;;;;;;;; asf> and asf>> (mix of ( -> or ->>) and as->) ;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;; asf> as> asf>> as>> (mix of -> ->> as-> f> f>>) ;;;;;;;;;;;;;;;;
 
 (defn- replace_ [x sym] 
   (if (sequential? x)
@@ -193,28 +193,60 @@
     x))
 
 (defmacro asf> [& funs] 
-(let [sym (gensym "x")]  
-  `#(as-> % ~sym
+  (let [sym (gensym "x")]  
+    `#(as-> % ~sym
       ~@(map (fn [x] 
-               (if (in? (flatten x) sym) 
-                 x 
-                 (list* (first x) sym (next x))))
+               (if (symbol? x)
+                 (list x sym)
+                 (if (in? (flatten x) sym) 
+                   x 
+                   (list* (first x) sym (next x)))))
              (w/postwalk (fn [x] (replace_ x sym)) funs)))))
 
 ;(asf> (+ 2 _ (* 3 _)) (- 3)) 
 ;;=> #(as-> % x# (+ 2 x# (* 3 x#)) (- x# 3))
 
-(defmacro asf>> [& funs] 
-(let [sym (gensym "x")]  
-  `#(as-> % ~sym
+(defmacro as> [v & funs] 
+  (let [sym (gensym "x")]  
+    `(as-> ~v ~sym
       ~@(map (fn [x] 
-               (if (in? (flatten x) sym) 
-                 x 
-                 (concat x [sym])))
+               (if (symbol? x)
+                 (list x sym)
+                 (if (in? (flatten x) sym) 
+                   x 
+                   (list* (first x) sym (next x)))))
              (w/postwalk (fn [x] (replace_ x sym)) funs)))))
 
-;(asf> (+ 2 _ (* 3 _)) (- 3)) 
+;(as> 1 (+ 2 _ (* 3 _)) (- 3)) 
+;;=> (as-> 1 x# (+ 2 x# (* 3 x#)) (- x# 3))
+
+(defmacro asf>> [& funs] 
+  (let [sym (gensym "x")]  
+    `#(as-> % ~sym
+      ~@(map (fn [x] 
+               (if (symbol? x)
+                 (list x sym)
+                 (if (in? (flatten x) sym) 
+                   x 
+                   (concat x [sym]))))
+             (w/postwalk (fn [x] (replace_ x sym)) funs)))))
+
+;(asf>> (+ 2 _ (* 3 _)) (- 3)) 
 ;;=> #(as-> % x# (+ 2 x# (* 3 x#)) (- 3 x#))
+
+(defmacro as>> [v & funs] 
+  (let [sym (gensym "x")]  
+    `(as-> ~v ~sym
+        ~@(map (fn [x] 
+                (if (symbol? x)
+                  (list x sym)
+                  (if (in? (flatten x) sym) 
+                    x 
+                    (concat x [sym]))))
+               (w/postwalk (fn [x] (replace_ x sym)) funs)))))
+
+;(as>> 1 (+ 2 _ (* 3 _)) (- 3)) 
+;;=> #(as-> 1 x# (+ 2 x# (* 3 x#)) (- 3 x#))
 
 ;buggy
 

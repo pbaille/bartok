@@ -19,7 +19,7 @@
   ([out pitch vel dur at](play-note out pitch vel dur at 1))
   ([out pitch vel dur at chan]
    (after at #(midi-note-on out pitch vel chan) pool)
-   (after (+ at (- dur 0.00001)) #(midi-note-off out pitch chan) pool)
+   (after (+ at (- dur 0.1)) #(midi-note-off out pitch chan) pool)
    nil))
 
 ;expand chords into notes
@@ -85,6 +85,6 @@
 (defn play-rythmic-line
   [pos-durs]
   (grid {:bars [[32 :4|4]] :tempo 120})
-  (play @*midi-out* (map #(note :C0 (:duration %) (:position %)) pos-durs)))
+  (play @*midi-out* (map #(note %2 (:duration %) (:position %)) pos-durs (cycle [:C0 :G0]))))
 
 

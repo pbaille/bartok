@@ -6,7 +6,7 @@
   (:use [utils utils prob dom-part macros]))
 
 (defnaults rythmic-cells
- "returns all [RVal] of a certain size at position start-pos of duration dur
+ "returns a lazy-seq of [RVal] of a certain size at position start-pos of duration dur
  ex: (rythmic-cells [1/2 1/3 1] 4 2)
  => ([1/2 1/2 1/2 1/2] [1/3 1/3 1/3 1] [1 1/3 1/3 1/3])"
  [rvals _ 
@@ -24,9 +24,14 @@
             (let [head-dur (a + head)
                   current-pos (pos+ start-pos head-dur)
                   rvals (filter #(<= (+ head-dur %) dur) rvals)
-                  allowed-rvals (allowed-rvals current-pos rvals)]
+                  allowed-rvals (shuffle (allowed-rvals current-pos rvals))]
               (map (p conj head) allowed-rvals)))
           heads))))
+
+(defn rand-rythmic-cell 
+  "same as rythmic-cells but just pick one"
+  [& args] 
+  (first (a rythmic-cells args)))
 
 ;;;;;;;;;;; tests ;;;;;;;;;;;;;;;;;
 
