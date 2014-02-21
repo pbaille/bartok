@@ -92,6 +92,8 @@
           (fit? time-signature-pat n) :time-signature
           :else nil))))
   
+
+  
   ;;old;;  
   ; (defn b-type [x & more]
   ;   (cond
@@ -126,6 +128,23 @@
         CIntervalClass 
         #{:pitch-class :pitch}]"
     [& xs] (mapv b-type xs))
+  
+  ; (defn b-type? 
+  ;   "check if x is a bartok type"
+  ;   [x]
+  ;   (in? ['Direction
+  ;         'Alteration
+  ;         'DIntervalClass
+  ;         'DInterval
+  ;         'CIntervalClass
+  ;         'CInterval
+  ;         'NaturalPitchClass
+  ;         'PitchClass
+  ;         'Pitch
+  ;         'ModeClass
+  ;         'Mode
+  ;         'TimeSignature] 
+  ;        (b-type x)))
   
 ;-------------------------------------------------------
 ;;;;;;;;;;;;;;;;;;;;;;; Eval ;;;;;;;;;;;;;;;;;;;;;;;;;;;

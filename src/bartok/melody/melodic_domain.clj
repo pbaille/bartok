@@ -91,7 +91,7 @@
       (fn [acc {:keys [steps mode]}]
         (let [md (melodic-domain mode bounds (or (last acc) start-pitch))
               s (step-sequence md steps)]
-          (if (nil? s) (pp "halt!!!!! out of bounds step-sequence !!!!"))
+          (if (nil? s) (println "halt!!!!! out of bounds step-sequence !!!!"))
           (concat acc s))) 
       [] coll)))
 

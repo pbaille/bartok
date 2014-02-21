@@ -45,7 +45,7 @@
           (map vector ~(vec sizes) ~(vec syms))))
      
      :else ;if doesn't fit in bounds return nil
-     (pp "*contour-transform*" "cntr-an:" cntr-an 
+     (println "*contour-transform*" "cntr-an:" cntr-an 
          "doesn't fit in bounds:" [bd bu] ))))
 
 ;constraint solving version 

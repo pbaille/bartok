@@ -1,6 +1,5 @@
 (ns utils.utils
-  (:use midje.sweet)
-  (:require clojure.pprint)
+  (:use bartok.print)
   (:require vendors.debug-repl)
   (:require [clojure.inspector :refer [inspect-tree]])
   (:require [clojure.contrib.math :as math]))
@@ -9,9 +8,9 @@
 
 ;***************** utils ********************
 
-  (defn pp [& xs] (dorun (map clojure.pprint/pprint xs)))
-  (defn pev [x] (do (clojure.pprint/pprint x) x))
   (def not-nil? (complement nil?))
+  
+  (defn pev [x] (do (pp x) x))
   
   (defmacro dr 
     ([] `(vendors.debug-repl/debug-repl))

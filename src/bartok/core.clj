@@ -15,6 +15,7 @@
  (:use utils.all)
  (:use bartok.primitives)
  (:use bartok.structure)
+ (:use bartok.print)
  (:use bartok.melody.all)
  (:use bartok.harmony.all)
  (:use bartok.rythmn.all)
