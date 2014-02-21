@@ -80,7 +80,11 @@
   ([pitches] (play-chord pitches 4))
   ([pitches dur]
    (grid {:bars [[32 :4|4]] :tempo 120})
-   ; (dr)
    (play @*midi-out* [(chord pitches dur (g-pos))])))
+
+(defn play-rythmic-line
+  [pos-durs]
+  (grid {:bars [[32 :4|4]] :tempo 120})
+  (play @*midi-out* (map #(note :C0 (:duration %) (:position %)) pos-durs)))
 
 
