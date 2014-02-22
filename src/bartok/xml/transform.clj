@@ -136,7 +136,7 @@
 (defn play-score [score]
   (let [ps (process-score score)]
     (grid-assoc :tempo 120) 
-    (play @*midi-out* (a concat ps))))
+    (play *m-out* (a concat ps))))
 
 ; (def score (parse-mxl "music-files/mxl/Promenade for Brass Quintet.mxl"))
 ; (def score (parse-xml "music-files/xml/jedall.xml"))

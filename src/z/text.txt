@@ -1,6 +1,4 @@
 TODO
-- passing tones system
-- melodic functions priority
-- chord generator
-- rythmic patterns
-- modal subsets
+- chromatic passing tones system
+- rythmic patterns continue
+- step-sequence on w-mode (omit missing pitchclasses)

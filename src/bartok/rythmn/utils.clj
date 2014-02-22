@@ -14,11 +14,16 @@
                     "have to implement resolution"))))
 
 (defn timable-queue
-  "assign position to each timable
-  a timable is any map that contains a duration field
-  ex: (timable-queue [{:duration 3/2}{:duration 3/4}])
+  "
+  assign position to each timable
+  a timable is any map that contains a duration field 
+  (or a number that will be map to {:duration number})
+  
+  ex: 
+  (timable-queue [{:duration 3/2}{:duration 3/4}])
   => ({:position {:cycle 0, :bar 0, :sub 0}, :duration 3/2} 
-      {:position {:cycle 0, :bar 0, :sub 3/2}, :duration 3/4})"
+      {:position {:cycle 0, :bar 0, :sub 3/2}, :duration 3/4})
+  "
   ([durations] (timable-queue (g-pos) durations))
   ([pos durations]
     (let [durations (if (number? (first durations)) 

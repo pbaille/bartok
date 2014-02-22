@@ -58,4 +58,4 @@
         mn-line (m-note-line-from (g-pos 0 0 0) 1/2 60 1 ss)]
   ; (dr)
   (grid {:bars [[24 :4|4]] :tempo 120})
-  (play @*midi-out* mn-line)))
+  (play *m-out* mn-line)))

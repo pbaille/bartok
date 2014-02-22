@@ -33,4 +33,4 @@
 
 ; ; (def vep (midi-out "Gestionnaire IAC Bus IAC 2" ))
 (grid {:tempo 120 :bars [[25 :4|4]]})
-(defn mc [] (play @*midi-out* (concat (mc1 100) (map #(update-in % [:pitch] transpose (c-interval :P5-d1)) (mc1 100)))))
+(defn mc [] (play *m-out* (concat (mc1 100) (map #(update-in % [:pitch] transpose (c-interval :P5-d1)) (mc1 100)))))

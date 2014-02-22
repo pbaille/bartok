@@ -8,7 +8,7 @@
         tar (rand-nth [:E1 :G#1 :B1])]
     (->> (make-passing dpc tar 3 true)
          (m-note-line-from (g-pos) 1/2 60 1)
-         (play @*midi-out*))))
+         (play *m-out*))))
 
 
 (comment 

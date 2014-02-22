@@ -74,17 +74,17 @@
   (grid {:bars [[32 :4|4]] :tempo tempo})
   (->> pitches 
       (m-note-line-from (g-pos) duration velocity channel)
-      (play @*midi-out*))))
+      (play *m-out*))))
 
 (defn play-chord 
   ([pitches] (play-chord pitches 4))
   ([pitches dur]
    (grid {:bars [[32 :4|4]] :tempo 120})
-   (play @*midi-out* [(chord pitches dur (g-pos))])))
+   (play *m-out* [(chord pitches dur (g-pos))])))
 
 (defn play-rythmic-line
   [pos-durs]
   (grid {:bars [[32 :4|4]] :tempo 120})
-  (play @*midi-out* (map #(note %2 (:duration %) (:position %)) pos-durs (cycle [:C0 :G0]))))
+  (play *m-out* (map #(note %2 (:duration %) (:position %)) pos-durs (cycle [:C0 :G0]))))
 
 

@@ -23,7 +23,7 @@
              2)
            (step-sequence c-lyd)
            (note-line-from (g-pos 0 0 0) 1/4)
-           (play @*midi-out*)))
+           (play *m-out*)))
 
 (time (->> (contour-prob-line 
              mel-steps 
@@ -32,6 +32,6 @@
              3)
            (step-sequence c-lyd)
            (note-line-from (g-pos 0 0 0) 1/4)
-           (play @*midi-out*)))
+           (play *m-out*)))
 
 (defn target-notes-mel [])

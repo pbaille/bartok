@@ -22,7 +22,7 @@
 (def clyd (melodic-domain :C-Lyd [:C0 :C1]))
 
 (comment 
-  (play @*midi-out*
+  (play *m-out*
    (step-patternify 
     pos-durs
     picker
@@ -30,20 +30,18 @@
     :C1)))
 
 (let [patta
-      (as>> (bartok.rythmn.pattern/rand-rythmic-cell [1/2 3/4 1/4 1/3] 8 3)
+      (as>> (bartok.rythmn.pattern/rand-rythmic-cell [2/3 1/3] 6 3)
         (repeat 4)
         flatten
-        (map #(hash-map :duration %))
         timable-queue
         (map #(note %2 (:duration %) (:position %)) _ (cycle [:C0 :A0])))
       pattb
-      (as>> (bartok.rythmn.pattern/rand-rythmic-cell [1/2 3/4 1/4 1/3] 12 4)
+      (as>> (bartok.rythmn.pattern/rand-rythmic-cell [1] 4 4)
         (repeat 3)
         flatten
-        (map #(hash-map :duration %))
         timable-queue 
         (map #(note %2 (:duration %) (:position %)) _ (cycle [:Eb0 :B0 :G0])))]
-  (play @*midi-out* (concat patta pattb)))
+  (play *m-out* (concat patta pattb)))
  
  (comment 
    (->> (bartok.rythmn.pattern/rythmic-cells [1/2 3/4 1/4] 8 3)
