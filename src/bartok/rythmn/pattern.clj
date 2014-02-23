@@ -61,28 +61,29 @@
       (>= 0.5 % 0) (m/round (scale-range % 0 0.5 mis med))
       :else (if (< % 0) mis mas))))
 
+;mutation!!! 
+(defn seq-consumer [seq]
+  (let [seq-atom (atom seq)]
+    (fn fun
+      ([] (first (fun 1)))
+      ([x] (let [ret (take x @seq-atom)] 
+        (swap! seq-atom (p drop x)) 
+        ret)))))
+
 (defn r-patt-picker 
   [{:keys [rvals lengths density] :as options}]
-  (let [r-cells-lazy-seqs
-        (map #(rythmic-cells rvals ((density-range-scaler rvals %) density) %) 
+  (let [r-cells-consumers
+        (map #(seq-consumer 
+                (rythmic-cells 
+                  rvals 
+                  ((density-range-scaler rvals %) density) %)) 
              lengths)]
-    #()))
+    ;function that call 
+    #((rand-nth r-cells-consumers))))
 
-; (defn r-patt [options]
-;   (let [len-dens-s (map )]))
+(def rp-picker 
+  (r-patt-picker 
+    {:rvals [1 1/2 1/3 2/3 1/4]
+     :lengths #{3 4 5 6}
+     :density 0.5}))
 
-;;;;;;;;;;; tests ;;;;;;;;;;;;;;;;;
-
-; (defrecord Aze [name val]
-;   clojure.lang.Named
-;   (getName [this] (subs (str (:name this)) 1))
-;   java.util.Map$Entry
-;   (getValue [this] (:val this))
-;   (getKey [this] (:name this)))
-
-; (def aze (Aze. :aze 1))
-
-; (name aze)
-; (val aze)
-; (key aze)
-; (name "azeaze")
