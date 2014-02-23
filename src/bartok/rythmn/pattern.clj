@@ -28,30 +28,28 @@
               (map (p conj head) allowed-rvals)))
           heads))))
 
-(defnaults rythmic-cells2
- "returns a lazy-seq of [RVal] of a certain size at position start-pos of duration dur
- ex: (rythmic-cells [1/2 1/3 1] 4 2)
- => ([1/2 1/2 1/2 1/2] [1/3 1/3 1/3 1] [1 1/3 1/3 1/3])"
- [rvals _ 
-  size  _ 
-  dur   _
-  start-pos (g-pos)
-  heads [[]]] 
-    (letfn [(fun [rvals size dur start-pos heads])
-      (if (count= (first heads) size)
-        ;final filter that remove wrong sum results
-        (filter #(= (a + %) dur) heads)
-        ;main recursive stuff
-        (fun rvals size dur start-pos 
-          (mapcat 
-            (fn [head]
-              (let [head-dur (a + head)
-                    current-pos (pos+ start-pos head-dur)
-                    rvals (filter #(<= (+ head-dur %) dur) rvals)
-                    allowed-rvals (shuffle (allowed-rvals current-pos rvals))]
-                (map (p conj head) allowed-rvals)))
-            heads)))]
-      (fun rvals size dur start-pos heads)))
+; (defnaults rythmic-cells2
+;  "returns a lazy-seq of [RVal] of a certain size at position start-pos of duration dur
+;  ex: (rythmic-cells [1/2 1/3 1] 4 2)
+;  => ([1/2 1/2 1/2 1/2] [1/3 1/3 1/3 1] [1 1/3 1/3 1/3])"
+;  [rvals _ 
+;   size  _ 
+;   dur   _
+;   start-pos (g-pos)
+;   heads [[]]] 
+;     (if (count= (first heads) size)
+;       ;final filter that remove wrong sum results
+;       (filter #(= (a + %) dur) heads)
+;       ;main recursive stuff
+;       (rythmic-cells2 rvals size dur start-pos 
+;         (mapcat 
+;           (fn [head]
+;             (let [rvals (filter #(if-let [lh (last head)]
+;                                     (<= (last head) %) 
+;                                     true) 
+;                                 rvals)]
+;               (map (p conj head) rvals)))
+;           heads))))
 
 (defn rand-rythmic-cell 
   "same as rythmic-cells but just pick one"
