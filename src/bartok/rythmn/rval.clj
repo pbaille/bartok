@@ -18,11 +18,11 @@
 (defn bin-rval? [rval]
   (in? bin-vals (denom rval)))
 
-(defn bin-resolution [rval]
-  (* rval (poly-base rval)))
-
 (defn poly-base [rval]
   (iterate-while integer? #(/ % 2) (denom rval)))
+
+(defn bin-resolution [rval]
+  (* rval (poly-base rval)))
 
 
 
