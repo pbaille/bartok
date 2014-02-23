@@ -1,6 +1,7 @@
 (ns bartok.rythmn.pattern
   (:use [bartok.rythmn rval utils])
   (:use bartok.structure)
+  (:use bartok.print)
   (:use bartok.primitives)
   (:use [clojure.math.combinatorics :as c])
   (:require [clojure.contrib.math :as m :exclude [abs]])
@@ -36,24 +37,17 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-{:rvals [1 1/2 1/3 2/3 1/4]
- :lengths #{3 4 5 6}
- :density 0.5}
-
-(median [1 1/2 1/3 2/3 1/4])
-((range-scaler 0 1 0 2) 0.5)
-
-(defn constrain-to-bounds [x [mi ma]]
+(defn- constrain-to-bounds [x [mi ma]]
   (cond (< x mi) mi (> x ma) ma :else x))
 
-(defn r-cell-size-bounds [rvals len]
+(defn- r-cell-size-bounds [rvals len]
   [(int (m/floor (/ len (a max rvals))))
    (int (m/ceil (/ len (a min rvals))))])
 
-(defn r-cell-median-size [rvals len]
+(defn- r-cell-median-size [rvals len]
   (median (map (p / len) rvals)))
 
-(defn density-range-scaler [rvals len]
+(defn- density-range-scaler [rvals len]
   (let [med (r-cell-median-size rvals len)
         [mis mas] (r-cell-size-bounds rvals len)]
     #(cond 
@@ -61,29 +55,28 @@
       (>= 0.5 % 0) (m/round (scale-range % 0 0.5 mis med))
       :else (if (< % 0) mis mas))))
 
-;mutation!!! 
-(defn seq-consumer [seq]
-  (let [seq-atom (atom seq)]
-    (fn fun
-      ([] (first (fun 1)))
-      ([x] (let [ret (take x @seq-atom)] 
-        (swap! seq-atom (p drop x)) 
-        ret)))))
-
-(defn r-patt-picker 
+;statefull
+(defn rythmic-cell-picker 
   [{:keys [rvals lengths density] :as options}]
-  (let [r-cells-consumers
-        (map #(seq-consumer 
-                (rythmic-cells 
+  (let [cnt (count lengths)
+        ;keep track of current index in each r-cell-seq
+        idxs (map (fn [x] (atom 0)) (range cnt))
+        r-cells-seqs
+        (map #(rythmic-cells 
                   rvals 
-                  ((density-range-scaler rvals %) density) %)) 
+                  ((density-range-scaler rvals %) density) %) 
              lengths)]
-    ;function that call 
-    #((rand-nth r-cells-consumers))))
+    ;pick the current index of a r-cells-seq then inc idx tracker 
+    #(let [x (rand-int cnt)
+           coll (nth r-cells-seqs x)
+           idx (nth idxs x)]
+       (if-let [ret (nth coll @idx nil)]
+         (do (swap! idx inc) ret)
+         (do (reset! idx 1) (first coll))))))
 
-(def rp-picker 
-  (r-patt-picker 
-    {:rvals [1 1/2 1/3 2/3 1/4]
-     :lengths #{3 4 5 6}
-     :density 0.5}))
-
+(comment 
+  (def rc-picker 
+    (rythmic-cell-picker
+      {:rvals [1 1/2 1/3 2/3 1/4]
+       :lengths #{3 4 5 6}
+       :density 0.5})))
