@@ -30,13 +30,13 @@
     :C1)))
 
 (let [patta
-      (as>> (bartok.rythmn.pattern/rand-rythmic-cell [2/3 1/3] 6 3)
+      (as>> (bartok.rythmn.pattern/rand-rythmic-cell [1 1/4 2/3 1/3] 6 3)
         (repeat 4)
         flatten
         timable-queue
         (map #(note %2 (:duration %) (:position %)) _ (cycle [:C0 :A0])))
       pattb
-      (as>> (bartok.rythmn.pattern/rand-rythmic-cell [1] 4 4)
+      (as>> (bartok.rythmn.pattern/rand-rythmic-cell [1 1/4 2/3 1/3] 8 4)
         (repeat 3)
         flatten
         timable-queue 
@@ -52,4 +52,32 @@
      timable-queue
      play-rythmic-line))
 
+(comment 
+  (let [rc-picker 
+        (rythmic-cell-picker
+          {:rvals [1 1/3 2/3]
+           :lengths #{5 6 7}
+           :density 0.5})
+        rc-picker2 
+        (rythmic-cell-picker
+          {:rvals [1 1/3 2/3]
+           :lengths #{5 6 7}
+           :density 0.5})
+        patta
+        (as>> (rc-picker)
+          (repeat 4)
+          flatten
+          timable-queue
+          (map #(note %2 (:duration %) (:position %)) _ (cycle [:C0 :G0])))
+        pattb
+        (as>> (rc-picker2)
+          (repeat 4)
+          flatten
+          timable-queue 
+          (map #(note %2 (:duration %) (:position %)) _ (cycle [:Eb1 :A1])))]
+    (play *m-out* (concat patta pattb))))
 
+(def rc (rythmic-cell-picker
+          {:rvals [1 1/3 2/3]
+           :lengths #{6}
+           :density 0.5}))

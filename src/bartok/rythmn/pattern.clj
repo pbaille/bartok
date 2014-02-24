@@ -55,7 +55,7 @@
       (>= 0.5 % 0) (m/round (scale-range % 0 0.5 mis med))
       :else (if (< % 0) mis mas))))
 
-;statefull
+;statefull and not really random, have to do better
 (defn rythmic-cell-picker 
   [{:keys [rvals lengths density] :as options}]
   (let [cnt (count lengths)
@@ -64,7 +64,8 @@
         r-cells-seqs
         (map #(rythmic-cells 
                   rvals 
-                  ((density-range-scaler rvals %) density) %) 
+                  ((density-range-scaler rvals %) density) 
+                  %) 
              lengths)]
     ;pick the current index of a r-cells-seq then inc idx tracker 
     #(let [x (rand-int cnt)
@@ -74,9 +75,13 @@
          (do (swap! idx inc) ret)
          (do (reset! idx 1) (first coll))))))
 
-(comment 
-  (def rc-picker 
-    (rythmic-cell-picker
-      {:rvals [1 1/2 1/3 2/3 1/4]
-       :lengths #{3 4 5 6}
-       :density 0.5})))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; (defn rvals-dom-part [rvals density length]
+;   (let [combs (dom-part 
+;                 rvals 
+;                 ((density-range-scaler rvals length) density) 
+;                 length)]))
+
+;;;;;;;;;;;;;;;;;;;; skull ;;;;;;;;;;;;;;;;;;;;;
+
