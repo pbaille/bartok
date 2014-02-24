@@ -3,6 +3,8 @@
   (:use bartok.print)
   (:use [utils utils prob dom-part macros]))
 
+;;;;;;;;;;;; r-skull-helpers ;;;;;;;;;;;;;;
+
 ;maybe should move this to utils
 (defn- doto-until 
   "like (first (drop-while (c not pred) (iterate f init))) "
@@ -100,6 +102,8 @@
         (vec (butlast skull)) 
         (update-in (last skull) [:len] + (:size (work-map chosen)))))))
 
+;;;;;;;;;;;;;;;;;;; r-skull ;;;;;;;;;;;;;;;;;;;;;;
+
 (defn r-skull 
   "
   len :: (Int) ;; length of the skull 
@@ -126,7 +130,20 @@
       [])))
 
 (comment 
-  (pp (r-skull 12 
-               {:complexity 1/6 
-                :r-bases-prob-map {2 1 3 1 5 1} 
-                :poly-homogeneity 0})))
+  (r-skull 
+    12 
+    {:complexity 1/6 
+     :r-bases-prob-map {2 1 3 1 5 1} 
+     :poly-homogeneity 0}))
+
+;;;;;;;;;;;;;;; skull-fill-helpers ;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;; skull-fill ;;;;;;;;;;;;;;;;;;;;;;
+
+(defn skull-fill 
+  [skull
+   {ms :mean-speed
+    cont :continuity
+    hom :homogeneity
+    pol :polarity}]
+  )
