@@ -3,7 +3,8 @@
   (:use bartok.print)
   (:use [utils utils prob dom-part macros]))
 
-(defn doto-until 
+;maybe should move this to utils
+(defn- doto-until 
   "like (first (drop-while (c not pred) (iterate f init))) "
   [pred f init]
   (loop [x init] 
@@ -11,7 +12,8 @@
       x 
       (recur (f x)))))
 
-(defn doto-while
+;maybe should move this to utils
+(defn- doto-while
   "like (last (take-while pred (iterate f init)))
   returns nil if (not (pred init))"
   [pred f init]
@@ -20,7 +22,7 @@
       (recur fx (f fx))
       (if (pred x) x nil))))
 
-(defn min-rbases-vals 
+(defn- min-rbases-vals 
   "for each given r-base return the minimum value that is greater than min
   ex: (min-rbases-vals 1/6)
   => (1/4 1/6 1/5 2/7)
