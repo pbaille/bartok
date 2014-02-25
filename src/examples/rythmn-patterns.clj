@@ -81,3 +81,24 @@
           {:rvals [1 1/3 2/3]
            :lengths #{6}
            :density 0.5}))
+
+;;;;;;;;;;;;; rythmn gen ;;;;;;;;;;;;;;
+
+(use 'bartok.rythmn.skull)
+(comment
+  (let [sk (r-skull 
+              16
+              {:complexity 1/4
+               :r-bases-prob-map {2 1 3 0.8} 
+               :poly-homogeneity 0.2})
+        patt (as>> (skull-fill sk 
+                      {:mean-speed 3/4
+                       :homogeneity 0.1
+                       :polarity 0.5})
+                     timable-queue
+                     (map #(note %2 (:duration %) (:position %)) _ (repeatedly #(pitch (rand-int-between 60 72)))))
+        met (->> (repeater [[16 1]])
+                 timable-queue
+                 (map #(note :C-1 1/16 (:position %) 30 1)))]
+    (play *m-out* (concat patt met))))
+

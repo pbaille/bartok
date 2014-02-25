@@ -1,6 +1,7 @@
 (ns bartok.rythmn.skull
   (:use [bartok.rythmn rval utils])
   (:use bartok.print)
+  (:use bartok.structure)
   (:use [clojure.math.combinatorics :as c])
   (:use [utils utils prob dom-part macros]))
 
@@ -150,7 +151,7 @@
 
 (defn- apply-polar-prob 
   [pol durs pos]
-  (let [dur-denom-h (map #(hash-map % (denom (:sub (pos+ pos %)))) durs)
+  (let [dur-denom-h (reduce #(assoc %1 %2 (denom (+ pos %2))) {} durs) ;have to include grid here? (pos+ pos %)?
         action (cond 
                   (< pol 0.5) :neg
                   (> pol 0.5) :pos
@@ -166,7 +167,7 @@
   [skull pos params]
   (let [durs (vec (reductions + skull))
         ;center is the closest duration of the mean-speed
-        center (closest (:mean-spead params) durs)
+        center (closest (:mean-speed params) durs)
         center-idx (.indexOf durs center)
         ;convert homogeneity to agitation
         agitation (abs (- (:homogeneity params) 1))
@@ -174,12 +175,11 @@
                        count 
                        (* agitation)
                        round)
-        possibles (subvec durs 
-                          (- center-idx side-size) 
-                          (inc (+ center-idx side-size)))
-        chosen (weight-pick-one (apply-polar-prob possibles))
+        possibles (take (inc (* 2 side-size))(subvec durs (- center-idx side-size)))
+        chosen (weight-pick-one (apply-polar-prob (:polarity params) possibles pos))
         durs-rest (drop-while (p > chosen) durs)
-        skull-rest (cons (first durs-rest) (steps durs-rest))]
+        skull-rest (steps durs-rest)]
+    ; (pp (reduce + skull) [chosen skull-rest])
     [chosen skull-rest]))
 
 (defn- refresh-params [durs params]
@@ -198,10 +198,13 @@
   (loop [ret []
          skull (expand-skull skull)
          params params]
+    ; (pp ret)
     (let [pos (reduce + ret)
           [chosen skull-rest] (choose-dur skull pos params)
           next-ret (conj ret chosen)
           refreshed-params (refresh-params next-ret params)]
       (if (seq skull-rest)
         (recur next-ret skull-rest refreshed-params)
-        ret))))
+        next-ret))))
+
+

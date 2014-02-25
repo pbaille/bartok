@@ -4,6 +4,7 @@
 
 (b-fn note 
   ([p dur pos]
+    ; (dr)
     (with-type 'Note {:pitch (pitch p) :duration dur :position pos}))
   ([p dur pos vel chan]
     (with-type 'Note {:pitch (pitch p) :duration dur :position pos :velocity vel :channel chan})))
