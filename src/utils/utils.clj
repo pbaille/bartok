@@ -77,6 +77,7 @@
   (defn div-mod [x div] [(int (/ x div)) (mod x div)])
   (defn int-div [x div] (int (/ x div)))
   (defn same-sign? [x y] (pos? (* x y)))
+  (defn dist [x y] (abs (- x y)))
   
   (defn median 
     ([coll] (/ (reduce + coll) (count coll)))
@@ -86,8 +87,9 @@
     (or (and (pos? x) (neg? y)) 
         (and (neg? x) (pos? y))))
   
-  (defn round [s n] 
-    (.setScale (bigdec n) s java.math.RoundingMode/HALF_EVEN)) 
+  (defn round 
+    ([n] (math/round n))
+    ([s n] (.setScale (bigdec n) s java.math.RoundingMode/HALF_EVEN))) 
   
   (defn between
     ([a b] (between a (first b) (second b)))
@@ -142,6 +144,13 @@
     "takes a seq of numbers and return a vector [min max]"
     [coll] 
     ((juxt #(a min %) #(a max %)) coll))
+  
+  (declare best)
+  (defn closest 
+    "takes a target (num) and a coll [(num)]
+    returns the closest to target elem of coll"
+    [target num-coll]
+    (best #(< (dist target %1)(dist target %2)) num-coll))
   
   ;(range-by 10 0.25)
 

@@ -1,6 +1,7 @@
 (ns bartok.rythmn.skull
   (:use [bartok.rythmn rval utils])
   (:use bartok.print)
+  (:use [clojure.math.combinatorics :as c])
   (:use [utils utils prob dom-part macros]))
 
 ;;;;;;;;;;;; r-skull-helpers ;;;;;;;;;;;;;;
@@ -83,7 +84,6 @@
         work-map))))
 
 (defn- append-next [skull work-map len]
-  ; (dr)
   (let [skull-len (r-skull-len skull)
         current-sub (denom skull-len)
         remaining-len (- len skull-len)
@@ -95,9 +95,10 @@
           work-map)
         prob-map (map-vals :prob filtered)
         chosen (weight-pick-one prob-map)]
-    ; (dr)
     (if (not= chosen (:base (last skull)))
-      (conj skull {:base chosen :len (:size (work-map chosen))})
+      (conj skull {:base chosen 
+                   :unit (:unit (work-map chosen)) 
+                   :len (:size (work-map chosen))})
       (conj 
         (vec (butlast skull)) 
         (update-in (last skull) [:len] + (:size (work-map chosen)))))))
@@ -113,7 +114,7 @@
     - rb-pm :: ({(r-base :: (Num)) (prob :: (Num))}) ;; probability of each r-base to occur
     - ph :: (0 < (Float) < 1) ;; probability of r-base switching
   ex: 
-  (pp (r-skull 12 {:complexity 1/6 :r-bases-prob-map {2 1 3 0.8 5 0.5} :poly-homogeneity 0.3}))"
+  (pp (r-skull 12 {:complexity 1/6 :r-bases-prob-map {2 1, 3 0.8, 5 0.5} :poly-homogeneity 0.3}))"
   [len
    {cmplx :complexity 
     rb-pm :r-bases-prob-map 
@@ -133,10 +134,57 @@
   (r-skull 
     12 
     {:complexity 1/6 
-     :r-bases-prob-map {2 1 3 1 5 1} 
-     :poly-homogeneity 0}))
+     :r-bases-prob-map {2 1 3 0.5 5 0.5} 
+     :poly-homogeneity 0.6}))
 
 ;;;;;;;;;;;;;;; skull-fill-helpers ;;;;;;;;;;;;;;;;;;
+
+(defn- expand-skull 
+  "return seq of all units of a skull
+  ex: (expand-skull [{:len 2 :unit 1/4 :base 2} {:len 1 :unit 1/3 :base 3}])
+  => (1/4 1/4 1/4 1/4 1/4 1/4 1/4 1/4 1/3 1/3 1/3)"
+  [skull]
+  (repeater 
+    (map (fn [{l :len u :unit}] [(/ l u) u]) 
+         skull)))
+
+(defn- apply-polar-prob 
+  [pol durs pos]
+  (let [dur-denom-h (map #(hash-map % (denom (:sub (pos+ pos %)))) durs)
+        action (cond 
+                  (< pol 0.5) :neg
+                  (> pol 0.5) :pos
+                  :else :neutral)
+        factor (scale-range (abs (- pol 0.5)) 0.5 0 0 1)]
+    (case action 
+      :pos (map-vals #(/ (* factor %)) dur-denom-h)
+      :neg (map-vals #(* factor %) dur-denom-h)
+      :neutral (zipmap durs (repeat 1)))))
+
+(defn- choose-dur 
+  "choose the next duration in a skull"
+  [skull pos params]
+  (let [durs (vec (reductions + skull))
+        ;center is the closest duration of the mean-speed
+        center (closest (:mean-spead params) durs)
+        center-idx (.indexOf durs center)
+        ;convert homogeneity to agitation
+        agitation (abs (- (:homogeneity params) 1))
+        side-size (->> (take-while (p > center) durs)
+                       count 
+                       (* agitation)
+                       round)
+        possibles (subvec durs 
+                          (- center-idx side-size) 
+                          (inc (+ center-idx side-size)))
+        chosen (weight-pick-one (apply-polar-prob possibles))
+        durs-rest (drop-while (p > chosen) durs)
+        skull-rest (cons (first durs-rest) (steps durs-rest))]
+    [chosen skull-rest]))
+
+(defn- refresh-params [durs params]
+  ;do nothing for now
+  params)
 
 ;;;;;;;;;;;;;;;;;;; skull-fill ;;;;;;;;;;;;;;;;;;;;;;
 
@@ -145,5 +193,15 @@
    {ms :mean-speed
     cont :continuity
     hom :homogeneity
-    pol :polarity}]
-  )
+    pol :polarity
+    :as params}]
+  (loop [ret []
+         skull (expand-skull skull)
+         params params]
+    (let [pos (reduce + ret)
+          [chosen skull-rest] (choose-dur skull pos params)
+          next-ret (conj ret chosen)
+          refreshed-params (refresh-params next-ret params)]
+      (if (seq skull-rest)
+        (recur next-ret skull-rest refreshed-params)
+        ret))))
