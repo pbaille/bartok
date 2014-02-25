@@ -6,13 +6,13 @@
                  [1 0] :Ab-Lyd}})
 
 (def picker (lazy-step-pattern-picker 
-              {:cycle-lengths #{3} 
-               :iterations    #{3} 
+              {:cycle-lengths #{4} 
+               :iterations    #{2 3 4} 
                :steps         #{-4 -3 -1 1 3 4}
                :cycle-steps   #{-7 -3 -2 -1 1 2 3 7}}))
 
 (def pos-durs
-  (->> (bartok.rythmn.pattern/rythmic-cells [1/2 1/4] 8 3)
+  (->> (bartok.rythmn.pattern/rythmic-cells [1/2 1/3 1/4] 12 4)
        rand-nth
        (repeat 10)
        flatten
@@ -88,13 +88,13 @@
 (comment
   (let [sk (r-skull 
               16
-              {:complexity 1/4
-               :r-bases-prob-map {2 1 3 0.8} 
-               :poly-homogeneity 0.2})
+              {:complexity 1/5
+               :r-bases-prob-map {2 1 3 0.1 5 0.1} 
+               :poly-homogeneity 0.8})
         patt (as>> (skull-fill sk 
-                      {:mean-speed 3/4
+                      {:mean-duration 1/2
                        :homogeneity 0.1
-                       :polarity 0.5})
+                       :polarity 0.4})
                      timable-queue
                      (map #(note %2 (:duration %) (:position %)) _ (repeatedly #(pitch (rand-int-between 60 72)))))
         met (->> (repeater [[16 1]])

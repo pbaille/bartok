@@ -245,7 +245,7 @@
   
   (defn map->sorted 
     "given a hash-map return the corresponding sorted-map"
-    [m] (a sorted-map (a concat m)))sort
+    [m] (a sorted-map (a concat m)))
   
   (defn sorted-map-by* 
     "given a hash-map and a function return the corresponding sorted-map-by

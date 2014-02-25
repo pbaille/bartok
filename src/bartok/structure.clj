@@ -16,8 +16,8 @@
     (def ^:private default-grid
       (with-type 
         'Grid
-        {:bars [[4 :4|4]]
-         :tempo [[0 4 60]]}))
+        {:bars [[32 :4|4]]
+         :tempo 120}))
 
     (defn- expand-harmonies [g]
       (let [h (:harmony g)
@@ -39,6 +39,8 @@
         ([m] (let [g ((c expand-harmonies expand-bars) 
                       (conj default-grid m))]
                (reset! *g* g))))
+      
+      (grid) ;init default grid
 
       (defn grid-assoc [& args] (swap! *g* #(ap assoc % args)))
   

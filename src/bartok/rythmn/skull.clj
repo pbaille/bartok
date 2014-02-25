@@ -26,43 +26,54 @@
       (recur fx (f fx))
       (if (pred x) x nil))))
 
-(defn- min-rbases-vals 
-  "for each given r-base return the minimum value that is greater than min
-  ex: (min-rbases-vals 1/6)
-  => (1/4 1/6 1/5 2/7)
-  (min-rbases-vals 1/6 [3 7]
-  => (1/6 2/7))"
-  ([min] (min-rbases-vals min [2 3 5 7]))
-  ([min bases]
-    (map 
-      (fn [baz]
-        (cond 
-          (< baz min) (doto-until (p <= min) (p * 2) baz)
-          (> baz min) (doto-while (p <= min) #(/ % 2) baz)
-          :else baz))
-      (map / bases))))
+(defn min-rbase-val 
+  "for given r-base return the minimum value that is greater than min
+  (min-rbase-val 1/4 3) => 1/3 "
+  [min base] 
+  (let [baz (/ base)]
+    (cond 
+      (< baz min) (doto-until (p <= min) (p * 2) baz)
+      (> baz min) (doto-while (p <= min) #(/ % 2) baz)
+      :else baz)))
 
-; (defn min-rbase-val [min base] 
-;   (first (min-rbases-vals min [base])))
+; (defn- r-skull-work-map 
+;   [cmplx rb-pm]
+;   (let [rbases (keys sorted-rb-pm)
+;         rb-min-vals (min-rbases-vals cmplx rbases)
+;         rb-bin-res (map bin-resolution rb-min-vals)]
+;     (zipmap 
+;       rbases 
+;       (map #(hash-map :prob %1 ;(/ %1 %3) 
+;                       :unit %2 
+;                       :size %3) 
+;            (vals rb-pm)
+;            rb-min-vals 
+;            rb-bin-res))))
 
 (defn- r-skull-work-map 
+  "assign a map {:unit _ :size _ :prob _} to each rbases
+  unit => resolution-unit of the rbase zone
+  size => size of a zone 
+  prob => prob of a zone to occur
+  a zone is the minimum size that a rbase unit need to resolve on a binary subdivision"
   [cmplx rb-pm]
-  (let [rbases (keys rb-pm)
-        rb-min-vals (min-rbases-vals cmplx rbases)
-        rb-bin-res (map bin-resolution rb-min-vals)]
-    (zipmap 
-      rbases 
-      (map #(hash-map :prob (/ %1 %3) 
-                      :unit %2 
-                      :size %3) 
-           (vals rb-pm)
-           rb-min-vals 
-           rb-bin-res))))
+  (let [work-map (map-h
+                  (fn [base prob]
+                   (let [unit (min-rbase-val cmplx base)
+                         size (bin-resolution unit)]
+                    {base {:prob prob :unit unit :size size}}))
+                  rb-pm)]
+    ; if base 2 is here make his size as large as the minimum size of others bases
+    (if (work-map 2) 
+      (assoc-in work-map [2 :size] 
+        (second (sort (map :size (vals work-map)))))
+      work-map)))
 
 (defn- r-skull-len [skull]
   (a + (map :len skull)))
 
 (defn- apply-ph-prob 
+  "apply poly-homogeneity probability to work-map"
   [ph skull work-map]
   (if-not (seq skull)
     work-map
@@ -84,7 +95,9 @@
         :neutral  
         work-map))))
 
-(defn- append-next [skull work-map len]
+(defn- append-next 
+  "add the last chosen zone to skull"
+  [skull work-map len]
   (let [skull-len (r-skull-len skull)
         current-sub (denom skull-len)
         remaining-len (- len skull-len)
@@ -150,6 +163,7 @@
          skull)))
 
 (defn- apply-polar-prob 
+  "apply polarity probability to potential chosen durations"
   [pol durs pos]
   (let [dur-denom-h (reduce #(assoc %1 %2 (denom (+ pos %2))) {} durs) ;have to include grid here? (pos+ pos %)?
         action (cond 
@@ -167,7 +181,7 @@
   [skull pos params]
   (let [durs (vec (reductions + skull))
         ;center is the closest duration of the mean-speed
-        center (closest (:mean-speed params) durs)
+        center (closest (:mean-duration params) durs)
         center-idx (.indexOf durs center)
         ;convert homogeneity to agitation
         agitation (abs (- (:homogeneity params) 1))
@@ -188,23 +202,25 @@
 
 ;;;;;;;;;;;;;;;;;;; skull-fill ;;;;;;;;;;;;;;;;;;;;;;
 
-(defn skull-fill 
+(defn skull-fill
+  "given a skull and some options, 
+  return a seq of durations that fit on the skull accordingly to options
+  options: 
+  - mean-duration: mean duration!
+  - homogeneity: ability of duration to vary from mean-duration
+  - polarity: probability of a duration to occur on a strong subdivision" 
   [skull
-   {ms :mean-speed
-    cont :continuity
+   {ms :mean-duration
     hom :homogeneity
     pol :polarity
     :as params}]
   (loop [ret []
-         skull (expand-skull skull)
-         params params]
-    ; (pp ret)
+         skull (expand-skull skull)]
     (let [pos (reduce + ret)
           [chosen skull-rest] (choose-dur skull pos params)
-          next-ret (conj ret chosen)
-          refreshed-params (refresh-params next-ret params)]
+          next-ret (conj ret chosen)]
       (if (seq skull-rest)
-        (recur next-ret skull-rest refreshed-params)
+        (recur next-ret skull-rest)
         next-ret))))
 
 
