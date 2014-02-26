@@ -36,7 +36,7 @@
       (> baz min) (doto-while (p <= min) #(/ % 2) baz)
       :else baz)))
 
-; (defn- r-skull-work-map 
+; (defn- r-skull-p-zones 
 ;   [cmplx rb-pm]
 ;   (let [rbases (keys sorted-rb-pm)
 ;         rb-min-vals (min-rbases-vals cmplx rbases)
@@ -50,36 +50,36 @@
 ;            rb-min-vals 
 ;            rb-bin-res))))
 
-(defn- r-skull-work-map 
+(defn- poly-zones 
   "assign a map {:unit _ :size _ :prob _} to each rbases
   unit => resolution-unit of the rbase zone
   size => size of a zone 
   prob => prob of a zone to occur
   a zone is the minimum size that a rbase unit need to resolve on a binary subdivision"
   [cmplx rb-pm]
-  (let [work-map (map-h
+  (let [p-zones (map-h
                   (fn [base prob]
                    (let [unit (min-rbase-val cmplx base)
                          size (bin-resolution unit)]
                     {base {:prob prob :unit unit :size size}}))
                   rb-pm)]
     ; if base 2 is here make his size as large as the minimum size of others bases
-    (if (work-map 2) 
-      (assoc-in work-map [2 :size] 
-        (second (sort (map :size (vals work-map)))))
-      work-map)))
+    (if (p-zones 2) 
+      (assoc-in p-zones [2 :size] 
+        (second (sort (map :size (vals p-zones)))))
+      p-zones)))
 
 (defn- r-skull-len [skull]
   (a + (map :len skull)))
 
 (defn- apply-ph-prob 
   "apply poly-homogeneity probability to work-map"
-  [ph skull work-map]
+  [ph skull p-zones]
   (if-not (seq skull)
-    work-map
+    p-zones
     (let [last-base (:base (last skull))
-          last-base-val (work-map last-base)
-          other-bases (dissoc work-map last-base)
+          last-base-val (p-zones last-base)
+          other-bases (dissoc p-zones last-base)
           action (cond 
                     (< ph 0.5) :destabilize
                     (> ph 0.5) :stabilize
@@ -93,11 +93,11 @@
         (conj {last-base last-base-val} 
               (map-vals #(update-in % [:prob] * factor) other-bases))
         :neutral  
-        work-map))))
+        p-zones))))
 
 (defn- append-next 
   "add the last chosen zone to skull"
-  [skull work-map len]
+  [skull p-zones len]
   (let [skull-len (r-skull-len skull)
         current-sub (denom skull-len)
         remaining-len (- len skull-len)
@@ -106,16 +106,16 @@
           #(and 
              (>= remaining-len (:size (val %)))
              (in? (allowed-subs (:size (val %))) current-sub)) 
-          work-map)
+          p-zones)
         prob-map (map-vals :prob filtered)
         chosen (weight-pick-one prob-map)]
     (if (not= chosen (:base (last skull)))
       (conj skull {:base chosen 
-                   :unit (:unit (work-map chosen)) 
-                   :len (:size (work-map chosen))})
+                   :unit (:unit (p-zones chosen)) 
+                   :len (:size (p-zones chosen))})
       (conj 
         (vec (butlast skull)) 
-        (update-in (last skull) [:len] + (:size (work-map chosen)))))))
+        (update-in (last skull) [:len] + (:size (p-zones chosen)))))))
 
 ;;;;;;;;;;;;;;;;;;; r-skull ;;;;;;;;;;;;;;;;;;;;;;
 
@@ -123,32 +123,44 @@
   "
   len :: (Int) ;; length of the skull 
   (maybe allow ratio too, but more complex implementation) 
-  options: (see r-skull-work-map destructuring)
+  options: (see poly-zones destructuring)
     - complexity :: (ratio) ;; minimum allowed subdivision
     - rb-pm :: ({(r-base :: (Num)) (prob :: (Num))}) ;; probability of each r-base to occur
     - ph :: (0 < (Float) < 1) ;; probability of r-base switching
   ex: 
-  (pp (r-skull 12 {:complexity 1/6 :r-bases-prob-map {2 1, 3 0.8, 5 0.5} :poly-homogeneity 0.3}))"
+  (pp (r-skull 12 {:complexity 1/6 :poly-prob {2 1, 3 0.8, 5 0.5} :poly-homogeneity 0.3}))"
   [len
    {cmplx :complexity 
-    rb-pm :r-bases-prob-map 
+    pp    :poly-prob
     ph    :poly-homogeneity
     :or {cmplx 1/4 
-         rb-pm {2 1 3 1} 
+         pp {2 1 3 1} 
          ph 0.5 }}]
-  (let [work-map (r-skull-work-map cmplx rb-pm)]
-    (doto-until 
-      #(<= len (r-skull-len %))
-      (fn [skull]
-        (let [work-map (apply-ph-prob ph skull work-map)]
-          (append-next skull work-map len)))
-      [])))
+  (let [p-zones (poly-zones cmplx pp)
+        homo? (count= p-zones 1)]
+    (if homo? ;if not polyrythmic
+      (let [base (first (keys p-zones))
+            unit (:unit (p-zones base))] 
+        [{:base base :unit unit :len len}])
+      (doto-until 
+        #(<= len (r-skull-len %))
+        (fn [skull]
+          (let [p-zones (apply-ph-prob ph skull p-zones)]
+            (append-next skull p-zones len)))
+        []))))
 
 (comment 
   (r-skull 
     12 
     {:complexity 1/6 
-     :r-bases-prob-map {2 1 3 0.5 5 0.5} 
+     :poly-prob{2 1 3 0.5 5 0.5} 
+     :poly-homogeneity 0.6}))
+
+(comment 
+  (r-skull 
+    12 
+    {:complexity 1/6 
+     :poly-prob{3 1} 
      :poly-homogeneity 0.6}))
 
 ;;;;;;;;;;;;;;; skull-fill-helpers ;;;;;;;;;;;;;;;;;;
@@ -163,7 +175,7 @@
          skull)))
 
 (defn- apply-polar-prob 
-  "apply polarity probability to potential chosen durations"
+  "apply polarity probability to potentialy chosen durations"
   [pol durs pos]
   (let [dur-denom-h (reduce #(assoc %1 %2 (denom (+ pos %2))) {} durs) ;have to include grid here? (pos+ pos %)?
         action (cond 
@@ -196,10 +208,6 @@
     ; (pp (reduce + skull) [chosen skull-rest])
     [chosen skull-rest]))
 
-(defn- refresh-params [durs params]
-  ;do nothing for now
-  params)
-
 ;;;;;;;;;;;;;;;;;;; skull-fill ;;;;;;;;;;;;;;;;;;;;;;
 
 (defn skull-fill
@@ -222,5 +230,7 @@
       (if (seq skull-rest)
         (recur next-ret skull-rest)
         next-ret))))
+
+
 
 

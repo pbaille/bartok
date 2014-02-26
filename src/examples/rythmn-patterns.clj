@@ -85,20 +85,81 @@
 ;;;;;;;;;;;;; rythmn gen ;;;;;;;;;;;;;;
 
 (use 'bartok.rythmn.skull)
-(comment
-  (let [sk (r-skull 
-              16
-              {:complexity 1/5
-               :r-bases-prob-map {2 1 3 0.1 5 0.1} 
-               :poly-homogeneity 0.8})
-        patt (as>> (skull-fill sk 
-                      {:mean-duration 1/2
-                       :homogeneity 0.1
-                       :polarity 0.4})
-                     timable-queue
-                     (map #(note %2 (:duration %) (:position %)) _ (repeatedly #(pitch (rand-int-between 60 72)))))
-        met (->> (repeater [[16 1]])
-                 timable-queue
-                 (map #(note :C-1 1/16 (:position %) 30 1)))]
-    (play *m-out* (concat patt met))))
 
+
+(defn metro [len res pitch]
+  (map #(note pitch 1/32 (:position %) 30 1)
+       (timable-queue (repeat (/ len res) res))))
+
+(defn r-gen 
+  [len 
+   {cp :complexity
+    pp :poly-prob 
+    ph :poly-homogeneity
+    md :mean-duration
+    h  :homogeneity
+    p  :polarity 
+    :as options}]
+  (let [skull (r-skull len options)
+        durs  (skull-fill skull options)]
+    (timable-queue durs)))
+
+(defn skull-patt
+  "make pattern based on the skull strategy, 
+  options are the same as above r-gen" 
+  [cycle-len iterations options]
+  (let [skull (r-skull cycle-len options)
+        durs  (skull-fill skull options)
+        exp-iters (a concat (repeat iterations durs))]
+    (timable-queue exp-iters)))
+
+(comment
+  (let [durs (r-gen 
+              48
+              {:complexity 1/4
+               :poly-prob {2 1 3 1 5 1 7 1 9 1} 
+               :poly-homogeneity 0.3
+               :mean-duration 1
+               :homogeneity 0.1
+               :polarity 0.5})
+        pitched (map
+                  #(note %2 (:duration %) (:position %)) 
+                   durs 
+                  (repeatedly #(pitch (rand-nth [60 61 63 65 67 69 70 72]))))]
+    (play *m-out* (concat pitched (metro 48 1 :C-1)))))
+
+
+(comment
+  (let [durs (skull-patt 6 8
+              {:complexity 1/4
+               :poly-prob {2 1} 
+               :poly-homogeneity 0.3
+               :mean-duration 1/2
+               :homogeneity 0.1
+               :polarity 0.5})
+        pitched (map
+                  #(note %2 (:duration %) (:position %)) 
+                   durs 
+                  (repeatedly #(pitch (rand-nth [60 61 63 65 67 69 70 72]))))]
+    (play *m-out* (concat pitched (metro 48 1 :C-1)))))
+
+(comment
+  (let [durs (skull-patt 6 8
+              {:complexity 1/4
+               :poly-prob {2 1} 
+               :poly-homogeneity 0.3
+               :mean-duration 1/2
+               :homogeneity 0.1
+               :polarity 0.5})
+        pitched (map
+                  #(note %2 (:duration %) (:position %)) 
+                   durs 
+                  (repeatedly #(pitch (rand-nth [60 61 63 65 67 69 70 72]))))
+        durs2 (skull-patt 4 12
+              {:complexity 1/3
+               :poly-prob {3 1} 
+               :mean-duration 1.5
+               :homogeneity 0.5
+               :polarity 0.8})
+        pitched2 (map #(note :C-1 1/32 (:position %) 30 1) durs2 )]
+    (play *m-out* (concat pitched pitched2))))
