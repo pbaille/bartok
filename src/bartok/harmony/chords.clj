@@ -1,6 +1,7 @@
 (ns bartok.harmony.chords
   (:use [clojure.math.combinatorics :as c])
   (:use bartok.primitives)
+  (:use bartok.print)
   (:use bartok.types.w-mode)
   (:use [utils.all :exclude [median]]))
 
@@ -112,7 +113,7 @@
 
 ;;;;;;;;;;;;; Validator ;;;;;;;;;;;;;;;
 
-(defn- drop-validator 
+(defn drop-validator 
   "return a validator function for drops"
   [& preds]
   (fn [drop]
@@ -120,6 +121,13 @@
 
 (def ^:private default-validator 
   (drop-validator b9-free? no-m2-on-top?))
+
+(defn default-validator-and
+  "assoc given preds to the default validator defined above"
+  [& preds]
+  (ap drop-validator default-validator preds))
+
+
 
 ;;;;;;;;;;;; options ;;;;;;;;;;;;;;;;;
 
@@ -247,20 +255,20 @@
 
 (b-multi voicings
   "return a list of [Pitch] voicings accordingly with args..."
-  ;;; no-options dispatchs ;;;
-  ([['Pitch] 'ModeClass :number] [[bass top] modc n-voices]
-    (voicings [bass top] (build-occ-map modc n-voices) default-options))
-  ([['Pitch] 'Map] [[bass top] occ-map]
-    (voicings [bass top] occ-map default-options))
-  (['Pitch 'Map] [root-pitch occ-map] 
-    (voicings root-pitch occ-map default-options))
-  ([['Pitch] ['CIntervalClass] :number] [[bass top] degrees n-voices]
-    (voicings [bass top] (build-occ-map degrees n-voices default-options)))
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  
+  (['Pitch 'ModeClass :number 'Map] [root-pitch modc n-voices options]
+    (voicings root-pitch 
+              (build-occ-map modc n-voices) 
+              (merge-with-default-options options)))
   
   ([['Pitch] 'ModeClass :number 'Map] [[bass top] modc n-voices options]
     (voicings [bass top] 
               (build-occ-map modc n-voices) 
+              (merge-with-default-options options)))
+  
+  (['Pitch ['CIntervalClass] :number 'Map] [root-pitch degrees n-voices options]
+    (voicings root-pitch 
+              (build-occ-map degrees n-voices) 
               (merge-with-default-options options)))
   
   ([['Pitch] ['CIntervalClass] :number 'Map] [[bass top] degrees n-voices options]
@@ -290,7 +298,18 @@
           options (-> options 
                       (assoc :max-size size 
                              :validator #(and (validator %) ((size=? size) %))))]
-      (voicings bass occ-map options))))
+      (voicings bass occ-map options)))
+  
+  ;little hack to don't have to add empty map as last args when we want default options
+  (:default [& args]
+    (cond 
+      ; if last arg is default-options then we-ve try everything... no possible dispatch
+      (and (= (last args) default-options) (= args (b> args))) 
+        (pp "no dispatch value for" (b-types args)) 
+      ; if args are already bartokized try to add the default-options
+      (= args (b> args)) (a voicings (conj (vec args) default-options))
+      ; if args are not yet bartokified then try if it yields to a valid dispatch
+      :else (a voicings (b> args)))))
 
 (comment 
   (map (p map :name) (voicings [:Bb-2 :D1] :Mix 8))
@@ -317,42 +336,69 @@
                      :max-size 48
                      :inversions true})
          rand-nth
-         shuffle 
-         first
+         rand-nth
          (map #(pitch (+ 36 %))))))
 
 (comment 
   (play-pitch-line 
     (->> (all-drops {:P1 2 :+5 2 :+4 2 :M3 2 :M7 2}
-                    {:validator (drop-validator 
-                                  b9-free? 
-                                  no-m2-on-top? 
+                    {:validator (default-validator-and 
                                   (grav-center > 0.5))})
-         shuffle 
-         first
+         rand-nth
          (map #(pitch (+ 44 %))))))
 
 (comment 
   (play-chord
-    (->> (voicings :C-1
-           {:P1 1 :M6 1 :+4 1 :M3 1 :#2 1 :M7 1} 
-           {:validator (drop-validator b9-free? no-m2-on-top? (grav-center > 0.5))})
-         shuffle 
-         first)))
+    (rand-nth 
+      (voicings 
+        [:C-1 :D#1]
+        {:P1 1 :M6 1 :+4 1 :M3 1 :#2 1 :M7 1} 
+        {:validator (default-validator-and
+                      (grav-center > 0.5))}))))
 
 (comment 
   (play-chord
-    (->> (voicings :Ab-2 
-                   {:P1 1 :P5 1 :P4 1 :M6 1 :m7 1 :M2 1 :M3 1} 
-                   {:max-size 48
-                    :validator (drop-validator 
-                                 b9-free? 
-                                 no-m2-on-top? 
-                                 (grav-center > 0.6))})
-         shuffle 
-         first)))
+    (rand-nth 
+      (voicings 
+        :Ab-2 
+        {:P1 1 :P5 1 :P4 1 :M6 1 :m7 1 :M2 1 :M3 1} 
+        {:max-size 48
+         :validator (default-validator-and
+                      (grav-center > 0.6))}))))
 
+(comment 
+  (play-chord
+    (rand-nth 
+      (voicings 
+        :C-1 
+        [:M3 :M2 :P5 :M7] 6))))
 
+(comment 
+  (play-chord
+    (rand-nth 
+      (voicings 
+        :Bb-2  
+        [:M6 :P4 :M2 :P5 :m7] 6))))
 
-(uniformity [1 2 3 4 50])
+(comment 
+  (play-chord
+    (rand-nth 
+      (voicings 
+        :Eb-1  
+        [:M3 :M2 :P5 :M7] 6))))
+
+(comment 
+  (play-chord
+    (rand-nth 
+      (voicings 
+        :Ab-2  
+        [:M6 :P4 :M2 :P5 :m7] 6))))
+
+(comment 
+  (play-chord
+    (rand-nth 
+      (voicings 
+        :Db-1  
+        [:M3 :M2 :P5 :M7] 6))))
+; (uniformity [1 2 3 4 50])
 

@@ -1,4 +1,6 @@
 TODO
 - chromatic passing tones system
-- rythmic patterns continue
 - step-sequence on w-mode (omit missing pitchclasses)
+- voice leading
+- rythmn analysis (from melodic and harmonic povs)
+- passing chords
