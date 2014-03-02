@@ -526,23 +526,45 @@
   :7+     [:M3 :+5 :m7]
   }) 
 
-(def known-chord-synonym 
+(def known-chords-syns
  (reduce-kv
    #(a assoc %1 (mapcat (fn [x] (vector x (known-chords %2))) %3))
    {}  
-   {:M      [:maj :Maj :major :Major]
-    :m      [:min :Min :minor :Minor]
-    :+      [:aug :Aug]
-    :o      [:dim :Dim]
-    :7      [:seventh :dominant :Dominant]
-    :M7     [:Maj7 :maj7 :∆ :∆7]
-    :m7     [:-7 :min7 :Min7]
-    :mM7    [:m∆ :m∆7 :-∆ :-∆7]
-    :m7b5   [:Ø :ø :-7b5]
-    :mM7b5  [:m∆b5 :m∆7b5 :-∆b5 :-∆7b5]
-    :o7     [:dim7 :Dim7]
+   {:M      [:M :maj :Maj :major :Major]
+    :m      [:m :min :Min :minor :Minor]
+    :+      [:+ :aug :Aug]
+    :o      [:o :dim :Dim]
+    :7      [:7 :seventh :dominant :Dominant]
+    :M7     [:M7 :Maj7 :maj7 :∆ :∆7]
+    :m7     [:m7 :-7 :min7 :Min7]
+    :mM7    [:mM7 :m∆ :m∆7 :-∆ :-∆7]
+    :m7b5   [:m7b5 :Ø :ø :-7b5]
+    :mM7b5  [:mM7b5 :m∆b5 :m∆7b5 :-∆b5 :-∆7b5]
+    :o7     [:o7    :dim7 :Dim7]
     :M7+    (for [x [:Maj7 :maj7 :∆ :∆7 :M7] y [:#5 :+5 :+]] (kwcat x y))
     :7+     (for [x [:seventh :dominant :Dominant :7] y [:#5 :+5 :+]] (kwcat x y))}))
+
+(def cic-syns 
+  (reduce-kv
+   #(a assoc %1 (mapcat (fn [x] (vector x %2)) %3))
+   {}  
+   {:m2 [:m2 :b2 :-2 :-9 :b9]
+    :M2 [:M2 :2 :P2 :9 :P9]
+    :#2 [:#2 :+2 :+9 :#9]
+    :o3 [:o3 :bb3 :dim3]
+    :m3 [:m3 :b3 :-3]
+    :M3 [:M3 :P3 :3]
+    :b4 [:b4 :-4 :m4 :-11 :b11 :m11]
+    :P4 [:P4 :4 :11 :M4 :P11 :M11]
+    :+4 [:+4 :#4 :#11 :+11]
+    :b5 [:b5 :-5 :m5]
+    :P5 [:P5 :5 :M5]
+    :+5 [:+5 :#5]
+    :m6 [:m6 :m13 :b13 :b6 :-13 :-6]
+    :M6 [:M6 :6 :13 :P13 :P6 :M13]
+    :o7 [:o7 :dim7 :bb7]
+    :m7 [:m7 :-7 :b7 :7]
+    :M7 [:M7 :P7] }))
 
 (require '[clojure.string :as s])
 
@@ -553,19 +575,14 @@
   #"(bb|o|b|m|M|N|P|#|\+|x)(2|3|4|5|6|7|9|11|13)")
 
 (defn- chord-add->cic [ca]
-  (cond 
-    (fit? cic-pat ca) (keyword ca)
-    (fit? altered ca) 
-      (let [[_ alt n] (re-find #"([^1-9]+)([1-9]+)" ca)]
-        (kwcat alt (mod (parse-int n) 7)))
-    (fit? #"(2|3|4|5|6|7|9|11|13)" ca) 
-      (-> (parse-int ca) (mod 7) (- 1) d-interval-class  c-interval-class :name)
-    :else :NC))
+  (if-let [kw (cic-syns (keyword ca))] 
+    kw 
+    :NC))
 
 (defn chord-class [sym]
   (let [[structur & adds] (s/split (name sym) #"\.")
         adds (map chord-add->cic adds)]
-    (vec (concat (known-chords (keyword structur)) adds))))
+    (vec (concat (known-chords-syns (keyword structur)) adds))))
 
-(chord-class :M7.9.+11)
+(chord-class :∆.2.#11)
 
