@@ -70,10 +70,12 @@
   [kw]
   (let [[_ base seventh sharp-fifth sus adds]
         (re-find #"(Major|major|Minor|minor|maj|Maj|min|Min|m|M|-)?(7|ø|Ø|∆)?(\+)?(sus)?(\S*)" (name kw))
-        base (if (seq (concat base seventh sharp-fifth)) (known-chords-syns (kwcat base seventh sharp-fifth)) [:M3 :P5])
+        base (if (seq (concat base seventh sharp-fifth)) 
+               (known-chords-syns (kwcat base seventh sharp-fifth)) 
+               [:M3 :P5]) ;defaults to Major
         base-sus (if sus (next base) base) ;if sus remove 3rd
-        adds (->> (re-seq (pat-comp alteration-pattern #"(11|13|9|[2-7]|∆)") 
-                          (s/replace adds #"\." ""))
+        adds (->> (re-seq (pat-comp alteration-pattern #"(11|13|9|10|[2-7]|∆)") 
+                          (s/replace adds #"\." "")) ;remove dot separators
                   (map (f> first keyword cic-syns)))
         all (concat base-sus adds)
         ; this little trick is for overiding double d-interval-class ex: (P5 b5) => (b5)
