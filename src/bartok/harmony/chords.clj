@@ -510,6 +510,8 @@
 
 ; (play-chord (rand-nth (voicings :C-1 (chord-class 'M7.#9.m6) 6)))
 
+;;;;;;;;;;;;;;;;;;;; chord litterals ;;;;;;;;;;;;;;;;;;;;;;;
+
 (def known-chords {
   :M      [:M3 :P5]
   :m      [:m3 :P5]
@@ -566,23 +568,15 @@
     :m7 [:m7 :-7 :b7 :7]
     :M7 [:M7 :P7] }))
 
-(require '[clojure.string :as s])
-
-(defn- fit? [regex str]
-  (if (re-matches regex str) true false))
-
-(def altered 
-  #"(bb|o|b|m|M|N|P|#|\+|x)(2|3|4|5|6|7|9|11|13)")
-
 (defn- chord-add->cic [ca]
   (if-let [kw (cic-syns (keyword ca))] 
     kw 
     :NC))
 
 (defn chord-class [sym]
-  (let [[structur & adds] (s/split (name sym) #"\.")
+  (let [[structur & adds] (clojure.string/split (name sym) #"\.")
         adds (map chord-add->cic adds)]
     (vec (concat (known-chords-syns (keyword structur)) adds))))
 
-(chord-class :∆.2.#11)
+(chord-class :7+.b9.#11)
 
