@@ -570,6 +570,11 @@
      (map (p map f) coll))
     ([depth f coll] 
      (a map [(nested-expr depth f partial map) coll])))
+  
+;************** regex ***********************
+
+  (defn pat-comp [& args]
+    (java.util.regex.Pattern/compile (apply str args)))
 
 ;************** namespaces ******************
 
