@@ -554,6 +554,23 @@
                 (a concat (repeat n (mapcat #(repeater [%]) els))))) 
             (map #(if (vector? %) % (vector 1 %)) coll)))
   
+  (defn- nested-expr 
+    [depth nested & wrap-expr]
+    (if (= 0 depth)
+      nested
+      (eval `(~@wrap-expr ~(ap nested-expr (dec depth) nested wrap-expr)))))
+  
+  (defn map-in 
+    "nested mapping 
+    ex: (map-in inc [[1][2 3][3]]) 
+    <=> (map-in 1 inc [[1][2 3][3]]) 
+    <=> (map (partial map inc) [[1][2 3][3]])
+    => ((2) (3 4) (4))"
+    ([f coll] 
+     (map (p map f) coll))
+    ([depth f coll] 
+     (a map [(nested-expr depth f partial map) coll])))
+
 ;************** namespaces ******************
 
   ; https://groups.google.com/forum/#!topic/clojure/GAGF38uI1-o

@@ -1,6 +1,10 @@
-TODO
+#TODO
 - chromatic passing tones system
 - step-sequence on w-mode (omit missing pitchclasses)
 - voice leading
+  given a chord sequence, should find a voice leading
 - rythmn analysis (from melodic and harmonic povs)
+  scale of analysis (beat, bar, cycle)
 - passing chords
+- grid redux
+- 

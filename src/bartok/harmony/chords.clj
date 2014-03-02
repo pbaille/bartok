@@ -428,8 +428,144 @@
           :Db-2  
           [:M3 :+4 :M6 :P5 :M7] 6))))
 
+(def a-voice-leading
+  (let [v1 (voicings 
+            :Db-2  
+            [:M3 :+4 :M6 :P5 :M7] 6)
+        v2 (voicings 
+            :Ab-2  
+            [:M6 :P4 :M2 :P5 :m7] 6
+            {:validator (default-validator-and 
+                          (amplitude or= [29 33]) 
+                          (median > 12))})
+        leadings (map next 
+                   (sort-by first 
+                     (for [x1 v1 x2 v2] 
+                       [(reduce + (map distance  x1 x2)) x1 x2])))]
+    leadings))
 
+(defn best-voice-leading [chord others]
+  (second 
+    (first 
+      (map next 
+        (sort-by first 
+          (for [x others] 
+            [(reduce + (map distance  chord x)) chord x]))))))
 
+(defn play-nth-voice-leading [n]
+  (play-pitch-line 
+    [(play-chord (first  (nth a-voice-leading n)))
+     (play-chord (second (nth a-voice-leading n)))]
+    {:duration 4}))
 
+(comment 
+  (play-pitch-line 
+  [(first (first a-voice-leading))(second (first a-voice-leading))]
+  {:duration 4}))
 
+(defn do-voice-leading [fst & chords-colls]
+  (reduce 
+    #(conj %1 (best-voice-leading (last %1) %2))
+    [(rand-nth fst)]
+    chords-colls))
+
+(comment 
+ (play-pitch-line
+ (do-voice-leading 
+  (voicings :C-2  [:M7 :M2 :P5 :M3] 10 {:max-step 9 :max-size 48 :validator (default-validator-and (grav-center > 0.6) (mean-interval < 7))})
+  (voicings :Bb-2 [:M6 :M3 :M2 :P5 :m7] 6)
+  (voicings :Eb-2 [:M7 :M2 :P5 :M3] 5)
+  (voicings :Ab-2 [:M6 :M3 :M2 :P5 :m7] 6)
+  (voicings :Db-1 [:M2 :M3 :M7 :M6 :P5] 6)
+  (voicings :G-2  [:M6 :M3 :m2 :m7] 6)
+  (voicings :C-1  [:M2 :M3 :M7 :M6 :P5] 6)
+  ; (voicings :Bb-2 [:M6 :M2 :+4 :m7 :M3] 6)
+  ; (voicings :D-1  [:M7 :M2 :P5 :M3] 6)
+  ; (voicings :A-2  [:P4 :M2 :P5 :m7 :m3] 6)
+  ; (voicings :F#-2 [:P4 :M2 :P5 :m7 :m3] 6)
+  ; (voicings :B-2  [:M6 :m2 :m7 :M3] 6)
+  ; (voicings :E-2  [:P4 :M2 :P5 :m7 :m3] 6)
+  ; (voicings :Ab-2 [:M6 :P4 :M2 :P5 :m7] 6)
+  ; (voicings :Db-2 [:M7 :M2 :P5 :M3] 6)
+  ; (voicings :G-2  [:M6 :P4 :M2 :P5 :m7] 6)
+  
+  ; (voicings :C-1  [:M7 :M2 :P5 :M3] 6)
+  ; (voicings :Bb-2 [:M6 :P4 :M2 :P5 :m7] 6)
+  ; (voicings :Eb-2 [:M7 :M2 :P5 :M3] 6)
+  ; (voicings :Ab-2 [:M6 :P4 :M2 :P5 :m7] 6)
+  ; (voicings :Db-2 [:M7 :M2 :P5 :M3] 6)
+  ; (voicings :G-2  [:M6 :P4 :M2 :P5 :m7] 6)
+  ; (voicings :C-1  [:M7 :M2 :P5 :M3] 6)
+  ; (voicings :Bb-2 [:M6 :M2 :+4 :m7 :M3] 6)
+  ; (voicings :D-1  [:M7 :M2 :P5 :M3] 6)
+  ; (voicings :A-2  [:P4 :M2 :P5 :m7 :m3] 6)
+  ; (voicings :F#-2 [:P4 :M2 :P5 :m7 :m3] 6)
+  ; (voicings :B-2  [:M6 :m2 :m7 :M3] 6)
+  ; (voicings :E-2  [:P4 :M2 :P5 :m7 :m3] 6)
+  ; (voicings :Ab-2 [:M6 :P4 :M2 :P5 :m7] 6)
+  ; (voicings :Db-2 [:M7 :M2 :P5 :M3] 6)
+  ; (voicings :G-2  [:M6 :P4 :M2 :P5 :m7] 6)
+  )
+ {:duration 4}))
+
+; (play-chord (rand-nth (voicings :C-1 (chord-class 'M7.#9.m6) 6)))
+
+(def known-chords {
+  :M      [:M3 :P5]
+  :m      [:m3 :P5]
+  :+      [:M3 :+5]
+  :o      [:m3 :b5]
+  :7      [:M3 :P5 :m7]
+  :M7     [:M3 :P5 :M7]
+  :m7     [:m3 :P5 :m7]
+  :mM7    [:m3 :P5 :M7]
+  :m7b5   [:m3 :b5 :m7]
+  :mM7b5  [:m3 :b5 :M7]
+  :o7     [:m3 :b5 :o7]
+  :M7+    [:M3 :+5 :M7]
+  :7+     [:M3 :+5 :m7]
+  }) 
+
+(def known-chord-synonym 
+ (reduce-kv
+   #(a assoc %1 (mapcat (fn [x] (vector x (known-chords %2))) %3))
+   {}  
+   {:M      [:maj :Maj :major :Major]
+    :m      [:min :Min :minor :Minor]
+    :+      [:aug :Aug]
+    :o      [:dim :Dim]
+    :7      [:seventh :dominant :Dominant]
+    :M7     [:Maj7 :maj7 :∆ :∆7]
+    :m7     [:-7 :min7 :Min7]
+    :mM7    [:m∆ :m∆7 :-∆ :-∆7]
+    :m7b5   [:Ø :ø :-7b5]
+    :mM7b5  [:m∆b5 :m∆7b5 :-∆b5 :-∆7b5]
+    :o7     [:dim7 :Dim7]
+    :M7+    (for [x [:Maj7 :maj7 :∆ :∆7 :M7] y [:#5 :+5 :+]] (kwcat x y))
+    :7+     (for [x [:seventh :dominant :Dominant :7] y [:#5 :+5 :+]] (kwcat x y))}))
+
+(require '[clojure.string :as s])
+
+(defn- fit? [regex str]
+  (if (re-matches regex str) true false))
+
+(def altered 
+  #"(bb|o|b|m|M|N|P|#|\+|x)(2|3|4|5|6|7|9|11|13)")
+
+(defn- chord-add->cic [ca]
+  (cond 
+    (fit? cic-pat ca) (keyword ca)
+    (fit? altered ca) 
+      (let [[_ alt n] (re-find #"([^1-9]+)([1-9]+)" ca)]
+        (kwcat alt (mod (parse-int n) 7)))
+    (fit? #"(2|3|4|5|6|7|9|11|13)" ca) 
+      (-> (parse-int ca) (mod 7) (- 1) d-interval-class  c-interval-class :name)
+    :else :NC))
+
+(defn chord-class [sym]
+  (let [[structur & adds] (s/split (name sym) #"\.")
+        adds (map chord-add->cic adds)]
+    (vec (concat (known-chords (keyword structur)) adds))))
+
+(chord-class :M7.9.+11)
 
