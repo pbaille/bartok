@@ -15,7 +15,7 @@
     #"([A-G])")
   
   (def alt-pat 
-    #"(|bb|o|b|m|M|N|P|#|\+|x)")
+    #"(bb|o|b|m|M|N|P|#|\+|x|)")
   
   (def p-alt-pat 
     #"([x#b]b*)*")
@@ -323,9 +323,9 @@
     (def degree-alterations-2 (make-alterations-set {:b -1 :P 0 :+ 1}))
     
     (def alterations 
-      (merge pitch-alterations 
-             degree-alterations-1 
-             degree-alterations-2))
+      (concat pitch-alterations 
+              degree-alterations-1 
+              degree-alterations-2))
     
     (def name->alteration (reduce #(into %1 {(:name %2) %2}) {} alterations))
     (def val->alteration  (reduce #(into %1 {(:val %2) %2}) {} pitch-alterations))
@@ -419,6 +419,8 @@
     
   ;;;;;;;;;;;;;;;;;; CIntervalClass ;;;;;;;;;;;;;;;;;;;;;;;;;
     
+    (declare c-interval-class)
+    
     (def c-interval-classes
         (for [{cn :name cv :val ddv :degree-val ct :alt-type :as dc} d-interval-classes
               alt (cond (= ct :t1) degree-alterations-1
@@ -429,7 +431,7 @@
     
     (def d-interval-class->c-interval-class
       (reduce #(into %1 {(-> %2 :d-class :name) %2}) {} 
-              (filter #(#{:P1 :M2 :M3 :P4 :P5 :M6 :M7} (:name %)) c-interval-classes)))
+              (filter #(#{:P1 :M2 :M3 :P4 :P5 :M6 :m7} (:name %)) c-interval-classes)))
     
     (def c-interval-class-default-names 
       #{:P1 :m2 :M2 :m3 :M3 :P4 :+4 :P5 :m6 :M6 :m7 :M7})
@@ -454,6 +456,10 @@
         (let [dv (:degree-val di)
               alt (alteration (- n dv) (:alt-type di))]
           (when alt (c-interval-class (kwcat (:name alt) (inc (:val di))))))
+      
+      ['DIntervalClass dic 'Alteration alt]  
+        (let [alt (alteration (alt :val) (-> dic :alt-type))]
+          (name->c-interval-class (kwcat (alt :name) (inc (dic :val)))))
         
       ['PitchClass pc1 'PitchClass pc2]
         (let [dic (d-interval-class (:natural pc1) (:natural pc2))
