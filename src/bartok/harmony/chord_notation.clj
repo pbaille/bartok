@@ -39,13 +39,13 @@
   #"(dominant|Dominant|seventh|Seventh|Major7|major7|Dim7|dim7|Maj7|maj7|7th|dom|Dom|o7|∆7|M7|∆|7)?")
 
 (def ^:private cic-syns-pat
-  #"(bb|o|b|m|M|N|P|#|\+|x|)(10|11|12|13|[1-9])|\+")
+  #"(bb|o|b|m|M|N|P|#|\+|x|\.|)(10|11|12|13|[1-9])|\+")
 
 (def ^:private extensions-pat
-  #"([[bb|o|b|m|M|N|P|#|\+|x|\-]?[10|11|13|[1-9]]|\+|sus|omit[2-7]]*)?")
+  #"([[bb|o|b|m|M|N|P|#|\+|x|\-|\.]?[10|11|13|[2-9]]|\+|sus|omit[2-7]]*)?")
 
 (def ^:private ext-pat
-  #"[bb|o|b|m|M|N|P|#|\+|x|\-]?[10|11|13|[1-9]]|\+|sus|omit[2-7]")
+  #"(bb|o|b|m|M|N|P|#|\+|x|\-|\.)?(10|11|13|[2-9])|(\+)|(sus)|(omit)([2-7])")
 
 (def ^:private chord-notation-pat
   (pat-comp 
@@ -59,8 +59,8 @@
 (defn- cic-syns 
   [kw]
   (let [[_ alt n] (re-find cic-syns-pat (name kw))
-        alt (when (seq alt) (alteration (keyword alt)))
-        n (when n (mod (dec (parse-int n)) 7))]
+        alt (when (and (seq alt) (not= alt ".")) (alteration (keyword alt)))
+        n   (when n (mod (dec (parse-int n)) 7))]
     (cond 
       (not n) :+5
       (and (= 6 n)(not alt)) :m7 ; because 7 => m7
@@ -76,23 +76,36 @@
 (defn- add-extensions 
   [base adds]
   (reduce 
-    #(let [[ext pref n] (re-find #"([^\d]*)(\S*)" %2)]
+     #(let [[ext pref n] (re-find #"([^\d]*)(\S*)" %2)]
        (cond
          (= pref "sus") (remove-third %1)
          (= pref "omit") (remove-nth %1 (parse-int n))
          :else (add-cic %1 (cic-syns ext))))
     base 
-    (re-seq ext-pat (name adds))))
+    (map first (re-seq ext-pat (name adds)))))
 
-(defn parse-chord 
+(defn parse-chord-class 
   "given a chord notation return a seq of c-interval-class
-  ex: (parse-chord :69) => (:M2 :P5 :M3 :M6)
-      (parse-chord :m∆9) => (:M2 :P5 :M7 :m3)
-      (parse-chord :sus2) => (:M2 :P5)"
+  ex: (parse-chord-class :69) => (:M2 :P5 :M3 :M6)
+      (parse-chord-class :m∆9) => (:M2 :P5 :M7 :m3)
+      (parse-chord-class :sus2) => (:M2 :P5)"
   [kw]
-  (let [[_ base seventh extensions] (re-find chord-notation-pat (name kw)) ;(s/replace (name kw) #"\." "")
+  (let [[_ base seventh extensions] (re-find chord-notation-pat (name kw)) 
         base (if base (known-chords-syns (keyword base)) [:M3 :P5]) ;defaults to Major
         base (if seventh (conj base (seventh-syns (keyword seventh))) base)]; add seventh
-    (add-extensions base extensions)))
+    (sort-by (f> b> :val) (add-extensions base extensions))))
 
+(defn parse-chord
+  "given a chord notation return a map {:root _ :degrees _ :pitch-classes _}
+  ex: (parse-chord :C69) => {:root :C, :degrees (:M2 :M3 :P5 :M6), :pitch-classes (:C :D :E :G :A)}
+      (parse-chord :Fm∆9) => {:root :F, :degrees (:M2 :m3 :P5 :M7), :pitch-classes (:F :G :Ab :C :E)}
+      (parse-chord :Absus2) => {:root :Ab, :degrees (:M2 :P5), :pitch-classes (:Ab :Bb :Eb)}"
+  [x]
+  (let [[_ root class] (re-find #"([A-G][#|b|bb|x]*)(\S*)?" (name x))
+        root (keyword root)
+        degrees (parse-chord-class class)
+        pitch-classes (map :name (map (p transpose root) degrees))]
+    {:root root
+     :degrees degrees
+     :pitch-classes (cons root pitch-classes)}))
 
