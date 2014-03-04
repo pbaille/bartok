@@ -53,8 +53,7 @@
     seventh-pat 
     extensions-pat))
 
-(defn- add-cic [base cic]
-  (conj (remove-nth base (-> cic b> :d-class :val inc)) cic))
+
 
 (defn- cic-syns 
   [kw]
@@ -73,6 +72,15 @@
 
 (defn- remove-third [base] (remove-nth base 3))
 
+(defn- add-cic [base cic]
+  (sort-by (f> b> :val)
+    (conj (remove-nth base (-> cic b> :d-class :val inc)) cic)))
+
+(defn- full-name [kw]
+  (if (seq (str (namespace kw))) 
+    (str (symbol (str (namespace kw)) (name kw))) 
+    (name kw)))
+
 (defn- add-extensions 
   [base adds]
   (reduce 
@@ -85,7 +93,7 @@
     (map first (re-seq ext-pat (name adds)))))
 
 (defn parse-chord-class 
-  "given a chord notation return a seq of c-interval-class
+  "given a chord-class notation return a seq of c-interval-class
   ex: (parse-chord-class :69) => (:M2 :P5 :M3 :M6)
       (parse-chord-class :m∆9) => (:M2 :P5 :M7 :m3)
       (parse-chord-class :sus2) => (:M2 :P5)"
@@ -93,19 +101,50 @@
   (let [[_ base seventh extensions] (re-find chord-notation-pat (name kw)) 
         base (if base (known-chords-syns (keyword base)) [:M3 :P5]) ;defaults to Major
         base (if seventh (conj base (seventh-syns (keyword seventh))) base)]; add seventh
-    (sort-by (f> b> :val) (add-extensions base extensions))))
+    (add-extensions base extensions)))
+
+(declare parse-chord)
+
+(defn- add-bass 
+  "for foreign bass chords like C/E (Ctriad over D bass)"
+  [chord bass]
+  (let [bass-cic (:name (c-interval-class (:root chord) bass))
+        pcs (when-not (in? (:pitch-classes chord) bass) 
+              (cons bass (:pitch-classes chord)))]
+    (-> chord
+        (assoc :bass bass)
+        (update-in [:degrees] add-cic bass-cic)
+        (update-in [:pitch-classes] #(or pcs %)))))
+
+(defn- merge-superpos 
+  "for superposition chord symbols like C|B (Ctriad over Btriad)"
+  [chord superpos]
+  (let [sup (parse-chord superpos)
+        base-sup-inter (c-interval-class (:root sup) (:root chord))
+        trans-degrees (map #(:name (b:+ base-sup-inter %)) (conj (:degrees chord) :P1))
+        merged-degs (reduce add-cic (:degrees sup) trans-degrees)
+        root (:root sup)
+        pcs (cons root (map #(:name (transpose root %)) merged-degs))]
+    {:root root :degrees merged-degs :pitch-classes pcs :bass (:bass sup)}))
 
 (defn parse-chord
   "given a chord notation return a map {:root _ :degrees _ :pitch-classes _}
   ex: (parse-chord :C69) => {:root :C, :degrees (:M2 :M3 :P5 :M6), :pitch-classes (:C :D :E :G :A)}
       (parse-chord :Fm∆9) => {:root :F, :degrees (:M2 :m3 :P5 :M7), :pitch-classes (:F :G :Ab :C :E)}
-      (parse-chord :Absus2) => {:root :Ab, :degrees (:M2 :P5), :pitch-classes (:Ab :Bb :Eb)}"
+      (parse-chord :Absus2) => {:root :Ab, :degrees (:M2 :P5), :pitch-classes (:Ab :Bb :Eb)}
+      (parse-chord :C/B) => {:root :C, :degrees (:M7 :M3 :P5), :pitch-classes (:B :C :E :G), :bass :B}
+      (parse-chord :C|B) => {:root :B, :degrees (:m2 :M3 :P4 :P5 :m6), :pitch-classes (:B :C :D# :E :F# :G), :bass :D#}"
   [x]
-  (let [[_ root class] (re-find #"([A-G][#|b|bb|x]*)(\S*)?" (name x))
-        root (keyword root)
-        degrees (parse-chord-class class)
-        pitch-classes (map :name (map (p transpose root) degrees))]
-    {:root root
-     :degrees degrees
-     :pitch-classes (cons root pitch-classes)}))
+  (let [full-name       (full-name x)
+        [base bass]     (s/split full-name #"/")
+        [base superpos] (s/split full-name #"\|")
+        [_ root class]  (re-find #"([A-G][#|b|bb|x]*)([\S*])?" base)
+        root            (keyword root)
+        degrees         (parse-chord-class (or class "Maj"))
+        pitch-classes   (cons root (map :name (map (p transpose root) degrees)))
+        chord           {:root root :degrees degrees :pitch-classes pitch-classes :bass root}]
+    (cond 
+      superpos (merge-superpos chord (keyword superpos))
+      bass (add-bass chord (keyword bass))
+      :else chord)))
 
