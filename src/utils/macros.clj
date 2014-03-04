@@ -268,3 +268,39 @@
 ;         with-clauses (into bindings (map (fn [[kw clau]] `(~kw (a ~clau ~syms))) clauses))]
 ;     `(for ~with-clauses (list ~@syms))))
 
+;;;;;;;;;;;;;;;;;;; Experiments ;;;;;;;;;;;;;;;;;;;;;;
+
+(defmacro defmet2 [n v fun-body]
+  (let [[x post-cond] (take-last 2 v)
+        post-cond? (= '=> x)
+        v (if-not post-cond? v (take (- (count v) 2) v))
+        types (vec (take-nth 2 v))
+        args  (vec (take-nth 2 (next v)))]
+    (if post-cond?
+      `(defmethod ~n ~types ~args {:post [(~post-cond ~'%)]} ~fun-body)
+      `(defmethod ~n ~types ~args ~fun-body))))
+
+(defmacro defmult2 [n dispfun & body]
+  (let [doc-string (when (string? (first body)) (first body))
+        body (if doc-string (next body) body)]
+   `(do (defmulti ~n ~dispfun)
+      ~@(map (fn [[v fun-body]]
+               `(defmet2 ~n ~v ~fun-body)) 
+            (partition 2 2 body)))))
+
+(comment 
+  
+  (use 'bartok.primitives)
+  
+  (defmult2 multest2 b-types
+    "yop comment"
+    [:pitch p1 :pitch p2 => number?]
+      ((b> distance) p1 p2)
+    [:mode m [:pitch] [p1 p2] => (fn [[_ _ p]] (vector? p))]
+      ((b> vector) m p1 p2))
+  
+  (defmet2 multest2 [:alteration alt => number?]
+    (:val (b> alt)))
+)
+
+

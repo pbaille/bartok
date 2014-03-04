@@ -53,8 +53,6 @@
     seventh-pat 
     extensions-pat))
 
-
-
 (defn- cic-syns
   "do this best to return a c-interval-class given a compatible named object
   ex: (cic-syns :+3) => :M3
@@ -73,7 +71,7 @@
                     (or alt (alteration 0)))))))
 
 (defn- remove-nth 
-  "remove corresponding 'd-interval-class compatible' c-interva-class from the base
+  "remove corresponding 'd-interval-class compatible' c-interval-class from the base
   ex: (remove-nth [:M3 :P5] 3) => (:P5)"
   [base n] 
   (remove (f> b> :d-class :val (= (dec n))) base))
