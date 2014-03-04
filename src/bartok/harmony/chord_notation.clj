@@ -24,7 +24,7 @@
     :M7 [:M7 :maj7 :Maj7 :major7 :Major7 :∆ :∆7]
     :o7 [:o7 :dim7 :Dim7]}))
 
-(def ^:private base-pat 
+(def ^:private base-pat
   (as>> (keys known-chords-syns)
         (map name)
         (sort-by count) ;sort for ensure good precedance
@@ -55,33 +55,49 @@
 
 
 
-(defn- cic-syns 
+(defn- cic-syns
+  "do this best to return a c-interval-class given a compatible named object
+  ex: (cic-syns :+3) => :M3
+      (cic-syns :#5) => :+5
+      (cic-syns :13) => :M6" 
   [kw]
   (let [[_ alt n] (re-find cic-syns-pat (name kw))
         alt (when (and (seq alt) (not= alt ".")) (alteration (keyword alt)))
         n   (when n (mod (dec (parse-int n)) 7))]
     (cond 
-      (not n) :+5
+      (and (not n)(= alt "+")) :+5
+      (and (not n)(not alt)) nil
       (and (= 6 n)(not alt)) :m7 ; because 7 => m7
       :else (:name (c-interval-class 
-                     (d-interval-class n) 
-                     (or alt (alteration 0)))))))
+                    (d-interval-class n) 
+                    (or alt (alteration 0)))))))
 
-(defn- remove-nth [base n] 
+(defn- remove-nth 
+  "remove corresponding 'd-interval-class compatible' c-interva-class from the base
+  ex: (remove-nth [:M3 :P5] 3) => (:P5)"
+  [base n] 
   (remove (f> b> :d-class :val (= (dec n))) base))
 
 (defn- remove-third [base] (remove-nth base 3))
 
-(defn- add-cic [base cic]
+(defn- add-cic 
+  "add a degree(c-interval-class) to a collection of degrees 
+  while removing previous occurence of the same d-interval-class
+  ex: (add-cic [:m2 :P5] :+5) => (:m2 :+5)"
+  [base cic]
   (sort-by (f> b> :val)
     (conj (remove-nth base (-> cic b> :d-class :val inc)) cic)))
 
-(defn- full-name [kw]
+(defn- full-name 
+  "when a keyword contains a '/', name function return only the right part.
+  this function will return the full name"
+  [kw]
   (if (seq (str (namespace kw))) 
     (str (symbol (str (namespace kw)) (name kw))) 
     (name kw)))
 
 (defn- add-extensions 
+  "split extensions and apply them to the base"
   [base adds]
   (reduce 
      #(let [[ext pref n] (re-find #"([^\d]*)(\S*)" %2)]
@@ -133,7 +149,8 @@
       (parse-chord :Fm∆9) => {:root :F, :degrees (:M2 :m3 :P5 :M7), :pitch-classes (:F :G :Ab :C :E)}
       (parse-chord :Absus2) => {:root :Ab, :degrees (:M2 :P5), :pitch-classes (:Ab :Bb :Eb)}
       (parse-chord :C/B) => {:root :C, :degrees (:M7 :M3 :P5), :pitch-classes (:B :C :E :G), :bass :B}
-      (parse-chord :C|B) => {:root :B, :degrees (:m2 :M3 :P4 :P5 :m6), :pitch-classes (:B :C :D# :E :F# :G), :bass :D#}"
+      (parse-chord :C|B) => {:root :B, :degrees (:m2 :M3 :P4 :P5 :m6), :pitch-classes (:B :C :D# :E :F# :G), :bass :B}
+      (parse-chord :C|B/D#) => {:root :B, :degrees (:m2 :M3 :P4 :P5 :m6), :pitch-classes (:B :C :D# :E :F# :G), :bass :D#}"
   [x]
   (let [full-name       (full-name x)
         [base bass]     (s/split full-name #"/")
