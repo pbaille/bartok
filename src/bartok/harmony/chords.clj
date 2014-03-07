@@ -1,7 +1,6 @@
 (ns bartok.harmony.chords
   (:use [clojure.math.combinatorics :as c])
   (:use bartok.primitives)
-  (:use bartok.print)
   (:use bartok.types.w-mode)
   (:use [utils.all :exclude [median]]))
 

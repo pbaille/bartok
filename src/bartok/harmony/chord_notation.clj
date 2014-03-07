@@ -1,6 +1,6 @@
 (ns bartok.harmony.chord-notation
   (:use utils.all)
-  (:use [bartok primitives print])
+  (:use bartok.primitives)
   (:require [clojure.string :as s]))
 
 (def ^:private known-chords-syns
@@ -48,7 +48,7 @@
   #"(bb|o|b|m|M|N|P|#|\+|x|\-|\.)?(10|11|13|[2-9])|(\+)|(sus)|(omit)([2-7])")
 
 (def ^:private chord-notation-pat
-  (pat-comp 
+  (re-cat 
     base-pat 
     seventh-pat 
     extensions-pat))
@@ -141,6 +141,14 @@
         pcs (cons root (map #(:name (transpose root %)) merged-degs))]
     {:root root :degrees merged-degs :pitch-classes pcs :bass (:bass sup)}))
 
+(comment 
+  (parse-chord :C69) 
+  (parse-chord :Fm∆9) 
+  (parse-chord :Absus2)
+  (parse-chord :C/B) 
+  (parse-chord :C|B) 
+  (parse-chord :C|B/D#))
+
 (defn parse-chord
   "given a chord notation return a map {:root _ :degrees _ :pitch-classes _}
   ex: (parse-chord :C69) => {:root :C, :degrees (:M2 :M3 :P5 :M6), :pitch-classes (:C :D :E :G :A)}
@@ -153,7 +161,7 @@
   (let [full-name       (full-name x)
         [base bass]     (s/split full-name #"/")
         [base superpos] (s/split full-name #"\|")
-        [_ root class]  (re-find #"([A-G][#|b|bb|x]*)([\S*])?" base)
+        [_ root class]  (re-find #"([A-G][#|b|bb|x]?)(\S*)?" base)
         root            (keyword root)
         degrees         (parse-chord-class (or class "Maj"))
         pitch-classes   (cons root (map :name (map (p transpose root) degrees)))

@@ -1,7 +1,6 @@
 (ns bartok.rythmn.pattern
   (:use [bartok.rythmn rval utils])
   (:use bartok.structure)
-  (:use bartok.print)
   (:use bartok.primitives)
   (:use [clojure.math.combinatorics :as c])
   (:require [clojure.contrib.math :as m :exclude [abs]])

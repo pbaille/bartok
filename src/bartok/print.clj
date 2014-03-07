@@ -16,6 +16,14 @@
                  :else x)))]
     (if (map? x) (map-vals fun x) (mapv fun x))))
 
+; (defn bartok-sym [x]
+;   (if-let [n (:name x)]
+;      (symbol (name n))
+;      (cond
+;        (map? x) (map-vals bartok-sym x) 
+;        (sequential? x) (mapv bartok-sym x) 
+;        :else x)))
+
 (defmulti bartok-dispatch
   #(if (not-java-class? %) :bartok (class %)))
 

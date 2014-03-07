@@ -27,3 +27,6 @@
 (b-fn chord [pitches dur pos]
   (with-type 'Chord 
     {:pitches pitches :duration dur :position pos}))
+
+
+()

@@ -18,16 +18,16 @@
     #"(bb|o|b|m|M|N|P|#|\+|x|)")
   
   (def p-alt-pat 
-    #"([x#b]b*)*")
+    #"(#|b|bb|x)?")
   
   (def dir-pat 
     #"([ud])")
   
   (def pitch-pat 
-    (pat-comp npc-pat p-alt-pat #"(\-*[0-5])"))
+    (re-cat npc-pat p-alt-pat #"(\-?[0-5])"))
   
   (def pitch-class-pat 
-    (pat-comp npc-pat p-alt-pat))
+    (re-cat npc-pat p-alt-pat))
   
   (def cic-pat
     #"([omM#][2367]|[bP+][145])")
@@ -39,10 +39,10 @@
     #"([ud][0-5]*)")
   
   (def d-interval-pat
-    (pat-comp dic-pat -pat dir-oct-pat))
+    (re-cat dic-pat -pat dir-oct-pat))
   
   (def c-interval-pat
-    (pat-comp cic-pat -pat dir-oct-pat))
+    (re-cat cic-pat -pat dir-oct-pat))
   
   (def mode-class-pat
     #"(Lyd#2|AltDim|Harmm|Loc6|Ion\+|Dor\+4|PhryM|Lyd\+|Lydb7|Mixb6|Loc2|Alt|Melm|Phry6|Lyd|Mix|Eol|Loc|Ion|Dor|Phry)" )
@@ -51,10 +51,10 @@
     #"(Lyd#2|Lyd\+|Lyd)")
   
   (def h-function-pat
-    #"(SD|T)(\-|\+|alt)*")
+    #"(SD|T)(\-|\+|alt)?")
   
   (def mode-pat
-    (pat-comp pitch-class-pat #"(\-)" mode-class-pat))
+    (re-cat pitch-class-pat -pat mode-class-pat))
   
   (def time-signature-pat
     #"[1-9][1-9]*\|(2|4|8|16)")
@@ -914,8 +914,6 @@
       [:number n :number d] (build-time-signature n d))
     
     
-    
-
 
 
 

@@ -18,6 +18,7 @@
                  [org.clojure/data.xml "0.0.7"]
                  [org.clojure/data.zip "0.1.1"]
                  [into-edn "1.0.2"]
+                 [instaparse "1.2.16"]
                  
                  [org.clojure/core.contracts "0.0.5"]
                  [org.clojure/tools.reader "0.8.3"]

@@ -1,6 +1,5 @@
 (ns bartok.rythmn.skull
   (:use [bartok.rythmn rval utils])
-  (:use bartok.print)
   (:use bartok.structure)
   (:use [clojure.math.combinatorics :as c])
   (:use [utils utils prob dom-part macros]))

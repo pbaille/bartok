@@ -1,5 +1,5 @@
 (ns utils.utils
-  (:use bartok.print)
+  (:require [bartok.print :as bp])
   (:require vendors.debug-repl)
   (:require [clojure.inspector :refer [inspect-tree]])
   (:require [clojure.contrib.math :as math]))
@@ -9,6 +9,8 @@
 ;***************** utils ********************
 
   (def not-nil? (complement nil?))
+  
+  (defn pp [& x] (a bp/pp x))
   
   (defn pev [x] (do (pp x) x))
   
@@ -573,7 +575,7 @@
   
 ;************** regex ***********************
 
-  (defn pat-comp [& args]
+  (defn re-cat [& args]
     (java.util.regex.Pattern/compile (apply str args)))
 
 ;************** namespaces ******************
