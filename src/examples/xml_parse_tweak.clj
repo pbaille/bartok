@@ -46,6 +46,8 @@
        ;to midi-notes
        (m-note-line-from (g-pos 0 0 0) 1/4 60 1)))
 
+(comment (play vep (rav-step-line 100)))
+
 ;buggy
 (defn ctt []
   (let [ints-vals (map to-num d-ints)

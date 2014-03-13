@@ -32,62 +32,28 @@
 (defmacro def- [name value]
   `(def ~(vary-meta name assoc :private true) ~value))
 
-; evil don't use
-; move all forms with first sym that ends with "-" char to top of the file
-; you can then keep your helpers at bottom of file
-(defmacro public-first [& body]
-  (let [body (sort-by 
-               #(if (-> % first str last (= \-)) 0 1) 
-               body)]
-    `(do ~@body)))
+; (defmacro defmult [name disp & body]
+;   (let [docstring (when (string? (first body)) (first body))
+;         body (if docstring (next body) body)]
+;    `(do (defmulti ~name ~disp)
+;      ~@(map (fn [[v & fun-body]]
+;                (let [params (vec (take-nth 2 v))
+;                      types  (vec (take-nth 2 (next v)))
+;                      types (if (count= types 1) (first types) types)]
+;                  `(defmethod ~name ~types ~params ~@fun-body))) 
+;             body))))
 
-;(public-first 
-; (def aze 12) 
-; (defn azeaze [] "azeaze") 
-; (defn- qsd [] "qsd") 
-; (def- az 456))
-
-; => (do (defn- qsd [] "qsd") 
-       ; (def- az 456) 
-       ; (def aze 12) 
-       ; (defn azeaze [] "azeaze"))
-
-
-(defmacro defmult [name disp & body]
-  (let [docstring (when (string? (first body)) (first body))
-        body (if docstring (next body) body)]
-   `(do (defmulti ~name ~disp)
-     ~@(map (fn [[v & fun-body]]
-               (let [params (vec (take-nth 2 v))
-                     types  (vec (take-nth 2 (next v)))
-                     types (if (count= types 1) (first types) types)]
-                 `(defmethod ~name ~types ~params ~@fun-body))) 
-            body))))
-
-(comment 
-  (defmult multest b-types
-    "yop comment"
-    ([x :pitch
-      y :pitch]
-      ((b> distance) x y))
-    ([x1 :mode
-      x2 :pitch]
-     ((b> vector) x1 x2))
-    ([x clojure.lang.Keyword]
-      (name x))))
-
-;to define helper function that is traced by declare-helpers macro
-(defmacro dehfn [name & body]
-  `(defn- ~name ~@body))
-
-(defmacro declare-helpers []
-  `(declare ~@(map symbol 
-                   (re-seq #"(?<=dehfn\s)[a-zA-Z+!\-_?0-9*~#@''`/.$=]*(?=\s)" 
-                           (slurp (str "src/" *file*))))))
-
-; (declare-helpers)
-; (defn hello-user [name] (greet name))
-; (dehfn greet [name] (str "Hello my dear " name))
+; (comment 
+;   (defmult multest b-types
+;     "yop comment"
+;     ([x :pitch
+;       y :pitch]
+;       ((b> distance) x y))
+;     ([x1 :mode
+;       x2 :pitch]
+;      ((b> vector) x1 x2))
+;     ([x clojure.lang.Keyword]
+;       (name x))))
 
 (defmacro env-h [] 
   (let [ks (keys &env)]
@@ -110,18 +76,6 @@
    `(dr-e "auto-catch repl" ~expr))
   ([msg expr]
    `(try ~expr (catch Exception e# (do (pp ~msg)(dr))))))
-
-;NOOOB !
-; (defmacro p1-fn [name arg1 argv & body]
-;   `(do 
-;      (defn ~name ~argv ~@body)
-;      (def ~name (p ~name ~arg1))))
-
-; ;(macroexpand-1 '(p1-fn add 2 [aa b] (+ aa b)))
-; ;=>(do (clojure.core/defn add [a b] (+ a b)) (def add (utils.utils/p add 2)))
-; ;(p1-fn add 2 [a b] (+ a b))
-; ;(add 1) => 3
-
 
 ;from mikera stackoverflow
 
@@ -248,14 +202,6 @@
 ;(as>> 1 (+ 2 _ (* 3 _)) (- 3)) 
 ;;=> #(as-> 1 x# (+ 2 x# (* 3 x#)) (- 3 x#))
 
-;buggy
-
-
-; (defnaults2 bob 
-;   "blabla"
-;   [a 1 b 2] 
-;   (+ a b))
-
 (defmacro juxt-for [& seqs]
   (let [syms (repeatedly (count seqs) (p gensym "x"))
         bindings (vec (interleave syms seqs))]
@@ -270,7 +216,7 @@
 
 ;;;;;;;;;;;;;;;;;;; Experiments ;;;;;;;;;;;;;;;;;;;;;;
 
-(defmacro defmet2 [n v fun-body]
+(defmacro defmet [n v fun-body]
   (let [[x post-cond] (take-last 2 v)
         post-cond? (= '=> x)
         v (if-not post-cond? v (take (- (count v) 2) v))
@@ -280,26 +226,26 @@
       `(defmethod ~n ~types ~args {:post [(~post-cond ~'%)]} ~fun-body)
       `(defmethod ~n ~types ~args ~fun-body))))
 
-(defmacro defmult2 [n dispfun & body]
+(defmacro defmult [n dispfun & body]
   (let [doc-string (when (string? (first body)) (first body))
         body (if doc-string (next body) body)]
    `(do (defmulti ~n ~dispfun)
       ~@(map (fn [[v fun-body]]
-               `(defmet2 ~n ~v ~fun-body)) 
+               `(defmet ~n ~v ~fun-body)) 
             (partition 2 2 body)))))
 
 (comment 
   
   (use 'bartok.primitives)
   
-  (defmult2 multest2 b-types
+  (defmult multest2 b-types
     "yop comment"
     [:pitch p1 :pitch p2 => number?]
       ((b> distance) p1 p2)
     [:mode m [:pitch] [p1 p2] => (fn [[_ _ p]] (vector? p))]
       ((b> vector) m p1 p2))
   
-  (defmet2 multest2 [:alteration alt => number?]
+  (defmet multest2 [:alteration alt => number?]
     (:val (b> alt)))
 )
 

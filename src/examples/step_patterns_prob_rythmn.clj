@@ -27,7 +27,7 @@
      :prob-rvals {1/4 1} 
      :start-pos (g-pos 0 0 0) 
      :end-pos (g-pos 8 0 0 )
-     :bounds [:C-1 :C3] 
+     :bounds [:C-1 :C2] 
      :start-pitch :C1 }))
 
 ; (def notes 

@@ -431,7 +431,7 @@
     "take the first truthy element of (map f coll)
     (first-truthy #(when (< 0 %) %) [-1 2 3])
     => 2"
-    (select-first (complement nil?) (map f coll)))
+    (first (filter identity (map f coll))))
   
   (defn set-map [f coll]
     "call set on the result of map"

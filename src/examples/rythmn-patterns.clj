@@ -117,7 +117,7 @@
   (let [durs (r-gen 
               48
               {:complexity 1/4
-               :poly-prob {2 1 3 1 5 1 7 1 9 1} 
+               :poly-prob {2 1 3 1} 
                :poly-homogeneity 0.3
                :mean-duration 1
                :homogeneity 0.1
