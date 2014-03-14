@@ -43,9 +43,13 @@
   
   (def c-interval-pat
     (re-cat cic-pat -pat dir-oct-pat))
-  
+
   (def mode-class-pat
-    #"(Lyd#2|AltDim|Harmm|Loc6|Ion\+|Dor\+4|PhryM|Lyd\+|Lydb7|Mixb6|Loc2|Alt|Melm|Phry6|Lyd|Mix|Eol|Loc|Ion|Dor|Phry)" )
+    (re-pattern 
+     (str
+      "(Lyd#2|AltDim|Harmm|Loc6|Ion\\+|Dor\\+4|PhryM|"
+      "Lyd\\+|Lydb7|Mixb6|Loc2|Alt|Melm|Phry6|"
+      "Lyd|Mix|Eol|Loc|Ion|Dor|Phry)")))
   
   (def mother-mode-pat 
     #"(Lyd#2|Lyd\+|Lyd)")
@@ -65,11 +69,9 @@
   
   
   (defn- fit? [regex str]
-    (if (re-matches regex str) true false))
+    (when (re-matches regex str) true))
   
-  ; TODO use core.match for this part
   (defn b? [x]
-    ; (pp 'b> x)
     (when (named? x)
       (let [n (name x)]
         (cond

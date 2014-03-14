@@ -9,7 +9,7 @@
   (:use [bartok.composition.utils]))
 
 (defn rythmic-step-pattern [options-map]
-  (let [options-map (zipmap (keys options-map) (map b> (vals options-map)))
+  (let [options-map (map-vals b> options-map)
         {:keys [picker rvals bounds start-pitch start-pos end-pos]} options-map
         rl (r-line rvals start-pos end-pos)]
     (step-patternify rl picker bounds start-pitch)))
@@ -30,7 +30,7 @@
 ;      :start-pitch :C1 }))
 
 (defn prob-rythmn-step-pattern [options-map]
-  (let [options-map (zipmap (keys options-map) (map b> (vals options-map)))
+  (let [options-map (map-vals b> options-map)
         {:keys [picker prob-rvals bounds start-pitch start-pos end-pos]} options-map
         rl (r-prob-line prob-rvals start-pos end-pos)]
     (step-patternify rl picker bounds start-pitch)))
@@ -51,7 +51,7 @@
 ;      :start-pitch :C1 }))
 
 (defn rythmic-prob-step [options-map]
-  (let [options-map (zipmap (keys options-map) (map b> (vals options-map)))
+  (let [options-map (map-vals b> options-map)
         {:keys [prob-map rvals bounds start-pitch start-pos end-pos]} options-map
         rl (r-line rvals start-pos end-pos)
         hc (map #(-> % (dissoc :elements) (assoc :steps (count (:elements %)))) (harmonic-chunks rl))

@@ -320,7 +320,7 @@
     (str "#'" s "'"))  
   
   (defn re->instapat
-    "turn a string into a instaparse compatible regex"
+    "turn a regex into instaparse regex"
     [re]
     (str "#'" (str re) "'"))
 
@@ -481,8 +481,7 @@
         (->> (insta/parses parser x)
           (map first)
           (insta/transform transforms)
-          eval-tree
-          ))))
+          eval-tree))))
 
   (def b-parser
     (bartok-parser 
@@ -505,87 +504,8 @@
   ; (defn tree->expr [[head & nodes]]
   ;   (if (and (count= nodes 1) (not (vector? (first nodes))))
   ;     (call (name head) (first nodes))
-  ;     (a call (name head) (map tree->expr nodes))))
-  
-
-  
-;;;;;;;;;;;;;; global ;;;;;;;;;;;;;;;;;;;;  
-  
-  ; (defn parses-map [x] 
-  ;   (reduce #(assoc %1 (first %2) (second %2)) 
-  ;           {} 
-  ;           (map-vals first (group-by type (b-parser (name x))))))
-  
-  ; ; (pp (parses-map :C#))
-  
-  ; (defn coerce-types [target-types argv]
-  ;   (let [res (map #(get %2 %1) 
-  ;                  target-types 
-  ;                  (map #(let [pm (when (named? %1) (parses-map %1))] 
-  ;                          (cond 
-  ;                            (seq pm) pm 
-  ;                            :else {(type %1) %1})) 
-  ;                       argv
-  ;                       target-types))]
-  ;     (when (every? not-nil? res) res)))
-
-  ; (defmacro b-fun 
-  ;   "define a bartok function:
-  ;   the arg vector must be of the form [type-arg1 arg1-name type-arg2 arg2-name ...]
-  ;   if litterals are passed to this function, 
-  ;   they are automaticaly coerced to the good types if possible
-    
-  ;   ex: 
-  ;   (b-fun yo ['Pitch p 'DIntervalClass di] (vector p di))
-  ;   "
-  ;   [nam & tail]
-  ;   (let [ds (when (string? (first tail)) (first tail))
-  ;         [args & body] (if ds (next tail) tail)
-  ;         rest-arg? (= '& (first (take-last 2 args)))
-  ;         ; _ (dr)
-  ;         argt (vec (take-nth 2 args))
-  ;         argv (vec (take-nth 2 (next args)))]
-  ;     `(defn ~nam ~argv 
-  ;        (if (= ~argt (b-types ~@argv))
-  ;          ~@body
-  ;          (if-let [args# (coerce-types ~argt ~argv)]
-  ;            (a ~nam args#)
-  ;            (throw (Exception. 
-  ;             (str "bartok type error... cannot coerce " 
-  ;                  ~argv " to " ~argt))))))))
-  
-  ; ; (b-fun yep ['Pitch p 'DIntervalClass di ['Alteration] & alts]
-  ; ;   (pp p di kw))
-  
-  ; (defn- coerce-to-available-dispatch 
-  ;   "coerce args to the first possible dispatch of a multimethod"
-  ;   [dispatches args]
-  ;   (let [cnt (count args)]
-  ;     (first (keep #(coerce-types % args) 
-  ;                  (remove #(or (= :default %) (not= cnt (count %))) 
-  ;                          dispatches)))))
-  
-  ; ;TODO add possibility to define :default dispatch 
-  ; ;(need to combine with default behavior)
-  ; (defmacro b-mfun 
-  ;   "like defmult macro but if no available dispatch try to coerce those"
-  ;   [nam & tail]
-  ;  `(do (defmult ~nam b-types ~@tail)
-  ;     (defmethod ~nam :default [& args#] 
-  ;       (if-let [args# (coerce-to-available-dispatch 
-  ;                       (keys (methods ~nam)) args#)]
-  ;         (a ~nam args#)
-  ;         (throw (Exception. 
-  ;          (str "Bartok type error, can't find dispatch for " args#)))))))
-  
-
-  
-  ; ; (b-mfun yip 
-  ; ;   ['Pitch p]
-  ; ;   (pp "pitch")
-  ; ;   ['Pitch p1 'Pitch p2]
-  ; ;   (pp "2 pitches!"))
-  
-
+  ;     (a call (name head) (map tree->expr nodes))))  
+ 
+ ; (re-matches #"(M|m|o|\+)(?:\-?)((?:bb|o|b|m|M|N|P|#|\+|x)?(?:[2-9]|10|11|13))+" "Mm2P52")
 
   
