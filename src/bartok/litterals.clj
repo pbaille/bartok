@@ -70,18 +70,18 @@
     (when (named? x)
       (let [n (name x)]
         (cond
-          (fit? alt-pat n) :alteration
-          (fit? dir-pat n) :direction
-          (and (symbol? x) (fit? npc-pat n)) :natural-pitch-class
-          (fit? cic-pat n) :c-interval-class
-          (fit? pitch-class-pat n) :pitch-class
-          (fit? pitch-pat n) :pitch
-          (fit? c-interval-pat n) :c-interval
-          (fit? mode-class-pat n) :mode-class
-          (fit? mode-pat n) :mode
-          (fit? dic-pat n) :d-interval-class
-          (fit? d-interval-pat n) :d-interval
-          (fit? h-function-pat n) :h-function
-          (fit? time-signature-pat n) :time-signature
+          (fit? alt-pat n) 'alteration
+          (fit? dir-pat n) 'direction
+          (and (symbol? x) (fit? npc-pat n)) 'natural-pitch-class
+          (fit? cic-pat n) 'c-interval-class
+          (fit? pitch-class-pat n) 'pitch-class
+          (fit? pitch-pat n) 'pitch
+          (fit? c-interval-pat n) 'c-interval
+          (fit? mode-class-pat n) 'mode-class
+          (fit? mode-pat n) 'mode
+          (fit? dic-pat n) 'd-interval-class
+          (fit? d-interval-pat n) 'd-interval
+          (fit? h-function-pat n) 'h-function
+          (fit? time-signature-pat n) 'time-signature
           :else nil))))
   

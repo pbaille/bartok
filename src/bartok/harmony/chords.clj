@@ -185,12 +185,12 @@
         acc)))
 
   (b-multi build-occ-map 
-    (['ModeClass :number][mode-class n-voices]
+    (['ModeClass 'Number][mode-class n-voices]
       (let [main-degs (mapv :name (:main-degrees (w-mode-class mode-class)))
             size (inc (count main-degs)) ;inc it because :P1 is implicit
             occs (occ-repartition size n-voices)]
         (zipmap (conj main-degs :P1) occs)))
-    ([['CIntervalClass] :number][degrees n-voices]
+    ([['CIntervalClass] 'Number][degrees n-voices]
       (let [size (inc (count degrees)) ;inc it because :P1 is implicit
             occs (occ-repartition size n-voices)]
         (zipmap (conj (mapv :name degrees) :P1) occs))))
@@ -274,22 +274,22 @@
 (b-multi voicings
   "return a list of [Pitch] voicings accordingly with args..."
   
-  (['Pitch 'ModeClass :number 'Map] [root-pitch modc n-voices options]
+  (['Pitch 'ModeClass 'Number 'Map] [root-pitch modc n-voices options]
     (voicings root-pitch 
               (build-occ-map modc n-voices) 
               (merge-with-default-options options)))
   
-  ([['Pitch] 'ModeClass :number 'Map] [[bass top] modc n-voices options]
+  ([['Pitch] 'ModeClass 'Number 'Map] [[bass top] modc n-voices options]
     (voicings [bass top] 
               (build-occ-map modc n-voices) 
               (merge-with-default-options options)))
   
-  (['Pitch ['CIntervalClass] :number 'Map] [root-pitch degrees n-voices options]
+  (['Pitch ['CIntervalClass] 'Number 'Map] [root-pitch degrees n-voices options]
     (voicings root-pitch 
               (build-occ-map degrees n-voices) 
               (merge-with-default-options options)))
   
-  ([['Pitch] ['CIntervalClass] :number 'Map] [[bass top] degrees n-voices options]
+  ([['Pitch] ['CIntervalClass] 'Number 'Map] [[bass top] degrees n-voices options]
     (voicings [bass top] 
               (build-occ-map degrees n-voices) 
               (merge-with-default-options options)))

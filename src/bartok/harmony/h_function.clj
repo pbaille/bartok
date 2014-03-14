@@ -18,13 +18,13 @@
     {:name n :degree degree}))
 
 (b-construct h-function
-  [:h-function n] 
+  ['h-function n] 
     (build-h-function n (c-interval-class (h-functions n)))
-  [:degree d] 
+  ['degree d] 
     (build-h-function (d h-functions) (c-interval-class d))
   ['Degree d] 
     (build-h-function (-> d :name h-functions) d)
-  [:interval i] 
+  ['interval i] 
     (build-h-function ((-> i c-interval-class :name) h-functions) (c-interval-class i))
   ['Interval i] 
     (build-h-function ((-> i c-interval-class :name) h-functions) (c-interval-class i)))

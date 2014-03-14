@@ -40,8 +40,8 @@
     ([x] 
      (let [t (b-type x)] 
        (cond 
-         (or (= t :number)(= t :ratio)) x
-         (keyword? t) (call (name t) x) 
+         (or (= t 'Number)(= t 'Ratio)) x
+         (litteral-type? t) (call (name t) x) 
          (fn? x) (comp-b> x)
          (type= x clojure.lang.PersistentVector)  (mapv b> x)
          (type= x clojure.lang.PersistentHashSet) (set (map b> x))
@@ -160,10 +160,10 @@
         :down (with-type 'Direction {:name :d :val -1})})
     
     (b-construct direction
-      [:direction d]
+      ['direction d]
         (if (= d :u) (directions :up) 
                      (directions :down))
-      [:number n]
+      ['Number n]
         (if (= n 1) (directions :up) 
                     (directions :down)))
 
@@ -185,9 +185,9 @@
     (def val->alteration  (reduce #(into %1 {(:val %2) %2}) {} pitch-alterations))
     
     (b-construct alteration
-      [:alteration n] (name->alteration n)
-      [:number v] (val->alteration v)
-      [:number v clojure.lang.Keyword t] 
+      ['alteration n] (name->alteration n)
+      ['Number v] (val->alteration v)
+      ['Number v 'Keyword t] 
         (cond (= t :t1) (select-first #(= v (:val %)) degree-alterations-1)
               (= t :t2) (select-first #(= v (:val %)) degree-alterations-2)
               (= t :pitch) (select-first #(= v (:val %)) pitch-alterations)))
@@ -213,12 +213,12 @@
     
     (b-construct d-interval-class
                  
-      [:d-interval-class n] 
+      ['d-interval-class n] 
         (name->d-interval-class n)
         
       ['DInterval gi] (:class gi)
         
-      [:number v] 
+      ['Number v] 
         (val->d-interval-class v)
         
       ['NaturalPitchClass npc1 'NaturalPitchClass npc2]
@@ -239,7 +239,7 @@
     
     (b-construct d-interval 
                  
-      [:d-interval n] 
+      ['d-interval n] 
         (let [[gin diroct] (dash-split n)
                class (d-interval-class (keyword gin))
                [dir oct] (dir-oct-expand diroct)
@@ -247,7 +247,7 @@
           (with-type 'DInterval 
                      {:name n :val val :class class :direction dir :octave-offset oct}))
         
-      [:number v]
+      ['Number v]
         (let [[oct m] (div-mod (abs v) 7)
               class (d-interval-class m)
               dir (direction (if (>= v 0) :u :d))
@@ -299,14 +299,14 @@
     ;;; construct ;;;
     
     (b-construct c-interval-class
-      [:c-interval-class n] (name->c-interval-class n)
-      [:number v] (val->c-interval-class (mod12 v))
+      ['c-interval-class n] (name->c-interval-class n)
+      ['Number v] (val->c-interval-class (mod12 v))
       ['DIntervalClass dc] (d-interval-class->c-interval-class (:name dc))
       ['Mode m] (-> m :mode-class :degree)
       ['ModeClass m] (:degree m)
       ['CInterval m] (:class m)
       
-      ['DIntervalClass di :number n]
+      ['DIntervalClass di 'Number n]
         (let [dv (:degree-val di)
               alt (alteration (- n dv) (:alt-type di))]
           (when alt (c-interval-class (kwcat (:name alt) (inc (:val di))))))
@@ -356,7 +356,7 @@
     ;;; construct ;;;
     
     (b-construct c-interval 
-      [:c-interval n] 
+      ['c-interval n] 
         (let [[dn diroct] (dash-split n)
                class (c-interval-class (keyword dn))
                [dir oct] (dir-oct-expand diroct)
@@ -376,12 +376,12 @@
       ['CIntervalClass ci 'Direction d] 
         (c-interval (kwcat (:name ci) "-" (:name d)))
       
-      ['CIntervalClass d :number oct-offset]
+      ['CIntervalClass d 'Number oct-offset]
         (c-interval (kwcat (:name d) 
                            (if (>= oct-offset 0) "-u" "-d") 
                            (when-not (zero? oct-offset) (abs oct-offset))))
       
-      ['DIntervalClass di :number n]
+      ['DIntervalClass di 'Number n]
         (let [[d-val v] [(:degree-val di)(:val di)]
               alt-n (let [x (- (mod12 (abs n)) d-val)] 
                       (cond (< x -2) (+ x 12) (> x 2) (- x 12) :else x))
@@ -390,7 +390,7 @@
               oct (when-not (zero? (int-div n 12)) (abs (int-div n 12)))]
           (or-dr (c-interval (kwcat (:name alt) (str (inc v)) "-" dir oct))))
       
-      ['DInterval di :number n] (c-interval (:class di) n)
+      ['DInterval di 'Number n] (c-interval (:class di) n)
       
       ['NaturalPitchClass npc1 'NaturalPitchClass npc2]
         (let [dist (- (:val npc2)(:val npc1))
@@ -458,15 +458,15 @@
     ;;; construct ;;;
     
     (b-construct natural-pitch-class 
-      [:natural-pitch-class n] (name->natural-pitch-class n)
-      [:number v] (val->natural-pitch-class (mod v 7)))
+      ['natural-pitch-class n] (name->natural-pitch-class n)
+      ['Number v] (val->natural-pitch-class (mod v 7)))
     
     ;;; methods ;;;
     
     (b-meth transpose ['NaturalPitchClass 'DInterval] [this gi]
       (natural-pitch-class (+ (:val this) (:val gi))))
     
-    (b-meth transpose ['NaturalPitchClass :number] [this n]
+    (b-meth transpose ['NaturalPitchClass 'Number] [this n]
       (natural-pitch-class (+ (:val this) n)))
     
   ;;;;;;;;;;;;;;;;;;;; PitchClass ;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -495,15 +495,15 @@
     ;;; Constructor ;;;
     
     (b-construct pitch-class 
-      [:number v] 
+      ['Number v] 
         (val->pitch-class v)
-      [:pitch-class n] 
+      ['pitch-class n] 
         (name->pitch-class n)
       ['NaturalPitchClass n] 
         (name->pitch-class (keyword (:name n)))
       ['Pitch p] 
         (:pitch-class p)
-      ['NaturalPitchClass n :number v] 
+      ['NaturalPitchClass n 'Number v] 
         (select-first #(and (= (get-in % [:natural :name]) (:name n))
                             (= (:val %) v))
                       pitch-classes)
@@ -553,13 +553,13 @@
     
     (b-construct pitch 
                  
-      [:number v] (val->pitch v)
-      [:pitch n] (name->pitch n)
+      ['Number v] (val->pitch v)
+      ['pitch n] (name->pitch n)
       
       ['PitchClass pc] 
         (pitch (kwcat (:name pc) "0"))
       
-      ['NaturalPitchClass npc :number n]
+      ['NaturalPitchClass npc 'Number n]
         (let [[oct mod] (div-mod n 12)
                alt (- mod (:pitch-val npc))
                possible-alt? (between alt -2 2)]
@@ -568,10 +568,10 @@
              (> alt 0) (pitch (pitch-class npc (alteration (- alt 12))) (- oct 4))
              (< alt 0) (pitch (pitch-class npc (alteration (+ alt 12))) (- oct 6))))  
         
-      ['PitchClass p :number o]
+      ['PitchClass p 'Number o]
         (pitch (kwcat (:name p) (str o)))
       
-      ['Mode m :number n]
+      ['Mode m 'Number n]
         (let [[oct n-mod] (div-mod n 12)
               [[nam dist][nam2 dist2]] 
               (sort-by #(abs (second %)) (map (juxt :name #(- n-mod (:val %1))) (:pitch-classes m)))
@@ -584,10 +584,10 @@
                 (pitch (-> p2 :pitch-class :natural :name) 
                        n))))
         
-      ['NaturalPitchClass npc 'Alteration a :number o]
+      ['NaturalPitchClass npc 'Alteration a 'Number o]
         (pitch (kwcat (:name npc)(:name a) o ))
         
-      ; [:number n 'Mode m]
+      ; ['Number n 'Mode m]
       ;   (let [n-mod (mod12 n)
       ;         mnpcv (pev (map (c :pitch-val :natural) (:pitch-classes m)))])
     
@@ -681,14 +681,14 @@
     ;;; Constructor ;;;
     
     (b-construct mode-class 
-      [:mode-class n] (name->mode-class n)
-      ['ModeClass m :number d] 
+      ['mode-class n] (name->mode-class n)
+      ['ModeClass m 'Number d] 
         (mode-class (-> mother-modes (get (:name m)) :childs (nth (dec d)))))
     
     ;;; degree moves ;;;
     
     
-    (b-meth nth-diat ['ModeClass 'CIntervalClass :number] [mc degree n]
+    (b-meth nth-diat ['ModeClass 'CIntervalClass 'Number] [mc degree n]
       (let [degs (:degrees mc)]
         (if (in? degs degree)
           (let [d-pos (.indexOf degs degree)]
@@ -732,14 +732,14 @@
     ;;; construct ;;;
     
     (b-construct mode
-    [:mode n]
+    ['mode n]
       (let [[r mc] (dash-split n)
              r (pitch-class (keyword r))
              mc (mode-class (keyword mc))
              pcs (pitch-classes-calc r (:degrees mc))]
         (build-mode n r mc pcs))
     
-    ['Mode m :number d]
+    ['Mode m 'Number d]
       (let [mc (mode-class (keyword (second (dash-split (:name m)))) d)
             r (nth (:pitch-classes (mode (:name m))) (dec d))
             n (kwcat (:name r) "-" (:name mc))
@@ -764,10 +764,10 @@
             mother-mode-name (kwcat (:name (mother-root m)) "-" (:mother nmc))]
         (mode mother-mode-name degree)))
     
-    (b-meth intra-abs-move ['Mode :number] [m n]
+    (b-meth intra-abs-move ['Mode 'Number] [m n]
       (mode (:name (mother-mode m)) n))
     
-    (b-meth intra-rel-move ['Mode :number] [m n]
+    (b-meth intra-rel-move ['Mode 'Number] [m n]
       (mode (:name (mother-mode m)) 
             (-> (d-interval-class-val m) (+ n) (mod 7) inc)))
     
@@ -778,14 +778,14 @@
         (build-mode n r (:mode-class this) ps)))
     
     ;TODO
-    (b-meth nth-diat ['Mode 'PitchClass :number] [m pc n]
+    (b-meth nth-diat ['Mode 'PitchClass 'Number] [m pc n]
       (let [pcs (:pitch-classes m)]
         (if (in? pcs pc)
           (let [p-pos (.indexOf pcs pc)]
             (nth pcs (mod (+ p-pos n) (count pcs))))
           "pitch class doesn't belongs to mode")))
     
-    (b-meth nth-diat ['Mode 'CIntervalClass :number] [m cic n] 
+    (b-meth nth-diat ['Mode 'CIntervalClass 'Number] [m cic n] 
       (nth-diat (:mode-class m) cic n))
     
   ;;;;;;;;;;;;;;;;;; TimeSignature ;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -806,8 +806,8 @@
            :denominator den})))
     
     (b-construct time-signature
-      [:time-signature ts] (build-time-signature ts)
-      [:number n :number d] (build-time-signature n d))
+      ['time-signature ts] (build-time-signature ts)
+      ['Number n 'Number d] (build-time-signature n d))
     
   ;;;;;;;;;;;;;;; modal-struct-class ;;;;;;;;;;;;;;;;;;;;;;;;
 

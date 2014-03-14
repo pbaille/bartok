@@ -130,17 +130,18 @@
     (when md pitches)))
   ;[{:mode mode-name :steps [step ...]}...] / [Pitch Pitch] / Pitch
   ([coll bounds start-pitch]
+   (dr)
    ;TODO
    ))
 
 
-(fact "melodic-domain"
-  (def- md (melodic-domain :C-Lyd [:C0 :C2] :C1))
-    (melodic-domain :C-Lyd [:C0 :C2]) => (melodic-domain :C-Lyd [:C0 :C2] :C0)
-    (interval-bounds md)
-      => [(d-interval :1st-d1) (d-interval :1st-u1)]
-    (md-amplitude md) => 15
-    (step md 1) => (melodic-domain :C-Lyd [:C0 :C2] :D1)
-    (step-sequence md [1 1 1]) => [(b> :D1)(b> :E1)(b> :F#1)])
+; (fact "melodic-domain"
+;   (def- md (melodic-domain :C-Lyd [:C0 :C2] :C1))
+;     (melodic-domain :C-Lyd [:C0 :C2]) => (melodic-domain :C-Lyd [:C0 :C2] :C0)
+;     (interval-bounds md)
+;       => [(d-interval :1st-d1) (d-interval :1st-u1)]
+;     (md-amplitude md) => 15
+;     (step md 1) => (melodic-domain :C-Lyd [:C0 :C2] :D1)
+;     (step-sequence md [1 1 1]) => [(b> :D1)(b> :E1)(b> :F#1)])
 
 

@@ -250,7 +250,7 @@
       (map? x) 
         {:insta-str (str (name nam) " = " (instapat (syn-map->or-str x)) " ") 
          :resolver (syn-resolver x)
-         :name (keyword nam)}))))
+         :name (keyword nam)}))
 
 ;;;;;;;;;;; evaluators ;;;;;;;;;
 

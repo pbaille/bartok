@@ -84,13 +84,13 @@
 ;----------------
 
   ;smelly hack on types... have to make a hierarchy but don't know how with those symbol types...
-  (b-meth nth-diat ['WModeClass 'CIntervalClass :number] [wmc degree n]
+  (b-meth nth-diat ['WModeClass 'CIntervalClass 'Number] [wmc degree n]
     (nth-diat (with-type 'ModeClass wmc) degree n))
   
-  (b-meth nth-diat ['WMode 'CIntervalClass :number] [wm degree n]
+  (b-meth nth-diat ['WMode 'CIntervalClass 'Number] [wm degree n]
     (nth-diat (with-type 'ModeClass (:w-mode-class wm)) degree n))
   
-  (b-meth nth-diat ['WMode 'PitchClass :number] [wm pc n]
+  (b-meth nth-diat ['WMode 'PitchClass 'Number] [wm pc n]
     (nth-diat (with-type 'Mode wm) pc n))
   
   ;;;
