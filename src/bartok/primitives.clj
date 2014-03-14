@@ -4,131 +4,31 @@
   (:require [camel-snake-kebab :as csk])
   (:use vendors.debug-repl))
 
-;-------------------------------------------------------
-;;;;;;;;;;;;;;;;;;;;;;; Patterns ;;;;;;;;;;;;;;;;;;;;;;;
-;-------------------------------------------------------
-
-  (def -pat
-    #"(\-)")
+(load-file "src/bartok/litterals.clj")
+(load-file "src/bartok/types.clj")
   
-  (def npc-pat 
-    #"([A-G])")
+  ; (declare b-types)
   
-  (def alt-pat 
-    #"(bb|o|b|m|M|N|P|#|\+|x|)")
+  ; (defn b-type [x]
+  ;   (cond
+  ;     (named? x) (or (b? x) (type x))
+  ;     (number? x) (if (ratio? x) :ratio :number)
+  ;     (type= x clojure.lang.PersistentVector) 
+  ;       (let [[ft :as bts] (a b-types x)] 
+  ;         (if (all-eq? bts) [ft] bts))
+  ;     (type= x clojure.lang.PersistentHashSet) (set (a b-types x))
+  ;     (type= x clojure.lang.PersistentList) (a b-types x)
+  ;     (type= x clojure.lang.PersistentArrayMap) 'Map ;(map-h* b-type x)
+  ;     (type= x clojure.lang.PersistentHashMap)  'Map ;(map-h* b-type x)
+  ;     :else (type x)))
   
-  (def p-alt-pat 
-    #"(#|b|bb|x)?")
-  
-  (def dir-pat 
-    #"([ud])")
-  
-  (def pitch-pat 
-    (re-cat npc-pat p-alt-pat #"(\-?[0-5])"))
-  
-  (def pitch-class-pat 
-    (re-cat npc-pat p-alt-pat))
-  
-  (def cic-pat
-    #"([omM#][2367]|[bP+][145])")
-  
-  (def dic-pat
-    #"(1st|2nd|3rd|[4-7]th)")
-  
-  (def dir-oct-pat
-    #"([ud][0-5]*)")
-  
-  (def d-interval-pat
-    (re-cat dic-pat -pat dir-oct-pat))
-  
-  (def c-interval-pat
-    (re-cat cic-pat -pat dir-oct-pat))
-
-  (def mode-class-pat
-    (re-pattern 
-     (str
-      "(Lyd#2|AltDim|Harmm|Loc6|Ion\\+|Dor\\+4|PhryM|"
-      "Lyd\\+|Lydb7|Mixb6|Loc2|Alt|Melm|Phry6|"
-      "Lyd|Mix|Eol|Loc|Ion|Dor|Phry)")))
-  
-  (def mother-mode-pat 
-    #"(Lyd#2|Lyd\+|Lyd)")
-  
-  (def h-function-pat
-    #"(SD|T)(\-|\+|alt)?")
-  
-  (def mode-pat
-    (re-cat pitch-class-pat -pat mode-class-pat))
-  
-  (def time-signature-pat
-    #"[1-9][1-9]*\|(2|4|8|16)")
-  
-;-------------------------------------------------------
-;;;;;;;;;;;;;;;;;;;;;;; Identity ;;;;;;;;;;;;;;;;;;;;;;;
-;-------------------------------------------------------
-  
-  
-  (defn- fit? [regex str]
-    (when (re-matches regex str) true))
-  
-  (defn b? [x]
-    (when (named? x)
-      (let [n (name x)]
-        (cond
-          (fit? alt-pat n) :alteration
-          (fit? dir-pat n) :direction
-          (and (symbol? x) (fit? npc-pat n)) :natural-pitch-class
-          (fit? cic-pat n) :c-interval-class
-          (fit? pitch-class-pat n) :pitch-class
-          (fit? pitch-pat n) :pitch
-          (fit? c-interval-pat n) :c-interval
-          (fit? mode-class-pat n) :mode-class
-          (fit? mode-pat n) :mode
-          (fit? dic-pat n) :d-interval-class
-          (fit? d-interval-pat n) :d-interval
-          (fit? h-function-pat n) :h-function
-          (fit? time-signature-pat n) :time-signature
-          :else nil))))
-  
-  (declare b-types)
-  
-  (defn b-type [x]
-    (cond
-      (named? x) (or (b? x) (type x))
-      (number? x) (if (ratio? x) :ratio :number)
-      (type= x clojure.lang.PersistentVector) 
-        (let [[ft :as bts] (a b-types x)] 
-          (if (all-eq? bts) [ft] bts))
-      (type= x clojure.lang.PersistentHashSet) (set (a b-types x))
-      (type= x clojure.lang.PersistentList) (a b-types x)
-      (type= x clojure.lang.PersistentArrayMap) 'Map ;(map-h* b-type x)
-      (type= x clojure.lang.PersistentHashMap)  'Map ;(map-h* b-type x)
-      :else (type x)))
-  
-  (defn b-types 
-    "ex: 
-    (b-types {:m2 'A :Lyd :4|4} (b> :m2) #{:C# :C#2})
-    => [{:mode-class :time-signature, :c-interval-class :natural-pitch-class} 
-        CIntervalClass 
-        #{:pitch-class :pitch}]"
-    [& xs] (mapv b-type xs))
-  
-  ; (defn b-type? 
-  ;   "check if x is a bartok type"
-  ;   [x]
-  ;   (in? ['Direction
-  ;         'Alteration
-  ;         'DIntervalClass
-  ;         'DInterval
-  ;         'CIntervalClass
-  ;         'CInterval
-  ;         'NaturalPitchClass
-  ;         'PitchClass
-  ;         'Pitch
-  ;         'ModeClass
-  ;         'Mode
-  ;         'TimeSignature] 
-  ;        (b-type x)))
+  ; (defn b-types 
+  ;   "ex: 
+  ;   (b-types {:m2 'A :Lyd :4|4} (b> :m2) #{:C# :C#2})
+  ;   => [{:mode-class :time-signature, :c-interval-class :natural-pitch-class} 
+  ;       CIntervalClass 
+  ;       #{:pitch-class :pitch}]"
+  ;   [& xs] (mapv b-type xs))
   
 ;-------------------------------------------------------
 ;;;;;;;;;;;;;;;;;;;;;;; Eval ;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -213,12 +113,6 @@
   ;arithmetics
   (b-multi b:+)
   (b-multi b:-)
-  
-  ;comparators
-  (b-multi b:>)
-  (b-multi b:<)
-  (b-multi b:>=)
-  (b-multi b:<=)
   
   ;intra-mode degree-move
   ;return the nth diatonic pitchclass or degree of 2nd argument 
@@ -915,7 +809,93 @@
       [:time-signature ts] (build-time-signature ts)
       [:number n :number d] (build-time-signature n d))
     
+  ;;;;;;;;;;;;;;; modal-struct-class ;;;;;;;;;;;;;;;;;;;;;;;;
+
+  (def modal-bases
+    {:M  [:M3 :P5]    
+     :m  [:m3 :P5]    
+     :+  [:M3 :+5]    
+     :o  [:m3 :b5]    
+     :7  [:M3 :P5 :m7]
+     :∆  [:M3 :P5 :M7]
+     :o7 [:m3 :b5 :o7]
+     :ø  [:m3 :b5 :m7]})
+  
+  (defn- msc-update-degrees [msc]
+    (let [msc (dissoc msc :degrees)]
+      (assoc msc :degrees (vals msc))))
+  
+  (defn- msc-assoc [msc & cics]
+    (let [msc (ap assoc msc 
+              (mapcat #(vector (-> % :d-class :name) %) 
+                      cics))]
+      (msc-update-degrees msc)))
+  
+  (defn- msc-dissoc [msc & cics]
+    (let [msc (ap dissoc msc 
+               (map 
+                #(if (type= % 'DIntervalClass)
+                  (:name %)
+                  (-> % :d-class :name)) 
+                cics))]
+      (msc-update-degrees msc)))
+  
+  (defn modal-struct-class 
+    ([coll] (a modal-struct-class coll))
+    ([x & xs] (ap msc-assoc (with-type 'ModalStructClass {}) x xs)))
+  
+  (def msc modal-struct-class)
+  
+  ; (-> (b>> modal-struct-class :m2 :M3 :+4 :m7)
+  ;      pev
+  ;      (msc-assoc (b> :+5))
+  ;      pev
+  ;      (msc-assoc (b> :P5))
+  ;      pev)
+
+;;;;;;;;;;;;;;; modal-struct ;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+  (declare modal-struct)
+  
+  (defn ms-assoc [ms & args]
+    (let [root (:root ms)
+          cics (map #(if (type= % 'PitchClass) 
+                       (c-interval-class root %)
+                       %) 
+                    args)
+          msc (ap msc-assoc (:class ms) cics)]
+      (modal-struct root msc)))
+  
+  (defn ms-dissoc [ms & args]
+    (let [root (:root ms)
+          cics (map #(if (type= % 'PitchClass) 
+                       (c-interval-class root %)
+                       %) 
+                    args)
+          msc (ap msc-dissoc (:class ms) cics)]
+      (modal-struct root msc)))
+ 
+  (defn modal-struct [root msc]
+    (with-type 'ModalStruct
+      {:class msc
+       :root root
+       :pitch-classes 
+         (cons root 
+          (map (p transpose root) 
+               (:degrees msc)))}))
+  
+  (def ms modal-struct)
+
+  ; (-> (ms (b> :C) (b>> msc :m2 :M3 :+4 :m7))
+  ;      pev
+  ;      (ms-assoc (b> :+5))
+  ;      pev
+  ;      (ms-assoc (b> :G))
+  ;      pev)
     
+(load-file "src/bartok/parser.clj")
+(load-file "src/bartok/user_macros.clj")
+ 
 
 
 

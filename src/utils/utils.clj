@@ -573,6 +573,16 @@
     ([depth f coll] 
      (a map [(nested-expr depth f partial map) coll])))
   
+  ;;; #clojure llasram's print method dispatch solution ;;;
+  (defmulti print-method* (fn [x w] (type x)))
+  (doseq [[dv m] (.getMethodTable print-method)] 
+    (.addMethod print-method* dv m))
+  (doseq [[dv dvs] (.getPreferTable print-method), dv' dvs] 
+    (.preferMethod print-method* dv dv'))
+  (.bindRoot #'print-method print-method*)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+  
 ;************** regex ***********************
 
   (defn re-cat [& args]

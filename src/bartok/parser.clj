@@ -143,91 +143,7 @@
   ;         :C)
 
 (require '[instaparse.core :as insta])
-
-;;;;;;;;;;;; modal-struct-class ;;;;;;;;;;;;;
-
-  (def modal-bases
-    {:M  [:M3 :P5]    
-     :m  [:m3 :P5]    
-     :+  [:M3 :+5]    
-     :o  [:m3 :b5]    
-     :7  [:M3 :P5 :m7]
-     :∆  [:M3 :P5 :M7]
-     :o7 [:m3 :b5 :o7]
-     :ø  [:m3 :b5 :m7]})
-  
-  (defn- msc-update-degrees [msc]
-    (let [msc (dissoc msc :degrees)]
-      (assoc msc :degrees (vals msc))))
-  
-  (defn- msc-assoc [msc & cics]
-    (let [msc (ap assoc msc 
-              (mapcat #(vector (-> % :d-class :name) %) 
-                      cics))]
-      (msc-update-degrees msc)))
-  
-  (defn- msc-dissoc [msc & cics]
-    (let [msc (ap dissoc msc 
-               (map 
-                #(if (type= % 'DIntervalClass)
-                  (:name %)
-                  (-> % :d-class :name)) 
-                cics))]
-      (msc-update-degrees msc)))
-  
-  (defn modal-struct-class 
-    ([coll] (a modal-struct-class coll))
-    ([x & xs] (ap msc-assoc (with-type 'ModalStructClass {}) x xs)))
-  
-  (def msc modal-struct-class)
-  
-  ; (-> (b>> modal-struct-class :m2 :M3 :+4 :m7)
-  ;      pev
-  ;      (msc-assoc (b> :+5))
-  ;      pev
-  ;      (msc-assoc (b> :P5))
-  ;      pev)
-
-;;;;;;;;;;;; modal-struct ;;;;;;;;;;;;;
-
-  (declare modal-struct)
-  
-  (defn ms-assoc [ms & args]
-    (let [root (:root ms)
-          cics (map #(if (type= % 'PitchClass) 
-                       (c-interval-class root %)
-                       %) 
-                    args)
-          msc (ap msc-assoc (:class ms) cics)]
-      (modal-struct root msc)))
-  
-  (defn ms-dissoc [ms & args]
-    (let [root (:root ms)
-          cics (map #(if (type= % 'PitchClass) 
-                       (c-interval-class root %)
-                       %) 
-                    args)
-          msc (ap msc-dissoc (:class ms) cics)]
-      (modal-struct root msc)))
  
-  (defn modal-struct [root msc]
-    (with-type 'ModalStruct
-      {:class msc
-       :root root
-       :pitch-classes 
-         (cons root 
-          (map (p transpose root) 
-               (:degrees msc)))}))
-  
-  (def ms modal-struct)
-
-  ; (-> (ms (b> :C) (b>> msc :m2 :M3 :+4 :m7))
-  ;      pev
-  ;      (ms-assoc (b> :+5))
-  ;      pev
-  ;      (ms-assoc (b> :G))
-  ;      pev)
-  
 ;;;;;;;;; data ;;;;;;;;;;;;;
 
   (def dir-syns
@@ -408,7 +324,7 @@
        :d-interval-class d-interval-class*
        :d-interval d-interval*
        :c-interval-class c-interval-class*       
-       :c-interval c-interval*
+       'c-interval c-interval*
        :pitch-class pitch-class*
        :pitch pitch*
        ; :mode-class mode-class*
@@ -494,9 +410,15 @@
       :mother-mode-class mc-syns
       :modal-base modal-base-syns }))
   
+  (defn parses-map* [x] 
+    (reduce #(assoc %1 (first %2) (second %2)) 
+            {} 
+            (map-h #(hash-map %1 (first %2)) 
+                   (group-by b-type (b-parser (name x))))))
+  
 ;;;;;;;;;;; ex ;;;;;;;;;;;;;
 
-  (pp "\n" (b-parser "m∆9omit5"))
+  ;(pp "\n" (b-parser "m∆9omit5"))
   ; (pp "\n" (b-parser "D#"))
   
 
