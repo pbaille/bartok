@@ -410,7 +410,7 @@
       :mother-mode-class mc-syns
       :modal-base modal-base-syns }))
   
-  (defn parses-map* [x] 
+  (defn parses-map [x] 
     (reduce #(assoc %1 (first %2) (second %2)) 
             {} 
             (map-h #(hash-map %1 (first %2)) 

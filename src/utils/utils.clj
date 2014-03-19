@@ -12,6 +12,8 @@
   
   (defn pp [& x] (a bp/pp x))
   
+  (defn ppd [x] (bp/pp (into {} x)))
+  
   (defn pev [x] (do (pp x) x))
   
   (defmacro dr 
@@ -225,7 +227,7 @@
       (map f (take (inc (count xs)) (iterate rest xs)))))
 
   (defn inits 
-    "like haskell's Data.List tails
+    "like haskell's Data.List inits
     ex:
     (inits [1 2 3 4])
     => (() (1) (1 2) (1 2 3))"

@@ -6,6 +6,7 @@
 (defn- map-vals [f m]
   (apply merge (map (fn [[k v]] {k (f v)}) m)))
 
+;useless
 (defn nested-types->name [x]
   (letfn [(fun [x]
             (if-let [n (:name x)]
@@ -25,9 +26,20 @@
 ;        :else x)))
 
 (defmulti bartok-dispatch
-  #(if (not-java-class? %) :bartok (class %)))
+  #(if (not-java-class? %) 
+     (cond 
+       (:name %) :bartok-named
+       (:is-type (meta %)) :bartok-type
+       :else :bartok) 
+     (class %)))
 
-(use-method bartok-dispatch :bartok #(pprint-map (nested-types->name %)))
+; (use-method bartok-dispatch :bartok #(pprint-map (nested-types->name %)))
+(use-method bartok-dispatch :bartok-named pprint-simple-default)
+(use-method bartok-dispatch :bartok-type  pprint-simple-default)
+(use-method bartok-dispatch :bartok #(do (pprint-simple-default '<) 
+                                         (pprint-simple-default (type %)) 
+                                         (pprint-map (nested-types->name %)) 
+                                         (pprint-simple-default '>)))
 (use-method bartok-dispatch clojure.lang.ISeq pprint-list)
 (use-method bartok-dispatch clojure.lang.IPersistentVector pprint-vector)
 (use-method bartok-dispatch clojure.lang.IPersistentMap pprint-map)
@@ -43,3 +55,7 @@
   (:use [clojure.pprint :only [pprint]]))
 
 (defn pp [& xs] (dorun (map pprint xs)))
+
+
+
+

@@ -811,91 +811,133 @@
     
   ;;;;;;;;;;;;;;; modal-struct-class ;;;;;;;;;;;;;;;;;;;;;;;;
 
-  (def modal-bases
-    {:M  [:M3 :P5]    
-     :m  [:m3 :P5]    
-     :+  [:M3 :+5]    
-     :o  [:m3 :b5]    
-     :7  [:M3 :P5 :m7]
-     :∆  [:M3 :P5 :M7]
-     :o7 [:m3 :b5 :o7]
-     :ø  [:m3 :b5 :m7]})
-  
-  (defn- msc-update-degrees [msc]
-    (let [msc (dissoc msc :degrees)]
-      (assoc msc :degrees (vals msc))))
-  
-  (defn- msc-assoc [msc & cics]
-    (let [msc (ap assoc msc 
-              (mapcat #(vector (-> % :d-class :name) %) 
-                      cics))]
-      (msc-update-degrees msc)))
-  
-  (defn- msc-dissoc [msc & cics]
-    (let [msc (ap dissoc msc 
-               (map 
-                #(if (type= % 'DIntervalClass)
-                  (:name %)
-                  (-> % :d-class :name)) 
-                cics))]
-      (msc-update-degrees msc)))
-  
-  (defn modal-struct-class 
-    ([coll] (a modal-struct-class coll))
-    ([x & xs] (ap msc-assoc (with-type 'ModalStructClass {}) x xs)))
-  
-  (def msc modal-struct-class)
-  
-  ; (-> (b>> modal-struct-class :m2 :M3 :+4 :m7)
-  ;      pev
-  ;      (msc-assoc (b> :+5))
-  ;      pev
-  ;      (msc-assoc (b> :P5))
-  ;      pev)
-
-;;;;;;;;;;;;;;; modal-struct ;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-  (declare modal-struct)
-  
-  (defn ms-assoc [ms & args]
-    (let [root (:root ms)
-          cics (map #(if (type= % 'PitchClass) 
-                       (c-interval-class root %)
-                       %) 
-                    args)
-          msc (ap msc-assoc (:class ms) cics)]
-      (modal-struct root msc)))
-  
-  (defn ms-dissoc [ms & args]
-    (let [root (:root ms)
-          cics (map #(if (type= % 'PitchClass) 
-                       (c-interval-class root %)
-                       %) 
-                    args)
-          msc (ap msc-dissoc (:class ms) cics)]
-      (modal-struct root msc)))
- 
-  (defn modal-struct [root msc]
-    (with-type 'ModalStruct
-      {:class msc
-       :root root
-       :pitch-classes 
-         (cons root 
-          (map (p transpose root) 
-               (:degrees msc)))}))
-  
-  (def ms modal-struct)
-
-  ; (-> (ms (b> :C) (b>> msc :m2 :M3 :+4 :m7))
-  ;      pev
-  ;      (ms-assoc (b> :+5))
-  ;      pev
-  ;      (ms-assoc (b> :G))
-  ;      pev)
+    (def modal-bases
+      {:M  [:M3 :P5]    
+       :m  [:m3 :P5]    
+       :+  [:M3 :+5]    
+       :o  [:m3 :b5]    
+       :7  [:M3 :P5 :m7]
+       :∆  [:M3 :P5 :M7]
+       :o7 [:m3 :b5 :o7]
+       :ø  [:m3 :b5 :m7]})
     
+    (defn- msc-update-degrees [msc]
+      (let [msc (dissoc msc :degrees)]
+        (assoc msc :degrees (vals msc))))
+    
+    (defn- msc-assoc [msc & cics]
+      (let [msc (ap assoc msc 
+                (mapcat #(vector (-> % :d-class :name) %) 
+                        cics))]
+        (msc-update-degrees msc)))
+    
+    (defn- msc-dissoc [msc & cics]
+      (let [msc (ap dissoc msc 
+                 (map 
+                  #(if (type= % 'DIntervalClass)
+                    (:name %)
+                    (-> % :d-class :name)) 
+                  cics))]
+        (msc-update-degrees msc)))
+    
+    (defn modal-struct-class 
+      ([coll] (a modal-struct-class coll))
+      ([x & xs] (ap msc-assoc (with-type 'ModalStructClass {}) x xs)))
+    
+    (def msc modal-struct-class)
+    
+    ; (-> (b>> modal-struct-class :m2 :M3 :+4 :m7)
+    ;      pev
+    ;      (msc-assoc (b> :+5))
+    ;      pev
+    ;      (msc-assoc (b> :P5))
+    ;      pev)
+
+  ;;;;;;;;;;;;;;; modal-struct ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+    (declare modal-struct)
+    
+    (defn ms-assoc [ms & args]
+      (let [root (:root ms)
+            cics (map #(if (type= % 'PitchClass) 
+                         (c-interval-class root %)
+                         %) 
+                      args)
+            msc (ap msc-assoc (:class ms) cics)]
+        (modal-struct root msc)))
+    
+    (defn ms-dissoc [ms & args]
+      (let [root (:root ms)
+            cics (map #(if (type= % 'PitchClass) 
+                         (c-interval-class root %)
+                         %) 
+                      args)
+            msc (ap msc-dissoc (:class ms) cics)]
+        (modal-struct root msc)))
+   
+    (defn modal-struct [root msc]
+      (with-type 'ModalStruct
+        {:class msc
+         :root root
+         :pitch-classes 
+           (cons root 
+            (map (p transpose root) 
+                 (:degrees msc)))}))
+    
+    (def ms modal-struct)
+
+    ; (-> (ms (b> :C) (b>> msc :m2 :M3 :+4 :m7))
+    ;      pev
+    ;      (ms-assoc (b> :+5))
+    ;      pev
+    ;      (ms-assoc (b> :G))
+    ;      pev)
+      
+;------------------------------------------------------------
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;    
 (load-file "src/bartok/parser.clj")
 (load-file "src/bartok/user_macros.clj")
- 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;------------------------------------------------------------
+
+;;;;;;;;;;;;;;;;;;;;;;; PRINT ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+  (use 'clojure.template)
+  
+  (defn bartok-named-type-print [x]
+    (str "<" (symbol (name (:name x))) ">"))
+
+  (do-template [typ]
+    (defmethod print-method typ [x ^java.io.Writer w]
+      (.write w (bartok-named-type-print x)))
+        'Direction
+        'Alteration
+        'DIntervalClass
+        'DInterval
+        'CIntervalClass
+        'CInterval
+        'Pitch
+        'PitchClass
+        'NaturalPitchClass
+        'Mode
+        'ModeClass
+        'TimeSignature)
+  
+  ; (defn- nested-types->name [x]
+  ;   (letfn [(fun [x]
+  ;             (if-let [n (:name x)]
+  ;                (symbol (name n))
+  ;                (cond
+  ;                  (map? x) (map-vals fun x) 
+  ;                  (sequential? x) (mapv fun x) 
+  ;                  :else x)))]
+  ;     (if (map? x) (map-vals fun x) (mapv fun x))))
+  
+  ; (defmethod print-method 'MelodicDomain [x ^java.io.Writer w]
+  ;   (.write w (a str (map #(str (first %) (second %) "\n") (nested-types->name x)))))
 
 
 
+  
+
+  

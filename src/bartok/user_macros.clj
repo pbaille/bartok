@@ -5,7 +5,7 @@
           fast-parse (when litteral? (b> x))
           fast-match? (= typ (b-type fast-parse))
           pm (when (and litteral? (not fast-match?)) 
-               (parses-map* x))] 
+               (parses-map x))] 
       (cond 
         fast-match? fast-parse
         (any-type? typ) x
@@ -16,18 +16,21 @@
         (union-type? typ)
           (if (seq pm)
             (first (keep #(get pm %) typ))
-            (when (match-type? typ x) x))
-        (uniform-collection-type? typ)
+            (if (match-type? typ x) 
+              x
+              (first (keep #(coerce-type % x) typ))))
+        (and (uniform-collection-type? typ) (sequential? x))
           (let [ret (map (p coerce-type (first typ)) x)]
             (when (every? not-nil? ret)
               (if (= typ (do-type ['Any]))
                 (when (uniform-collection-type? (b-type ret)) ret)  
                 ret)))
-        (collection-type? typ)
+        (and (collection-type? typ) (sequential? x))
           (let [ret (map coerce-type typ x)]
             (when (every? not-nil? ret) ret)))))
   
   (defn- coerce-types [type-vec argv]
+    ; (dr)
     (let [ret (mapv coerce-type (do-types type-vec) argv)]
       (when (every? not-nil? ret) ret)))
 
@@ -128,12 +131,13 @@
     (= (do-types [:pitch ['DIntervalClass]]) (a b-types (coerce-types [:pitch ['DIntervalClass]] ["C1" [:3rd "fourth"]])))
   )
   
-  (defn- coerce-to-available-dispatch 
+  (defn coerce-to-available-dispatch 
     "coerce args to the first possible dispatch of a multimethod
     and return a vector with the matching method and coerced args"
     [multi args]
     (let [meths (methods multi)
           cnt (count args)]
+      ; (dr)
       (first (keep #(when-let [args (coerce-types % args)]
                       (vector (get meths %) args)) 
                    (remove #(or (= :default %) (not= cnt (count %))) 
