@@ -50,9 +50,10 @@
     [msc & cics]
     (a assoc msc 
       (mapcat 
-       #(if (type= % 'DIntervalClass)
-         [(:name %) nil]
-         [(-> % :d-class :name) nil]) 
+       #(cond 
+          (type= % 'DIntervalClass) [(:name %) nil]
+          (type= % 'CIntervalClass) [(-> % :d-class :name) nil]
+          (number? %) [(:name (d-interval-class (dec %))) nil]) 
        cics)))
   
   (b-fn modal-struct-class* 
@@ -261,16 +262,15 @@
 (defn- msc-assoc-adds [msc adds]
   (reduce 
     #(let [addkw (keyword %2)
-           syn (cic-syns %2)]
+           syn (cic-syns %2)
+           omit (when-let [[_ n] (re-matches #"(?:\.)?(?:omit)([2-7])" %2)]
+                  (parse-int n))]
        (cond 
          (= (b-type addkw) 'c-interval-class)
            (msc-assoc* %1 addkw)
-         (= addkw :sus)
-           (msc-dissoc* %1 :3rd)
-         (= addkw :omit5)
-           (msc-dissoc* %1 :5th)
-         syn 
-           (msc-assoc* %1 syn)
+         (= addkw :sus) (msc-dissoc* %1 :3rd)
+         omit (msc-dissoc* %1 omit)
+         syn  (msc-assoc* %1 syn)
          :else %1))
     msc
     adds))
@@ -289,4 +289,4 @@
             msc (msc-assoc-adds base-msc adds)]
         msc))))
 
-; (litteral->msc :m∆#11)
+(litteral->msc :m∆#11omit5)
