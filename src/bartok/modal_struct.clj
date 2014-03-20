@@ -1,29 +1,7 @@
 (in-ns 'bartok.primitives)
 
-;;;;;;;;;;;;;;; prio work ;;;;;;;;;;;;;;;;;;;;;;;;;;
- 
   (use 'clojure.set)
 
-  (defn deg-occs [mcs] 
-    (map-vals count (group-by identity (mapcat :degrees mcs))))
-
-  (defn ms-top-classes [degs]
-    (filter #(subset? (set (map :val degs)) 
-                      (set (map :val (:degrees %)))) 
-            mode-classes))
-
-  (defn rarest-degree [mc mcs]
-    (first (sort-by #(get (deg-occs mcs) %) (:degrees mc))))
-
-  (defn prio [mc]
-    (loop [ret [(rarest-degree mc mode-classes)]
-           top-classes (ms-top-classes ret)]
-      (let [ret (conj ret (rarest-degree mc top-classes))
-            top-classes (ms-top-classes ret)]
-        (if (count= top-classes 1)
-          ret
-          (recur ret top-classes)))))
- 
 ;;;;;;;;;;;;;;;;;;; MSC Work ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   
   (def empty-msc*
@@ -56,9 +34,16 @@
           (number? %) [(:name (d-interval-class (dec %))) nil]) 
        cics)))
   
+  (declare litteral->msc)
+  
   (b-fn modal-struct-class* 
     "modal-struct-class constructor, see below alias 'msc*'"
-    ([coll] (a modal-struct-class* coll))
+    ; conflict with mode-class litterals... 
+    ;but mode and mode-class will be certainly removed
+    ([x] 
+     (cond 
+       (coll? x)  (a modal-struct-class* x)
+       (named? x) (litteral->msc x)))
     ([x & xs] (a msc-assoc* empty-msc* x xs)))
   
   (def msc* modal-struct-class*)
@@ -221,77 +206,114 @@
   
 ;;;;;;;;;;;;;;;;;; msc-parse ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(require '[utils.regex :as re])
+  (require '[utils.regex :as re])
 
-(def ^:private msc-base-pat
-  (re-cat
-   (re/re-wrap
-    (re-cat 
-     (re/coll->or-pat (keys modes*))
-     #"|"
-     (re/coll->or-pat
-      (concat (keys tetrads-litterals)
-              (keys triads-litterals)))
-     #"|"))
-   #"(.*)"))
+  (def ^:private msc-base-pat
+    (re-cat
+     (re/re-wrap
+      (re-cat 
+       (re/coll->or-pat (keys modes*))
+       #"|"
+       (re/coll->or-pat
+        (concat (keys tetrads-litterals)
+                (keys triads-litterals)))
+       #"|"))
+     #"(.*)"))
 
-(def ^:private add-pat
-  #"(?:\.)?(?:bb|o|b|m|M|N|P|#|\+|x|\-)?(?:10|11|13|[2-9])|\+|sus|omit[2-7]")
+  (def ^:private add-pat
+    #"(?:\.)?(?:bb|o|b|m|M|N|P|#|\+|x|\-)?(?:10|11|13|[2-9])|\+|sus|omit[2-7]")
 
-(def ^:private adds-pat
-  (-> add-pat re/re-wrap (re-cat "*")))
+  (def ^:private adds-pat
+    (-> add-pat re/re-wrap (re-cat "*")))
 
-(def ^:private cic-syns-pat
-  #"(\.)?(bb|o|b|m|M|N|P|#|\+|x)?(10|11|12|13|[1-9])?")
+  (def ^:private cic-syns-pat
+    #"(\.)?(bb|o|b|m|M|N|P|#|\+|x)?(10|11|12|13|[1-9])?")
 
-(defn- cic-syns
-  "do this best to return a c-interval-class given a compatible named object
-  ex: (cic-syns :+3) => :M3
-      (cic-syns :#5) => :+5
-      (cic-syns :13) => :M6" 
-  [kw]
-  (let [[_ _ alt n] (re-find cic-syns-pat (name kw))
-        alt (when alt (alteration (keyword alt)))
-        n   (when n (mod (dec (parse-int n)) 7))]
-    (cond 
-      (and (not n) alt) :+5
-      (and n (not alt)) (c-interval-class (d-interval-class n))
-      n (:name (c-interval-class (d-interval-class n) alt))
-      :else nil)))
+  (defn- cic-syns
+    "do this best to return a c-interval-class given a compatible named object
+    ex: (cic-syns :+3) => :M3
+        (cic-syns :#5) => :+5
+        (cic-syns :13) => :M6" 
+    [kw]
+    (let [[_ _ alt n] (re-find cic-syns-pat (name kw))
+          alt (when alt (alteration (keyword alt)))
+          n   (when n (mod (dec (parse-int n)) 7))]
+      (cond 
+        (and (not n) alt) :+5
+        (and n (not alt)) (c-interval-class (d-interval-class n))
+        n (:name (c-interval-class (d-interval-class n) alt))
+        :else nil)))
 
-(defn- msc-assoc-adds 
-  "take a msc and a 'adds' string, 
-  return msc with adds applied"
-  [msc adds]
-  (reduce 
-    #(let [addkw (keyword %2)
-           syn (cic-syns %2)
-           omit (when-let [[_ n] (re-matches #"(?:\.)?(?:omit)([2-7])" %2)]
-                  (parse-int n))]
-       (cond 
-         (= (b-type addkw) 'c-interval-class)
-           (msc-assoc* %1 addkw)
-         (= addkw :sus) (msc-dissoc* %1 :3rd)
-         omit (msc-dissoc* %1 omit)
-         syn  (msc-assoc* %1 syn)
-         :else %1))
-    msc
-    adds))
+  (defn- msc-assoc-adds 
+    "take a msc and a 'adds' string, 
+    return msc with adds applied"
+    [msc adds]
+    (reduce 
+      #(let [addkw (keyword %2)
+             syn (cic-syns %2)
+             omit (when-let [[_ n] (re-matches #"(?:\.)?(?:omit)([2-7])" %2)]
+                    (parse-int n))]
+         ; (dr)
+         (cond 
+           (= (b-type addkw) 'c-interval-class)
+             (msc-assoc* %1 addkw)
+           (= addkw :sus) (msc-dissoc* %1 :3rd)
+           omit (msc-dissoc* %1 omit)
+           syn  (msc-assoc* %1 syn)
+           :else %1))
+      msc
+      adds))
+  
+  
+  (defn litteral->msc 
+    "take a keyword or a string that represent a msc 
+     an return the corresponding msc"
+    [kw-or-str]
+    (let [[all base adds] (re-matches msc-base-pat (name kw-or-str))
+          adds (when (and all (re-matches adds-pat adds)) (re-seq add-pat adds))]
+      (if (or base adds)
+        (let [base-msc
+              (if-let [base* ((keyword base) (merge tetrads-litterals triads-litterals))]
+                (msc* base*)
+                (if-let [msc-base* ((keyword base) modes*)] 
+                  msc-base*
+                  (msc* :M3 :P5)))
+              msc (msc-assoc-adds base-msc adds)]
+          msc))))
 
-(defn litteral->msc 
-  "take a keyword or a string that represent a msc 
-   an return the corresponding msc"
-  [kw-or-str]
-  (let [[all base adds] (re-matches msc-base-pat (name kw-or-str))
-        adds (when (and all (re-matches adds-pat adds)) (re-seq add-pat adds))]
-    (if (or base adds)
-      (let [base-msc
-            (if-let [base* ((keyword base) (merge tetrads-litterals triads-litterals))]
-              (msc* base*)
-              (if-let [msc-base* ((keyword base) modes*)] 
-                msc-base*
-                (msc* :M3 :P5)))
-            msc (msc-assoc-adds base-msc adds)]
-        msc))))
+; (litteral->msc :m∆#11omit5)
 
-(litteral->msc :m∆#11omit5)
+;;;;;;;;;;;;;;; prio work ;;;;;;;;;;;;;;;;;;;;;;;;;;
+ 
+
+  (defn deg-occs 
+    "takes a collection of mscs and return a map of type {CIntervalClass Number} 
+    where Number is the occurence of corresponding CIntervalClass in all mscs"
+    [mscs] 
+    (map-vals 
+      count 
+      (group-by 
+        identity 
+        (mapcat msc-degrees mscs))))
+
+  (defn rarest-degree 
+    "return the rarest degree of a msc comparing with given mscs"
+    [msc mscs]
+    (let [deg-occs (deg-occs mscs)]
+     (first 
+      (sort-by #(get deg-occs %) 
+               (msc-degrees msc)))))
+  
+  (defn prio 
+    "return the caracteristics degrees of an msc comparing with given mscs"
+    ([msc] (prio msc (vals modes*)))
+    ([msc mscs]
+    (loop [ret [(rarest-degree msc mscs)]
+           top-classes (map second (modal-origins (msc* ret)))]
+      (let [ret (conj ret (rarest-degree msc top-classes))
+            top-classes (map second (modal-origins (msc* ret)))]
+        (if (all-distinct? ret)
+          (recur ret top-classes)
+          (butlast ret))))))
+ 
+  (prio (msc* :Lyd#6))
