@@ -259,7 +259,10 @@
       n (:name (c-interval-class (d-interval-class n) alt))
       :else nil)))
 
-(defn- msc-assoc-adds [msc adds]
+(defn- msc-assoc-adds 
+  "take a msc and a 'adds' string, 
+  return msc with adds applied"
+  [msc adds]
   (reduce 
     #(let [addkw (keyword %2)
            syn (cic-syns %2)
@@ -275,10 +278,12 @@
     msc
     adds))
 
-(defn litteral->msc [kw-or-str]
+(defn litteral->msc 
+  "take a keyword or a string that represent a msc 
+   an return the corresponding msc"
+  [kw-or-str]
   (let [[all base adds] (re-matches msc-base-pat (name kw-or-str))
         adds (when (and all (re-matches adds-pat adds)) (re-seq add-pat adds))]
-    ; (dr)
     (if (or base adds)
       (let [base-msc
             (if-let [base* ((keyword base) (merge tetrads-litterals triads-litterals))]
