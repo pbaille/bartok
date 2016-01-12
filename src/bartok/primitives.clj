@@ -687,13 +687,12 @@
     
     ;;; degree moves ;;;
     
-    
     (b-meth nth-diat ['ModeClass 'CIntervalClass 'Number] [mc degree n]
       (let [degs (:degrees mc)]
         (if (in? degs degree)
           (let [d-pos (.indexOf degs degree)]
             (nth degs (mod (+ d-pos n) (count degs))))
-          "degree doesn't belongs to mode")))
+            "degree doesn't belongs to mode")))
     
     (b-fn diat-up 
       "args: m ModeClass degree CIntervalClass

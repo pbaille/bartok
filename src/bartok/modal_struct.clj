@@ -6,9 +6,10 @@
   
   (def empty-msc*
     (with-type 'ModalStructClass 
-     (zipmap [:2nd :3rd :4th :5th :6th :7th] 
-             (repeat nil))))
-  
+     (map->sorted 
+        (zipmap [:2nd :3rd :4th :5th :6th :7th] 
+                (repeat nil)))))
+    
   (defn msc-degrees 
     "return seq of all 'degrees' (c-interval-class) 
      of the given modal-struct-class "
@@ -18,6 +19,8 @@
   (b-fn msc-assoc* 
     "assoc a degree to msc, overiding previous degree if needed"
     [msc & cics]
+    {:pre [(type= msc 'ModalStructClass)
+           (match-type? ['CIntervalClass] cics)]}
     (a assoc msc 
      (mapcat #(vector (-> % :d-class :name) %) 
              cics)))
@@ -26,12 +29,14 @@
     "dissoc given degrees, assoc nil to their keys, 
     'cics' can be either cic(s) or dic(s) or mixed"
     [msc & cics]
+    {:pre [(type= msc 'ModalStructClass)]}
     (a assoc msc 
       (mapcat 
        #(cond 
           (type= % 'DIntervalClass) [(:name %) nil]
           (type= % 'CIntervalClass) [(-> % :d-class :name) nil]
-          (number? %) [(:name (d-interval-class (dec %))) nil]) 
+          (number? %) [(:name (d-interval-class (dec %))) nil]
+          :else (throw (Exception. (str "don't know how to dissoc : " % " .")))) 
        cics)))
   
   (declare litteral->msc)
@@ -253,7 +258,6 @@
              syn (cic-syns %2)
              omit (when-let [[_ n] (re-matches #"(?:\.)?(?:omit)([2-7])" %2)]
                     (parse-int n))]
-         ; (dr)
          (cond 
            (= (b-type addkw) 'c-interval-class)
              (msc-assoc* %1 addkw)
@@ -263,7 +267,6 @@
            :else %1))
       msc
       adds))
-  
   
   (defn litteral->msc 
     "take a keyword or a string that represent a msc 
@@ -284,7 +287,6 @@
 ; (litteral->msc :m∆#11omit5)
 
 ;;;;;;;;;;;;;;; prio work ;;;;;;;;;;;;;;;;;;;;;;;;;;
- 
 
   (defn deg-occs 
     "takes a collection of mscs and return a map of type {CIntervalClass Number} 

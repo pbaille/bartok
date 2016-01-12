@@ -76,13 +76,6 @@
             ((ap make-drop-pred fun comp-val-duplets) drop)
             true))))
 
-  ;; buggy, try to make a macro for avoiding multiple evaluation of (fun drop) ...
-  ; (defmacro make-drop-pred 
-  ;   [fun & comp-val-duplets]
-  ;   `(fn [x#] 
-  ;      (let [res# (~fun x#)] 
-  ;        (and ~@(map (fn [[c v]] (list c res# v)) (partition 2 comp-val-duplets))))))
-
 ;;;;;;;;;;; drop analysis ;;;;;;;;;;;;
 
   (defn amplitude
