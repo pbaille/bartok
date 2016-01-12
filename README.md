@@ -11,7 +11,6 @@ composition facilities for melody harmony and rythmn
 MIDI facilities
 and many exemples
 
-
 No longer in development
 
 If you are interested by the intersection of clojure and music I would be very glad to hear about you!
