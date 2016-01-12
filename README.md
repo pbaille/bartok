@@ -6,7 +6,7 @@ This repo contains many things, two much things...
 
 MIDI parser
 MusicXML Parser
-Musical Primitives data structures
+Musical Primitives data structures and symbolic parsing
 composition facilities for melody harmony and rythmn
 MIDI facilities
 and many exemples
